@@ -4,7 +4,7 @@ import NavBar from "../componentes/NavBar";
 export default function Novedades() {
   return (
     <>
-      <NavBar />
+    
 
       <main>
         <h2 className="colecciones-titulo">Nuevos Productos</h2>

@@ -3,7 +3,7 @@ import NavBar from "../componentes/NavBar";
 export default function Nosotros() {
   return (
     <>
-           <NavBar />
+    
 
       {/* CONTENIDO */}
       <main>

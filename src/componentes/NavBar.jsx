@@ -1,109 +1,77 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { FaBars, FaTimes, FaShoppingCart } from "react-icons/fa";
 
-function NavBar() {
+export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="bg-[#ecd2e7] text-[#4b2447] border-b-2 border-[#bc73a3] shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        {/* 🧁 Logo */}
+    <header className="bg-[#fff3f0] shadow-md sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+        {/* LOGO */}
         <Link
           to="/"
-          className="text-2xl font-bold text-[#7c2c53] hover:text-[#a87199] transition-colors"
+          className="text-2xl font-extrabold tracking-wide text-[#d8718c]"
         >
-          Bom-Bocado
+          BOM<span className="text-[#7a1a0a]">BOCADO</span>
         </Link>
 
-        {/* 🍔 Botón hamburguesa */}
+        {/* BOTÓN HAMBURGUESA */}
         <button
-          className="nav-toggle text-3xl md:hidden text-[#7c2c53] focus:outline-none"
-          aria-label="Abrir menú"
           onClick={() => setMenuOpen(!menuOpen)}
+          className="text-[#7a1a0a] text-2xl md:hidden transition-transform duration-300"
+          aria-label="Abrir menú"
         >
-          ☰
+          {menuOpen ? <FaTimes /> : <FaBars />}
         </button>
 
-        {/* 🌸 Menú (modo escritorio) */}
-        <nav className="hidden md:flex gap-8 text-lg font-medium">
+        {/* LINKS */}
+        <nav
+          className={`${
+            menuOpen ? "max-h-80 py-4" : "max-h-0"
+          } md:max-h-none md:py-0 
+          overflow-hidden flex flex-col md:flex-row md:items-center md:gap-6 
+          absolute md:static top-full left-0 w-full md:w-auto bg-[#fff3f0] md:bg-transparent 
+          shadow-md md:shadow-none transition-all duration-500 ease-in-out text-center`}
+        >
           <Link
             to="/"
-            className="hover:text-[#bc3a7] transition-colors duration-200"
+            className="block md:inline text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945] transition-colors duration-300"
           >
-            INICIO
-          </Link>
-          <Link
-            to="/nosotros"
-            className="hover:text-[#bc3a7] transition-colors duration-200"
-          >
-            NOSOTROS
+            Inicio
           </Link>
           <Link
             to="/productos"
-            className="hover:text-[#bc3a7] transition-colors duration-200"
+            className="block md:inline text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
           >
-            PRODUCTOS
+            Productos
           </Link>
           <Link
-            to="/novedades"
-            className="hover:text-[#bc3a7] transition-colors duration-200"
+            to="/nosotros"
+            className="block md:inline text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
           >
-            NOVEDADES
+            Nosotros
           </Link>
           <Link
             to="/contacto"
-            className="hover:text-[#bc3a7] transition-colors duration-200"
+            className="block md:inline text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
           >
-            CONTACTO
+            Contacto
+          </Link>
+          <Link
+            to="/novedades"
+            className="block md:inline text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
+          >
+            Novedades
+          </Link>
+          <Link
+            to="/carrito"
+            className="block md:inline text-[#d8718c] text-xl py-2 hover:text-[#e46945]"
+          >
+            <FaShoppingCart />
           </Link>
         </nav>
-
-        {/* 🧩 Contenedor dinámico */}
-        <div id="userArea" className="hidden md:block"></div>
       </div>
-
-      {/* 📱 Menú móvil */}
-      {menuOpen && (
-        <nav className="flex flex-col md:hidden bg-[#fbe8f4] border-t border-[#bc73a3] text-center py-3 space-y-2 text-lg shadow-inner animate-fade-in">
-          <Link
-            to="/"
-            className="block hover:text-[#bc3a7] transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            INICIO
-          </Link>
-          <Link
-            to="/nosotros"
-            className="block hover:text-[#bc3a7] transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            NOSOTROS
-          </Link>
-          <Link
-            to="/productos"
-            className="block hover:text-[#bc3a7] transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            PRODUCTOS
-          </Link>
-          <Link
-            to="/novedades"
-            className="block hover:text-[#bc3a7] transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            NOVEDADES
-          </Link>
-          <Link
-            to="/contacto"
-            className="block hover:text-[#bc3a7] transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            CONTACTO
-          </Link>
-        </nav>
-      )}
     </header>
   );
 }
-
-export default NavBar;

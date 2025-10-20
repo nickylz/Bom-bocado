@@ -23,7 +23,7 @@ export default function Contacto() {
 
   return (
     <>
-          <NavBar />
+  
 
       {/* ======= SECCIÓN CONTACTO ======= */}
       <section aria-label="Contacto">
