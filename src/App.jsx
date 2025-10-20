@@ -7,6 +7,7 @@ import Nosotros from "./paginas/Nosotros";
 import Productos from "./paginas/productos";
 import Novedades from "./paginas/Novedades";
 import Contacto from "./paginas/contacto";
+import "./App.css";
 
 function App() {
   return (
