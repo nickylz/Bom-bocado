@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NavBar from "./componentes/NavBar";
+import Footer from "./componentes/Footer";
 
-// Tus páginas:
+// Tus páginas
 import Inicio from "./paginas/Index";
 import Nosotros from "./paginas/Nosotros";
 import Productos from "./paginas/productos";
@@ -12,7 +13,9 @@ import "./App.css";
 function App() {
   return (
     <Router>
-      <NavBar />
+      {/* === NAVBAR visible en todas las páginas === */} <NavBar />
+
+      
       <Routes>
         <Route path="/" element={<Inicio />} />
         <Route path="/nosotros" element={<Nosotros />} />
@@ -20,6 +23,9 @@ function App() {
         <Route path="/novedades" element={<Novedades />} />
         <Route path="/contacto" element={<Contacto />} />
       </Routes>
+
+    
+      <Footer />
     </Router>
   );
 }

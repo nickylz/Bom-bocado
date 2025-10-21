@@ -6,7 +6,7 @@ export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="bg-[#fff3f0] shadow-md sticky top-0 z-50">
+    <header className="bg-[#ffe2e6] shadow-md sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
         {/* LOGO */}
         <Link
