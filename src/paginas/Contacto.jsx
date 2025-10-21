@@ -17,7 +17,7 @@ export default function Contacto() {
           <h1 className="text-5xl font-bold text-[#9c2007] mb-4">¡Hablemos!</h1>
           <p className="text-gray-700 text-lg leading-relaxed mb-6">
             ¿Tienes alguna pregunta, deseas hacer un pedido especial o solo quieres saludarnos? En{" "}
-            <span className="font-semibold text-[#d8718c]">Bom Bocado</span>, nos encanta escucharte. 💖
+            <span className="font-semibold text-[#d8718c]">Bom Bocado</span>, nos encanta escucharte. g
           </p>
         </div>
 
