@@ -12,7 +12,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="w-full overflow-x-hidden bg-[#ffe2e6] text-[#9c2007] border-t border-[#f5bfb2] shadow-[0_24px_48px_-8px_#d8718c26]">
+    <footer className="w-full overflow-x-hidden bg-[#fdd2d7] text-[#9c2007] border-t border-[#f5bfb2] shadow-[0_24px_48px_-8px_#d8718c26]">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 flex flex-col lg:flex-row justify-between items-start gap-10">
         {/* ======= CONTACTO ======= */}
         <div className="flex-1 space-y-4">
