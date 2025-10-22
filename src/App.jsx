@@ -4,6 +4,7 @@ import { CarritoProvider } from "./context/CarritoContext";
 import { CarritoFlotante } from "./componentes/CarritoFlotante"; // 👈 Importamos el carrito
 
 // Páginas
+import Footer from "./componentes/Footer";
 import Inicio from "./paginas/Index";
 import Nosotros from "./paginas/Nosotros";
 import Productos from "./paginas/Productos";
@@ -15,10 +16,13 @@ function App() {
   return (
     <Router>
       <CarritoProvider>
+        {/* === NAVBAR visible en todas las páginas === */}
         <NavBar />
 
+        {/* === Carrito flotante === */}
         <CarritoFlotante />
 
+        {/* === Rutas === */}
         <Routes>
           <Route path="/" element={<Inicio />} />
           <Route path="/nosotros" element={<Nosotros />} />
@@ -26,6 +30,9 @@ function App() {
           <Route path="/novedades" element={<Novedades />} />
           <Route path="/contacto" element={<Contacto />} />
         </Routes>
+
+        {/* === Footer === */}
+        <Footer />
       </CarritoProvider>
     </Router>
   );
