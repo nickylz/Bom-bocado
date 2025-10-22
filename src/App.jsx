@@ -9,7 +9,7 @@ import Footer from "./componentes/Footer";
 // Páginas
 import Inicio from "./paginas/Index";
 import Nosotros from "./paginas/Nosotros";
-import Productos from "./paginas/Productos";
+import Productos from "./paginas/productos";
 import Novedades from "./paginas/Novedades";
 import Contacto from "./paginas/Contacto";
 

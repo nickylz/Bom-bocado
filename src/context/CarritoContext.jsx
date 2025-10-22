@@ -54,5 +54,5 @@ export function CarritoProvider({ children }) {
     </CarritoContext.Provider>
   );
 }
-
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCarrito = () => useContext(CarritoContext);
