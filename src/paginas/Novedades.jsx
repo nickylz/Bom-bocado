@@ -17,7 +17,7 @@ export default function Novedades() {
             {/* Producto nuevo 1 */}
             <article className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden">
               <img
-                src="https://i.pinimg.com/736x/3f/6d/a0/3f6da06c7f4d3c91c9f3b0462c5861ee.jpg"
+                src="https://i.pinimg.com/1200x/8f/d4/60/8fd4603b035327a5c02dc6e34ec3939f.jpg"
                 alt="Cheesecake de Arándanos"
                 className="w-full h-60 object-cover"
               />
@@ -36,7 +36,7 @@ export default function Novedades() {
             {/* Producto nuevo 2 */}
             <article className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden">
               <img
-                src="https://i.pinimg.com/736x/9a/07/03/9a0703aa2f7d8c7b03a4e236d0f9c879.jpg"
+                src="https://i.pinimg.com/736x/e1/f6/20/e1f62045feef931f2f57858699d64696.jpg"
                 alt="Mini Tartas de Frutas"
                 className="w-full h-60 object-cover"
               />
@@ -55,7 +55,7 @@ export default function Novedades() {
             {/* Producto nuevo 3 */}
             <article className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden">
               <img
-                src="https://i.pinimg.com/736x/2e/58/10/2e5810ac24cc0db3c4ed6e53e9f2e4b7.jpg"
+                src="https://i.pinimg.com/736x/3f/31/f9/3f31f9ed25d09d6b0a35e6c0a1cf8da0.jpg"
                 alt="Cupcakes de Vainilla Rosa"
                 className="w-full h-60 object-cover"
               />
@@ -83,21 +83,21 @@ export default function Novedades() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                img: "https://i.pinimg.com/736x/2d/5b/47/2d5b47e3ce22fc5ee3a40e8f70f30b4c.jpg",
-                name: "Charlotte de Fresas",
-                desc: "Suave y frutal",
+                img: "https://i.pinimg.com/1200x/b2/3a/03/b23a03dbae3f92df0e023a0372796165.jpg",
+                name: "Delicia de Frambuesas",
+                desc: "Suave bizcocho con crema de frambuesa",
                 price: "S/55.00",
               },
               {
-                img: "https://i.pinimg.com/736x/07/2a/44/072a44e67a1fae45c9c4c75bba129b76.jpg",
-                name: "Clásico Fresas & Crema",
-                desc: "Dulce y esponjoso",
+                img: "https://i.pinimg.com/736x/c5/d3/54/c5d354b9d6382a66574314bc67476828.jpg",
+                name: "Sueño de Chocolate Blanco",
+                desc: "Esponjoso y delicado",
                 price: "S/65.00",
               },
               {
-                img: "https://i.pinimg.com/736x/4b/d5/20/4bd5202b7c3a60e77a847af8b731f4db.jpg",
-                name: "Red Velvet con Fresas",
-                desc: "Suave y elegante",
+                img: "https://i.pinimg.com/736x/87/57/fe/8757fe48496277e663e2acb3656a4cac.jpg",
+                name: "Pastel Caramelo & Nuez",
+                desc: "Dulce con un toque crocante",
                 price: "S/70.00",
               },
             ].map((item, index) => (
@@ -133,23 +133,24 @@ export default function Novedades() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                img: "https://i.pinimg.com/736x/5a/fc/62/5afc6252e32c60b52b7bb3daeb7da0da.jpg",
-                name: "Galletas de Mantequilla",
-                desc: "Crocantes y suaves a la vez",
-                price: "S/25.00",
-              },
-              {
-                img: "https://i.pinimg.com/736x/da/7a/22/da7a22b8db08d5470ff99f50cb41c55e.jpg",
-                name: "Galletas con Chispas",
-                desc: "Rellenas de amor",
-                price: "S/30.00",
-              },
-              {
-                img: "https://i.pinimg.com/736x/3e/77/7c/3e777c6bb32b5b1f495ae7d75a437f2c.jpg",
-                name: "Galletas Decoradas",
-                desc: "Hechas a mano con diseño especial",
-                price: "S/35.00",
-              },
+  img: "https://i.pinimg.com/736x/be/07/61/be076160d1f41af3bfcd47f41caa6efb.jpg",
+  name: "Besitos de Coco",
+  desc: "Suaves, doradas y con un toque tropical",
+  price: "S/28.00",
+},
+{
+  img: "https://i.pinimg.com/736x/b5/02/ca/b502ca43e9eca3dcb5bf1cfc7914f13b.jpg",
+  name: "Dulce Tentación de Cacao",
+  desc: "Crujientes con trocitos de chocolate",
+  price: "S/32.00",
+},
+{
+  img: "https://i.pinimg.com/736x/1c/58/4f/1c584f91ef88fb4425aa3d355827534c.jpg",
+  name: "Estrellitas de Vainilla",
+  desc: "Decoradas con glasé rosa pastel",
+  price: "S/36.00",
+},
+
             ].map((item, index) => (
               <article
                 key={index}
