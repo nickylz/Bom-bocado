@@ -55,7 +55,7 @@ export default function Nosotros() {
           {/* ======= VISIÓN ======= */}
           <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
             <img
-              src="https://i.ibb.co/93mLPFDW/20250807-1006-Equipo-Dise-ando-Pastel-remix-01k22h3272ebfbdckenrybya2c.png"
+              src="https://i.postimg.cc/9QCbCxL4/unnamed.jpg"
               alt="Nuestra Visión"
               className="w-full h-56 object-cover"
             />
