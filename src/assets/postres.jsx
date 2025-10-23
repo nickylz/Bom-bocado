@@ -94,7 +94,7 @@ export const Postres = [
     nombre: "Corazón de Vainilla",
     descripcion: "Suave y con delicioso relleno",
     precio: 12.00,
-    categoria: "Bombones",
+    categoria: "Donas",
     imagen:
       "https://i.pinimg.com/736x/5c/c4/60/5cc460bbac19a9db23183c8df11362dd.jpg",
   },
@@ -103,7 +103,7 @@ export const Postres = [
     nombre: "Nube de Fresas",
     descripcion: "Con crema y fresas frescas",
     precio: 11.00,
-    categoria: "Bombones",
+    categoria: "Donas",
     imagen:
       "https://i.pinimg.com/736x/f2/8b/75/f28b7536a7b468d792d739548d120621.jpg",
   },
@@ -112,7 +112,7 @@ export const Postres = [
     nombre: "Velvet Pasión",
     descripcion: "Bizcocho rojo y cremoso",
     precio: 6.50,
-    categoria: "Pasteles",
+    categoria: "Cupcakes",
     imagen:
       "https://i.pinimg.com/736x/e4/73/04/e47304511a9bad8a1b667b3022ad3f86.jpg",
   },
@@ -121,7 +121,7 @@ export const Postres = [
     nombre: "Magia del Bosque",
     descripcion: "Inspirada en la estación",
     precio: 7.00,
-    categoria: "Tartas",
+    categoria: "Cupcakes",
     imagen:
       "https://i.pinimg.com/736x/3a/33/b4/3a33b48d4d9400b8a8735a8a46b8a5d6.jpg",
   },
@@ -130,7 +130,7 @@ export const Postres = [
     nombre: "Latido Dulce",
     descripcion: "Chocolate con crema suave",
     precio: 7.50,
-    categoria: "Tartas",
+    categoria: "Cupcakes",
     imagen:
       "https://i.pinimg.com/736x/0c/4e/30/0c4e301ebb111d34551e62bc6d8707c4.jpg",
   },
@@ -139,7 +139,7 @@ export const Postres = [
     nombre: "Fresa Delicia",
     descripcion: "Vainilla con crema y fresa",
     precio: 6.00,
-    categoria: "Tartas",
+    categoria: "Cupcakes",
     imagen:
       "https://i.pinimg.com/1200x/3d/e9/7f/3de97fb9492b9896a37f9251f725997b.jpg",
   },
@@ -211,7 +211,7 @@ export const Postres = [
     nombre: "Macarons",
     descripcion: "Crujientes por fuera y con relleno de fresa",
     precio: 25.00,
-    categoria: "Bombones",
+    categoria: "Macarons",
     imagen:
       "https://i.pinimg.com/1200x/8a/c7/db/8ac7dba6e7683598c0e3e972c0040888.jpg",
   },
@@ -220,7 +220,7 @@ export const Postres = [
     nombre: "BomCorazon",
     descripcion: "Una explocion de sabor",
     precio: 25.00,
-    categoria: "Pasteles",
+    categoria: "Bombones",
     imagen:
       "https://i.pinimg.com/736x/a9/f2/97/a9f297b5bfa18907f0659a93e5f0c65b.jpg",
   },

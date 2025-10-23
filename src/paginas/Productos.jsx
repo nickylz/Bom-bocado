@@ -26,7 +26,7 @@ export default function Productos() {
   const handleComprar = (producto) => agregarProducto(producto);
 
   return (
-    <main className="bg-[#fff3f0] min-h-screen">
+    <main className="bg-[#fff3f0] min-h-screen pb-20">
       {/* ===== ENCABEZADO ===== */}
       <section className="w-full flex flex-col md:flex-row items-center justify-center bg-[#d16170] text-white">
         {/* TEXTO */}
@@ -70,12 +70,8 @@ export default function Productos() {
                   className="w-full h-60 object-cover"
                 />
                 <div className="p-5 text-center">
-                  <h3 className="text-lg font-semibold text-[#9c2007]">
-                    {p.nombre}
-                  </h3>
-                  <p className="text-[#d8718c] font-bold mt-2">
-                    S/{p.precio.toFixed(2)}
-                  </p>
+                  <h3 className="text-lg font-semibold text-[#9c2007]">{p.nombre}</h3>
+                  <p className="text-[#d8718c] font-bold mt-2">S/{p.precio.toFixed(2)}</p>
                   <button
                     onClick={() => handleComprar(p)}
                     className="bg-[#a34d5f] text-white px-5 py-2 rounded-full mt-3 hover:bg-[#912646] transition"
@@ -93,5 +89,6 @@ export default function Productos() {
         )}
       </div>
     </main>
+
   );
 }
