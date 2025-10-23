@@ -65,6 +65,14 @@ export default function Filtros({ filtro, setFiltro }) {
         >
           Bombones
         </option>
+
+        <option
+          value="Macarons"
+          className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
+        >
+          Macarons
+        </option>
+        
         <option
           value="Galletas"
           className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
@@ -77,6 +85,7 @@ export default function Filtros({ filtro, setFiltro }) {
         >
           Postres fríos
         </option>
+
       </select>
 
       {/* Filtros de precio (min) */}
