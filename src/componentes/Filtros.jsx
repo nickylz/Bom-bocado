@@ -7,57 +7,100 @@ export default function Filtros({ filtro, setFiltro }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto bg-rose-100 p-4 rounded-xl my-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-rose-800 mb-3 text-center">
-        🔍 Filtros
-      </h2>
+    // Contenedor principal de filtros en FILA (horizontal)
+    <div className="flex flex-wrap gap-4 justify-center md:justify-end">
+      
+      {/* Buscar por nombre */}
+      <input
+        type="text"
+        name="nombre"
+        placeholder="Buscar por nombre..."
+        value={filtro.nombre}
+        onChange={handleChange}
+        className="border border-[#f5bfb2] rounded-lg p-2 w-56 focus:outline-none focus:ring-2 focus:ring-[#d16170]"
+      />
 
-      <div className="flex flex-wrap gap-4 justify-center">
-        {/* Buscar por nombre */}
-        <input
-          type="text"
-          name="nombre"
-          placeholder="Buscar por nombre..."
-          value={filtro.nombre}
-          onChange={handleChange}
-          className="border border-rose-300 rounded-lg p-2 w-56 focus:outline-none focus:ring-2 focus:ring-rose-400"
-        />
-
-        {/* Filtro por categoría */}
-        <select
-          name="categoria"
-          value={filtro.categoria}
-          onChange={handleChange}
-          className="border border-rose-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+      {/* --- SELECT CON ESTILO DE PALETA DE COLORES --- */}
+      <select
+        name="categoria"
+        value={filtro.categoria}
+        onChange={handleChange}
+        // --- Clases actualizadas para el <select> ---
+        // Borde: color salmón claro de tus tarjetas
+        // Texto: color rojo oscuro de tus títulos
+        // Focus (al hacer clic): color rosado fuerte de tu header
+        className="cursor-pointer rounded-lg border border-[#f5bfb2] bg-white p-2 font-medium text-[#9c2007] focus:border-[#d16170] focus:outline-none focus:ring-2 focus:ring-[#d16170]"
+      >
+        {/* --- Opciones con clases para color --- */}
+        {/* El fondo (#fff3f0) es el de tu página y el texto (#a34d5f) es el de tus botones */}
+        {/* NOTA: Chrome/Safari pueden ignorar estos colores de fondo y mostrar el menú nativo del sistema */}
+        <option
+          value=""
+          className="font-medium text-gray-500 bg-white hover:bg-[#f5bfb2]"
         >
-          <option value="">Todas las categorías</option>
-          <option value="Pasteles">Pasteles</option>
-          <option value="Tartas">Tartas</option>
-          <option value="Donas">Donas</option>
-          <option value="Donas">Cupcakes</option>
-          <option value="Bombones">Bombones</option>
-          <option value="Galletas">Galletas</option>
-          <option value="Postres fríos">Postres fríos</option>
-        </select>
+          Todas las categorías
+        </option>
+        <option
+          value="Pasteles"
+          className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
+        >
+          Pasteles
+        </option>
+        <option
+          value="Tartas"
+          className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
+        >
+          Tartas
+        </option>
+        <option
+          value="Donas"
+          className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
+        >
+          Donas
+        </option>
+        <option
+          value="Cupcakes"
+          className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
+        >
+          Cupcakes
+        </option>
+        <option
+          value="Bombones"
+          className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
+        >
+          Bombones
+        </option>
+        <option
+          value="Galletas"
+          className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
+        >
+          Galletas
+        </option>
+        <option
+          value="Postres fríos"
+          className="font-medium text-[#a34d5f] bg-[#fff3f0] hover:bg-[#d16170] hover:text-white"
+        >
+          Postres fríos
+        </option>
+      </select>
 
-        {/* Filtros de precio */}
-        <input
-          type="number"
-          name="min"
-          placeholder="Precio mín."
-          value={filtro.min}
-          onChange={handleChange}
-          className="border border-rose-300 rounded-lg p-2 w-32 focus:outline-none focus:ring-2 focus:ring-rose-400"
-        />
-        <input
-          type="number"
-          name="max"
-          placeholder="Precio máx."
-          value={filtro.max}
-          onChange={handleChange}
-          className="border border-rose-300 rounded-lg p-2 w-32 focus:outline-none focus:ring-2 focus:ring-rose-400"
-        />
-      </div>
+      {/* Filtros de precio */}
+      <input
+        type="number"
+        name="min"
+        placeholder="Precio mín."
+        value={filtro.min}
+        onChange={handleChange}
+        className="border border-[#f5bfb2] rounded-lg p-2 w-32 focus:outline-none focus:ring-2 focus:ring-[#d16170]"
+      />
+      <input
+        type="number"
+        name="max"
+        placeholder="Precio máx."
+        value={filtro.max}
+        onChange={handleChange}
+        className="border border-[#f5bfb2] rounded-lg p-2 w-32 focus:outline-none focus:ring-2 focus:ring-[#d16170]"
+      />
     </div>
   );
 }

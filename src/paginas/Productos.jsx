@@ -51,12 +51,26 @@ export default function Productos() {
         </div>
       </section>
 
-      {/* ===== FILTROS ===== */}
+      {/* ===== FILTROS Y TÍTULO ===== */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 mt-10">
-        <h2 className="text-3xl font-bold text-[#9c2007] mb-6 border-b-2 border-[#f5bfb2] pb-2 text-center md:text-left">
-          Explora Nuestros Postres
-        </h2>
-        <Filtros filtro={filtro} setFiltro={setFiltro} />
+        
+        {/* Contenedor principal de Título y Filtros */}
+        <div className="flex flex-col md:flex-row justify-between md:items-start gap-8 mb-10">
+          
+          {/* Título (izquierda) */}
+          <div className="flex-1">
+            <h2 className="text-3xl font-bold text-[#9c2007] mb-2 border-b-2 border-[#f5bfb2] pb-2 text-center md:text-left">
+              Explora Nuestros Postres
+            </h2>
+          </div>
+
+          {/* Filtros (derecha) */}
+          {/* Este div alinea el componente de filtros a la derecha en escritorio */}
+          <div className="flex-shrink-0 w-full md:w-auto">
+            <Filtros filtro={filtro} setFiltro={setFiltro} />
+          </div>
+
+        </div>
 
         {/* ===== PRODUCTOS ===== */}
         {postresFiltrados.length > 0 ? (
