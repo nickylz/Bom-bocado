@@ -1,6 +1,7 @@
 // Testimonials.jsx
 import React, { useState, useEffect } from "react";
 import RatingSummary from "./RatingSummary"; // 1. IMPORTA EL GRÁFICO
+import { FaStar } from "react-icons/fa";
 
 const testimonials = [
   {
@@ -85,8 +86,7 @@ export default function Testimonials() {
 
   return (
     <>
-      {/* SECCIÓN 1: CARRUSEL DE COMENTARIOS */}
-      <section className="text-center px-6 md:px-12">
+     <section className="text-center px-6 md:px-12">
         <h2 className="text-3xl md:text-4xl font-bold text-[#8f2133] mb-14">
           Lo que dicen nuestros clientes
         </h2>
@@ -119,6 +119,7 @@ export default function Testimonials() {
           ))}
         </div>
       </section>
+
 
       {/* SECCIÓN 2: NUEVO RESUMEN DE CALIFICACIONES */}
       <RatingSummary />
