@@ -34,6 +34,7 @@ export default function Filtros({ filtro, setFiltro }) {
           <option value="Pasteles">Pasteles</option>
           <option value="Tartas">Tartas</option>
           <option value="Donas">Donas</option>
+          <option value="Donas">Cupcakes</option>
           <option value="Bombones">Bombones</option>
           <option value="Galletas">Galletas</option>
           <option value="Postres fríos">Postres fríos</option>

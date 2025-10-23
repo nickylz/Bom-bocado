@@ -4,6 +4,7 @@ export const Postres = [
     nombre: "Charlotte de Fresas",
     descripcion: "Suave y frutal",
     precio: 55.00,
+    categoria: "Postres fríos",
     imagen:
       "https://i.pinimg.com/1200x/70/c9/14/70c914af01fd5f7490192f559a508c42.jpg",
   },
@@ -12,6 +13,7 @@ export const Postres = [
     nombre: "Clásico Fresas & Crema",
     descripcion: "Dulce y esponjoso",
     precio: 65.00,
+    categoria: "Pasteles",
     imagen:
       "https://i.pinimg.com/736x/f6/b7/70/f6b7700c9ecd547d98470c67f8ed2870.jpg",
   },
@@ -20,6 +22,7 @@ export const Postres = [
     nombre: "Red Velvet con Fresas",
     descripcion: "Suave y elegante",
     precio: 70.00,
+    categoria: "Pasteles",
     imagen:
       "https://i.pinimg.com/736x/d7/d9/e5/d7d9e5701c0f734db4f914e967501f2d.jpg",
   },
@@ -28,6 +31,7 @@ export const Postres = [
     nombre: "Cheesecake de Fresas",
     descripcion: "Cremoso y fresco",
     precio: 60.00,
+    categoria: "Pasteles",
     imagen:
       "https://i.pinimg.com/1200x/95/8c/fc/958cfc0ca8d10651f1c29e76e3c00007.jpg",
   },
@@ -36,6 +40,7 @@ export const Postres = [
     nombre: "Fresas Glaseadas",
     descripcion: "Suaves y crocantes",
     precio: 12.00,
+    categoria: "Galletas",
     imagen:
       "https://i.pinimg.com/1200x/3d/1e/ca/3d1eca4db29ad0f033fbb03c2165132e.jpg",
   },
@@ -44,6 +49,7 @@ export const Postres = [
     nombre: "Bocados de Fresa",
     descripcion: "Suaves y frutales",
     precio: 14.00,
+    categoria: "Galletas",
     imagen:
       "https://i.pinimg.com/1200x/59/dd/24/59dd2470430abe11a0482fa3e3c5a8b0.jpg",
   },
@@ -52,6 +58,7 @@ export const Postres = [
     nombre: "Corazones Velvet",
     descripcion: "Rojas y cremosas",
     precio: 16.00,
+    categoria: "Galletas",
     imagen:
       "https://i.pinimg.com/1200x/20/d8/91/20d891848730b1987fa18b975ea5ec6e.jpg",
   },
@@ -60,6 +67,7 @@ export const Postres = [
     nombre: "Estrellitas de Mermelada",
     descripcion: "Dulces y rellenas",
     precio: 13.00,
+    categoria: "Galletas",
     imagen:
       "https://i.pinimg.com/736x/84/6c/a0/846ca0a6ec8219f74f924f8b79c3e9bf.jpg",
   },
@@ -68,6 +76,7 @@ export const Postres = [
     nombre: "Dona Glaseada",
     descripcion: "Dulce y esponjosa",
     precio: 10.00,
+    categoria: "Donas",
     imagen:
       "https://i.pinimg.com/1200x/af/19/32/af1932708236ef09f80708a822da78d7.jpg",
   },
@@ -76,6 +85,7 @@ export const Postres = [
     nombre: "Dona Primavera",
     descripcion: "Glaseado rosado con fresas",
     precio: 11.50,
+    categoria: "Donas",
     imagen:
       "https://i.pinimg.com/736x/fb/7e/ec/fb7eecc7780f7695518d74cfb9b8489d.jpg",
   },
@@ -84,6 +94,7 @@ export const Postres = [
     nombre: "Corazón de Vainilla",
     descripcion: "Suave y con delicioso relleno",
     precio: 12.00,
+    categoria: "Donas",
     imagen:
       "https://i.pinimg.com/736x/5c/c4/60/5cc460bbac19a9db23183c8df11362dd.jpg",
   },
@@ -92,6 +103,7 @@ export const Postres = [
     nombre: "Nube de Fresas",
     descripcion: "Con crema y fresas frescas",
     precio: 11.00,
+    categoria: "Donas",
     imagen:
       "https://i.pinimg.com/736x/f2/8b/75/f28b7536a7b468d792d739548d120621.jpg",
   },
@@ -100,6 +112,7 @@ export const Postres = [
     nombre: "Velvet Pasión",
     descripcion: "Bizcocho rojo y cremoso",
     precio: 6.50,
+    categoria: "Cupcakes",
     imagen:
       "https://i.pinimg.com/736x/e4/73/04/e47304511a9bad8a1b667b3022ad3f86.jpg",
   },
@@ -108,6 +121,7 @@ export const Postres = [
     nombre: "Magia del Bosque",
     descripcion: "Inspirada en la estación",
     precio: 7.00,
+    categoria: "Cupcakes",
     imagen:
       "https://i.pinimg.com/736x/3a/33/b4/3a33b48d4d9400b8a8735a8a46b8a5d6.jpg",
   },
@@ -116,6 +130,7 @@ export const Postres = [
     nombre: "Latido Dulce",
     descripcion: "Chocolate con crema suave",
     precio: 7.50,
+    categoria: "Cupcakes",
     imagen:
       "https://i.pinimg.com/736x/0c/4e/30/0c4e301ebb111d34551e62bc6d8707c4.jpg",
   },
@@ -124,6 +139,7 @@ export const Postres = [
     nombre: "Fresa Delicia",
     descripcion: "Vainilla con crema y fresa",
     precio: 6.00,
+    categoria: "Cupcakes",
     imagen:
       "https://i.pinimg.com/1200x/3d/e9/7f/3de97fb9492b9896a37f9251f725997b.jpg",
   },
@@ -132,6 +148,7 @@ export const Postres = [
     nombre: "Tarta Mix",
     descripcion: "Refrescante y cremosa",
     precio: 40.00,
+    categoria: "Tartas",
     imagen:
       "https://i.pinimg.com/736x/4c/07/44/4c07447203a816cbb5a470fbe7d14ee9.jpg",
   },
@@ -140,6 +157,7 @@ export const Postres = [
     nombre: "Tarta de Frutos Rojos",
     descripcion: "Colorida y natural",
     precio: 45.00,
+    categoria: "Tartas",
     imagen:
       "https://i.pinimg.com/1200x/7d/4a/61/7d4a613407354b6162116ff49940c4a4.jpg",
   },
@@ -148,6 +166,7 @@ export const Postres = [
     nombre: "Tarta Intensa",
     descripcion: "Perfecta para los amantes del cacao",
     precio: 48.00,
+    categoria: "Tartas",
     imagen:
       "https://i.pinimg.com/1200x/f0/e9/ec/f0e9ec675bb018f291c387e0e7e5cccf.jpg",
   },
@@ -156,6 +175,7 @@ export const Postres = [
     nombre: "Tarta Bom",
     descripcion: "La combinacion perfecta",
     precio: 48.00,
+    categoria: "Tartas",
     imagen:
       "https://i.pinimg.com/736x/7d/4c/5e/7d4c5e70f7af3312fb210e35e1df8812.jpg",
   },
@@ -164,6 +184,7 @@ export const Postres = [
     nombre: "Bombones de Frambuesa",
     descripcion: "Rellenos con centro frutal",
     precio: 18.00,
+    categoria: "Bombones",
     imagen:
       "https://i.pinimg.com/736x/83/27/51/832751dc0d1881d6467a3ec67e9501c8.jpg",
   },
@@ -172,6 +193,7 @@ export const Postres = [
     nombre: "Panna Cotta de Frutos Rojos",
     descripcion: "Nuevo y refrescante",
     precio: 15.00,
+    categoria: "Postres fríos",
     imagen:
       "https://i.pinimg.com/736x/3c/61/cb/3c61cba237f52567d5942cfa3fbe947b.jpg",
   },
@@ -179,7 +201,8 @@ export const Postres = [
     id: 23,
     nombre: "Bombones de Café",
     descripcion: "Cobertura de chocolate amargo",
-    precio: 20.00 ,
+    precio: 20.00,
+    categoria: "Bombones",
     imagen:
       "https://i.pinimg.com/1200x/60/a3/c0/60a3c08d627bf10bb9a47f303ea77708.jpg",
   },
@@ -188,6 +211,7 @@ export const Postres = [
     nombre: "Macarons",
     descripcion: "Crujientes por fuera y con relleno de fresa",
     precio: 25.00,
+    categoria: "Macarons",
     imagen:
       "https://i.pinimg.com/1200x/8a/c7/db/8ac7dba6e7683598c0e3e972c0040888.jpg",
   },
@@ -196,6 +220,7 @@ export const Postres = [
     nombre: "BomCorazon",
     descripcion: "Una explocion de sabor",
     precio: 25.00,
+    categoria: "Bombones",
     imagen:
       "https://i.pinimg.com/736x/a9/f2/97/a9f297b5bfa18907f0659a93e5f0c65b.jpg",
   },
@@ -204,6 +229,7 @@ export const Postres = [
     nombre: "Mousse de Fresa",
     descripcion: "Ligero y tropical",
     precio: 22.00,
+    categoria: "Postres fríos",
     imagen:
       "https://images.getrecipekit.com/20220607111638-mousse-de-fresa.jpg?aspect_ratio=4:3&quality=90&",
   },
@@ -212,6 +238,7 @@ export const Postres = [
     nombre: "Tiramisú Clásico",
     descripcion: "Con café y mascarpone",
     precio: 28.00,
+    categoria: "Postres fríos",
     imagen:
       "https://www.tasteofhome.com/wp-content/uploads/2024/11/EXPS_TOHD24_25469_EricKleinberg_6.jpg",
   },
@@ -220,6 +247,7 @@ export const Postres = [
     nombre: "Gelatina de Fresas Naturales",
     descripcion: "Refrescante y ligera",
     precio: 10.00,
+    categoria: "Postres fríos",
     imagen:
       "https://campograndeperu.com/wp-content/uploads/2024/03/gelatina-de-fresa-natural-1-1024x684.jpg",
   },
