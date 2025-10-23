@@ -1,7 +1,6 @@
-// src/componentes/CarritoFlotante.jsx
 import { useCarrito } from "../context/CarritoContext";
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShoppingCart, Trash2 } from "lucide-react";
 
 export function CarritoFlotante() {
   const {
@@ -12,14 +11,32 @@ export function CarritoFlotante() {
     total,
     mostrarCarrito,
     setMostrarCarrito,
+    totalProductos,
   } = useCarrito();
 
   const [mostrarPago, setMostrarPago] = useState(false);
   const [mostrarGracias, setMostrarGracias] = useState(false);
+  const [usuarioActual, setUsuarioActual] = useState(null);
+
+  // 🔁 Actualiza el usuario actual en tiempo real
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const saved = localStorage.getItem("usuarioActual");
+      setUsuarioActual(saved ? JSON.parse(saved) : null);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const cerrarCarrito = () => setMostrarCarrito(false);
 
-  const abrirPago = () => setMostrarPago(true);
+  const abrirPago = () => {
+    if (!usuarioActual) {
+      alert("Debes iniciar sesión para continuar con la compra 🧁");
+      return;
+    }
+    setMostrarPago(true);
+  };
+
   const cerrarPago = () => setMostrarPago(false);
 
   const finalizarCompra = (e) => {
@@ -30,105 +47,140 @@ export function CarritoFlotante() {
     setTimeout(() => setMostrarGracias(false), 4000);
   };
 
-  if (!mostrarCarrito) return null;
-
   return (
     <>
-      {/* === PANEL DEL CARRITO === */}
-      <div className="fixed top-0 right-0 w-80 sm:w-96 h-full bg-white shadow-2xl border-l border-rose-200 z-50 p-4 flex flex-col animate-slide-left">
-        <button
-          className="text-2xl text-rose-500 self-end hover:text-rose-700"
-          onClick={cerrarCarrito}
-        >
-          &times;
-        </button>
-        <h3 className="text-xl font-bold text-rose-800 mb-4 text-center">
-          Tu Carrito
-        </h3>
-
-        <div className="flex-1 overflow-y-auto space-y-3">
-          {carrito.length === 0 ? (
-            <p className="text-center text-gray-500">Tu carrito está vacío</p>
-          ) : (
-            carrito.map((p) => (
-              <div
-                key={p.nombre}
-                className="flex items-center justify-between border-b pb-2"
-              >
-                <img
-                  src={p.imagen}
-                  alt={p.nombre}
-                  className="w-16 h-16 object-cover rounded-lg"
-                />
-                <div className="flex-1 px-3">
-                  <strong className="block text-gray-800">{p.nombre}</strong>
-                  <span className="text-sm text-gray-600">
-                    S/{p.precio.toFixed(2)} x {p.cantidad}
-                  </span>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <button
-                    onClick={() => cambiarCantidad(p.nombre, 1)}
-                    className="px-2 bg-rose-200 hover:bg-rose-300 rounded"
-                  >
-                    +
-                  </button>
-                  <button
-                    onClick={() => cambiarCantidad(p.nombre, -1)}
-                    className="px-2 bg-rose-200 hover:bg-rose-300 rounded"
-                  >
-                    -
-                  </button>
-                  <button
-                    onClick={() => eliminarProducto(p.nombre)}
-                    className="p-1.5 rounded-lg hover:bg-rose-100 transition-all duration-200 text-rose-600 hover:text-rose-800"
-                    title="Eliminar producto"
-                  >
-                    <Trash2 size={18} strokeWidth={2} />
-                  </button>
-
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {carrito.length > 0 && (
-          <div className="mt-4">
-            <p className="font-semibold text-gray-800 mb-2">
-              Total: S/{total.toFixed(2)}
-            </p>
-            <button
-              onClick={abrirPago}
-              className="w-full bg-rose-600 text-white py-2 rounded-lg hover:bg-rose-700 transition"
-            >
-              Pagar
-            </button>
-          </div>
+      {/* === BOTÓN FLOTANTE === */}
+      <button
+        onClick={() => setMostrarCarrito(!mostrarCarrito)}
+        className="fixed bottom-6 right-6 bg-[#d16170] hover:bg-[#b84c68] text-white p-4 rounded-full shadow-xl transition-all duration-300 z-50"
+      >
+        <ShoppingCart size={26} />
+        {totalProductos > 0 && (
+          <span className="absolute -top-1 -right-2 bg-[#fff3f0] text-[#9c2007] text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center border border-[#d8718c]">
+            {totalProductos}
+          </span>
         )}
-      </div>
+      </button>
+
+      {/* === PANEL DEL CARRITO === */}
+      {mostrarCarrito && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black/30 z-40"
+            onClick={cerrarCarrito}
+          ></div>
+
+          {/* Panel flotante animado */}
+          <div
+            className="fixed bottom-20 right-6 bg-[#fff3f0] w-80 rounded-2xl shadow-2xl p-6 border border-[#f5bfb2] z-50 animate-slide-left"
+          >
+            <button
+              className="text-3xl text-[#d8718c] hover:text-[#b84c68] transition absolute top-2 right-4"
+              onClick={cerrarCarrito}
+            >
+              &times;
+            </button>
+
+            <h3 className="text-2xl font-bold text-[#9c2007] mb-5 text-center">
+              Tu carrito
+            </h3>
+
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-60">
+              {carrito.length === 0 ? (
+                <p className="text-center text-[#9c2007]/70 italic">
+                  Tu carrito está vacío 
+                </p>
+              ) : (
+                carrito.map((p) => (
+                  <div
+                    key={p.nombre}
+                    className="flex items-center justify-between bg-white/70 border border-[#f5bfb2] rounded-2xl p-3 shadow-sm"
+                  >
+                    <img
+                      src={p.imagen}
+                      alt={p.nombre}
+                      className="w-16 h-16 object-cover rounded-xl border border-[#f5bfb2]"
+                    />
+                    <div className="flex-1 px-3">
+                      <strong className="block text-[#7a1a0a]">
+                        {p.nombre}
+                      </strong>
+                      <span className="text-sm text-gray-600">
+                        S/{p.precio.toFixed(2)} x {p.cantidad}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-1">
+                      <button
+                        onClick={() => cambiarCantidad(p.nombre, 1)}
+                        className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition"
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={() => cambiarCantidad(p.nombre, -1)}
+                        className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition"
+                      >
+                        -
+                      </button>
+                      <button
+                        onClick={() => eliminarProducto(p.nombre)}
+                        className="p-1.5 rounded-lg hover:bg-[#fff3f0] transition text-[#d16170]"
+                        title="Eliminar producto"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {carrito.length > 0 && (
+              <div className="mt-5">
+                <p className="font-semibold text-[#7a1a0a] mb-2 text-center">
+                  Total: S/{total.toFixed(2)}
+                </p>
+                <button
+                  onClick={abrirPago}
+                  className="w-full bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
+                >
+                  Ir a pagar
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* === MODAL DE PAGO === */}
       {mostrarPago && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-2xl p-6 w-80 shadow-xl">
-            <h2 className="text-2xl font-bold text-rose-700 mb-4">
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center"
+          onClick={(e) => e.target === e.currentTarget && cerrarPago()}
+        >
+          <div className="bg-[#fff3f0] rounded-3xl p-8 w-[90%] max-w-md shadow-2xl border border-[#f5bfb2]">
+            <h2 className="text-2xl font-bold text-[#9c2007] mb-4 text-center">
               Finaliza tu compra
             </h2>
-            <form onSubmit={finalizarCompra} className="space-y-3">
+            <form onSubmit={finalizarCompra} className="space-y-4">
               <input
                 type="text"
                 placeholder="Nombre completo"
                 required
-                className="border rounded w-full p-2"
+                className="border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c]"
               />
               <input
                 type="text"
                 placeholder="Dirección de envío"
                 required
-                className="border rounded w-full p-2"
+                className="border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c]"
               />
-              <select required className="border rounded w-full p-2">
+              <select
+                required
+                className="border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c]"
+              >
                 <option value="">Método de pago</option>
                 <option value="tarjeta">Tarjeta</option>
                 <option value="yape">Yape</option>
@@ -136,27 +188,29 @@ export function CarritoFlotante() {
                 <option value="contraentrega">Contra entrega</option>
               </select>
 
-              <p className="text-gray-700">
-                <strong>Subtotal:</strong> S/{total.toFixed(2)}
-              </p>
-              <p className="text-gray-700">
-                <strong>Envío:</strong> S/5.00
-              </p>
-              <p className="text-gray-800 font-semibold">
-                Total final: S/{(total + 5).toFixed(2)}
-              </p>
+              <div className="text-[#7a1a0a] text-sm space-y-1">
+                <p>
+                  <strong>Subtotal:</strong> S/{total.toFixed(2)}
+                </p>
+                <p>
+                  <strong>Envío:</strong> S/5.00
+                </p>
+                <p className="font-semibold text-[#9c2007]">
+                  Total final: S/{(total + 5).toFixed(2)}
+                </p>
+              </div>
 
-              <div className="flex gap-2 mt-3">
+              <div className="flex gap-3 mt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-rose-600 text-white py-2 rounded-lg hover:bg-rose-700"
+                  className="flex-1 bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
                 >
                   Finalizar compra
                 </button>
                 <button
                   type="button"
                   onClick={cerrarPago}
-                  className="flex-1 border border-rose-500 text-rose-700 rounded-lg hover:bg-rose-100"
+                  className="flex-1 border border-[#d8718c] text-[#d8718c] rounded-xl hover:bg-[#f5bfb2]/50 transition"
                 >
                   Cancelar
                 </button>
@@ -169,8 +223,8 @@ export function CarritoFlotante() {
       {/* === MODAL DE GRACIAS === */}
       {mostrarGracias && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-2xl shadow-xl text-center">
-            <h2 className="text-2xl text-rose-700 font-bold mb-3">
+          <div className="bg-[#fff3f0] p-6 rounded-3xl shadow-xl text-center border border-[#f5bfb2]">
+            <h2 className="text-2xl text-[#9c2007] font-bold mb-3">
               ¡Gracias por tu compra!
             </h2>
             <img
@@ -182,7 +236,7 @@ export function CarritoFlotante() {
                 "Jz9bNDFs/5.png",
               ][Math.floor(Math.random() * 5)]}`}
               alt="Gracias"
-              className="rounded-xl mx-auto w-48"
+              className="rounded-2xl mx-auto w-48"
             />
           </div>
         </div>

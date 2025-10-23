@@ -50,9 +50,6 @@ export default function NavBar() {
           <Link to="/novedades" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">
             Novedades
           </Link>
-          <Link to="/carrito" className="text-[#d8718c] text-xl py-2 hover:text-[#e46945]">
-            <FaShoppingCart />
-          </Link>
 
           {/* LOGIN / USUARIO */}
           <Login /> {/* 👈 Aquí aparece todo el sistema de login */}
