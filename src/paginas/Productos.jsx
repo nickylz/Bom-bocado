@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useCarrito } from "../context/CarritoContext";
 import { Postres } from "../assets/postres";
 import Filtros from "../componentes/Filtros";
-import incono from "../componentes/img/Bom.png"
+import incono from "../componentes/Bom.png"
 
 
 export default function Productos() {
