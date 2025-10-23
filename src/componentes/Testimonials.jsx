@@ -1,6 +1,7 @@
 // Testimonials.jsx
 
 import React, { useState, useEffect } from "react";
+import { FaStar } from "react-icons/fa";
 import RatingSummary from "./RatingSummary"; // 1. IMPORTA EL GRÁFICO
 
 // Array con los 10 comentarios
@@ -94,13 +95,11 @@ export default function Testimonials() {
   return (
     // Usamos un Fragment (<>) para envolver ambas secciones
     <>
-      {/* SECCIÓN 1: CARRUSEL DE COMENTARIOS */}
-      <section className="text-center px-6 md:px-12">
+   <section className="text-center px-6 md:px-12">
         <h2 className="text-3xl md:text-4xl font-bold text-[#8f2133] mb-14">
           Lo que dicen nuestros clientes
         </h2>
 
-        {/* Contenedor del carrusel */}
         <div className="flex flex-col md:flex-row justify-center items-stretch gap-8 max-w-4xl mx-auto min-h-[250px]">
           {displayedComments.map((comment, index) => (
             <div
@@ -108,8 +107,15 @@ export default function Testimonials() {
               className="bg-white rounded-2xl p-6 shadow-lg w-full md:w-1/2 flex flex-col justify-between text-left animate-fadeIn"
             >
               <div>
-                <div className="text-2xl text-[#d16170] mb-3">
-                  {"⭐".repeat(comment.stars)}
+                {/* Estrellas ícono */}
+                <div className="flex mb-3">
+                  {Array.from({ length: comment.stars }).map((_, i) => (
+                    <FaStar
+                      key={i}
+                      className="text-[#d16170] mr-1 transition-transform duration-300 hover:scale-110"
+                      size={22}
+                    />
+                  ))}
                 </div>
                 <p className="text-gray-600 italic text-base leading-relaxed mb-4">
                   "{comment.comment}"
@@ -122,7 +128,6 @@ export default function Testimonials() {
           ))}
         </div>
       </section>
-
       {/* SECCIÓN 2: NUEVO RESUMEN DE CALIFICACIONES */}
       <RatingSummary />
       {/* 2. ESTA LÍNEA "LLAMA" E INSERTA EL GRÁFICO AQUÍ */}
