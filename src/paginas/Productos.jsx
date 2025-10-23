@@ -66,7 +66,7 @@ export default function Productos() {
 
           {/* Filtros (derecha) */}
           {/* Este div alinea el componente de filtros a la derecha en escritorio */}
-          <div className="flex-shrink-0 w-full md:w-auto">
+          <div className="shrink-0 w-full md:w-auto">
             <Filtros filtro={filtro} setFiltro={setFiltro} />
           </div>
 
