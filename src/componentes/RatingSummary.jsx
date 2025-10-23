@@ -10,7 +10,7 @@ const StarRatingDisplay = ({ rating }) => {
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); // Estrellas vacías restantes
 
   return (
-    <div className="flex text-4xl text-yellow-400">
+    <div className="flex text-4xl text-[#d16170] -400">
       {/* Estrellas completas */}
       {[...Array(fullStars)].map((_, i) => (
         <FaStar key={`full-${i}`} />
@@ -131,7 +131,7 @@ export default function RatingSummary() {
                   <span className="text-sm font-semibold text-[#a34d5f] w-12 text-right">
                     {stars}
                   </span>
-                  <FaStar className="text-yellow-400" />
+                  <FaStar className="text-[#d16170] -400" />
 
                   <div className="w-full bg-[#fdd2d7] rounded-full h-5 overflow-hidden border border-[#f5bfb2]">
                     <div

@@ -16,7 +16,7 @@ const testimonials = [
     name: "Javier Mendoza",
     comment:
       "El 'Strawberry Cloud Croissant' es de otro mundo. Esponjoso, fresco y nada empalagoso. ¡Volveré por más!",
-    stars: 5,
+    stars: 4,
   },
   {
     name: "María Fernanda T.",
@@ -40,7 +40,7 @@ const testimonials = [
     name: "Miguel Ángel R.",
     comment:
       "La atención al cliente es de primera. Mi pedido llegó impecable y a tiempo. Se han vuelto mi pastelería de cabecera.",
-    stars: 5,
+    stars: 4,
   },
   {
     name: "Valeria Campos",
@@ -58,7 +58,7 @@ const testimonials = [
     name: "Laura V.",
     comment:
       "¡Todo es exquisito! Compré una torta decorada y superó mis expectativas. Definitivamente la mejor tienda virtual de postres.",
-    stars: 5,
+    stars: 4,
   },
   {
     name: "Esteban D.",
