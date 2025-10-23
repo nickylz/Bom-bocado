@@ -3,7 +3,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Testimonials from "../componentes/Testimonials"; // <-- 1. IMPORTAMOS EL NUEVO COMPONENTE
-
+import incono from "../componentes/Bom.png"
 export default function Inicio() {
   return (
     <>
@@ -30,7 +30,7 @@ export default function Inicio() {
           {/* IMAGEN */}
           <div className="w-full md:w-1/2 flex justify-center py-10">
             <img
-              src="https://i.postimg.cc/WzQ2jJjC/lol.png"
+              src= {incono}
               alt="Torta decorada"
               className="w-[45%] md:w-[53%] h-auto object-contain"
             />

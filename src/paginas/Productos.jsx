@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useCarrito } from "../context/CarritoContext";
 import { Postres } from "../assets/postres";
 import Filtros from "../componentes/Filtros";
+import incono from "../componentes/Bom.png"
+
 
 export default function Productos() {
   const { agregarProducto } = useCarrito();
@@ -42,7 +44,7 @@ export default function Productos() {
         {/* IMAGEN */}
         <div className="w-full md:w-1/2 flex justify-center py-10">
           <img
-            src="https://i.postimg.cc/WzQ2jJjC/lol.png"
+            src= {incono}
             alt="Torta decorada"
             className="w-[45%] md:w-[53%] h-auto object-contain"
           />
