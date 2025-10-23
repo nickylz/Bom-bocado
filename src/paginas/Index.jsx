@@ -1,5 +1,8 @@
+// Index.jsx
+
 import React from "react";
 import { Link } from "react-router-dom";
+import Testimonials from "../componentes/Testimonials"; // <-- 1. IMPORTAMOS EL NUEVO COMPONENTE
 
 export default function Inicio() {
   return (
@@ -122,6 +125,11 @@ export default function Inicio() {
             </div>
           </div>
         </section>
+
+        {/* ===== SECCIÓN DE COMENTARIOS ===== */}
+        <Testimonials /> 
+        {/* <-- 2. AÑADIMOS EL COMPONENTE AQUÍ */}
+
       </main>
     </>
   );
