@@ -1,6 +1,7 @@
 // src/componentes/CarritoFlotante.jsx
 import { useCarrito } from "../context/CarritoContext";
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 
 export function CarritoFlotante() {
   const {
@@ -80,10 +81,12 @@ export function CarritoFlotante() {
                   </button>
                   <button
                     onClick={() => eliminarProducto(p.nombre)}
-                    className="text-sm text-rose-600 hover:text-rose-800"
+                    className="p-1.5 rounded-lg hover:bg-rose-100 transition-all duration-200 text-rose-600 hover:text-rose-800"
+                    title="Eliminar producto"
                   >
-                    🗑️
+                    <Trash2 size={18} strokeWidth={2} />
                   </button>
+
                 </div>
               </div>
             ))
