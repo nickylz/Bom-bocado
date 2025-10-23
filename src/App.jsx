@@ -9,7 +9,7 @@ import Footer from "./componentes/Footer";
 // Páginas
 import Inicio from "./paginas/Index";
 import Nosotros from "./paginas/Nosotros";
-import Productos from "./paginas/productos";
+import Productos from "./paginas/Productos";
 import Novedades from "./paginas/Novedades";
 import Contacto from "./paginas/Contacto";
 
@@ -23,7 +23,7 @@ function App() {
         <NavBar />
 
         {/* === Carrito flotante === */}
-        <CarritoFlotante />
+        
 
         {/* === Rutas === */}
         <Routes>
@@ -33,7 +33,7 @@ function App() {
           <Route path="/novedades" element={<Novedades />} />
           <Route path="/contacto" element={<Contacto />} />
         </Routes>
-
+<CarritoFlotante />
         {/* === Footer visible en todas las páginas === */}
         <Footer />
       </CarritoProvider>
