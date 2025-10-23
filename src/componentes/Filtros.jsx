@@ -17,23 +17,18 @@ export default function Filtros({ filtro, setFiltro }) {
         placeholder="Buscar por nombre..."
         value={filtro.nombre}
         onChange={handleChange}
-        className="border border-[#f5bfb2] rounded-lg p-2 w-56 focus:outline-none focus:ring-2 focus:ring-[#d16170]"
+        // --- Clases actualizadas ---
+        className="rounded-lg border border-[#f5bfb2] bg-white p-2 w-56 font-medium text-[#9c2007] placeholder:text-[#d8718c] focus:outline-none focus:ring-2 focus:ring-[#d16170]"
       />
 
-      {/* --- SELECT CON ESTILO DE PALETA DE COLORES --- */}
+      {/* Filtro por categoría */}
       <select
         name="categoria"
         value={filtro.categoria}
         onChange={handleChange}
-        // --- Clases actualizadas para el <select> ---
-        // Borde: color salmón claro de tus tarjetas
-        // Texto: color rojo oscuro de tus títulos
-        // Focus (al hacer clic): color rosado fuerte de tu header
+        // --- Estilo del Select (sin cambios) ---
         className="cursor-pointer rounded-lg border border-[#f5bfb2] bg-white p-2 font-medium text-[#9c2007] focus:border-[#d16170] focus:outline-none focus:ring-2 focus:ring-[#d16170]"
       >
-        {/* --- Opciones con clases para color --- */}
-        {/* El fondo (#fff3f0) es el de tu página y el texto (#a34d5f) es el de tus botones */}
-        {/* NOTA: Chrome/Safari pueden ignorar estos colores de fondo y mostrar el menú nativo del sistema */}
         <option
           value=""
           className="font-medium text-gray-500 bg-white hover:bg-[#f5bfb2]"
@@ -84,22 +79,26 @@ export default function Filtros({ filtro, setFiltro }) {
         </option>
       </select>
 
-      {/* Filtros de precio */}
+      {/* Filtros de precio (min) */}
       <input
         type="number"
         name="min"
         placeholder="Precio mín."
         value={filtro.min}
         onChange={handleChange}
-        className="border border-[#f5bfb2] rounded-lg p-2 w-32 focus:outline-none focus:ring-2 focus:ring-[#d16170]"
+        // --- Clases actualizadas ---
+        className="rounded-lg border border-[#f5bfb2] bg-white p-2 w-32 font-medium text-[#9c2007] placeholder:text-[#d8718c] focus:outline-none focus:ring-2 focus:ring-[#d16170]"
       />
+      
+      {/* Filtros de precio (max) */}
       <input
         type="number"
         name="max"
         placeholder="Precio máx."
         value={filtro.max}
         onChange={handleChange}
-        className="border border-[#f5bfb2] rounded-lg p-2 w-32 focus:outline-none focus:ring-2 focus:ring-[#d16170]"
+        // --- Clases actualizadas ---
+        className="rounded-lg border border-[#f5bfb2] bg-white p-2 w-32 font-medium text-[#9c2007] placeholder:text-[#d8718c] focus:outline-none focus:ring-2 focus:ring-[#d16170]"
       />
     </div>
   );
