@@ -1,5 +1,6 @@
 import React from "react";
 
+
 export default function Nosotros() {
   return (
     <section className="bg-[#fff3f0] py-16">
@@ -7,9 +8,9 @@ export default function Nosotros() {
         {/* ======= IMAGEN PRINCIPAL ======= */}
         <div className="overflow-hidden rounded-3xl shadow-xl">
           <img
-            src="https://i.ibb.co/0jzcKN9s/20250805-1131-Cafeter-a-Aesthetic-Amistosa-simple-compose-01k1xh00vke1b99r54a3esvst4.png"
+            src="/Centro.png"
             alt="Equipo Bom Bocado"
-            className="w-full h-[320px] sm:h-[420px] md:h-[500px] object-cover hover:scale-105 transition-transform duration-700"
+            className="w-full h-80 sm:h-[420px] md:h-[500px] object-cover hover:scale-105 transition-transform duration-700"
           />
         </div>
 
@@ -36,7 +37,7 @@ export default function Nosotros() {
           {/* ======= MISIÓN ======= */}
           <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
             <img
-              src="https://i.ibb.co/nqLVqQfR/94691f308486d9f0dff0c5a485f24301.jpg"
+              src="/Mision.png"
               alt="Nuestra Misión"
               className="w-full h-56 object-cover"
             />
@@ -55,8 +56,8 @@ export default function Nosotros() {
           {/* ======= VISIÓN ======= */}
           <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
             <img
-              src="https://i.postimg.cc/9QCbCxL4/unnamed.jpg"
-              alt="Nuestra Visión"
+              src="/Vision.jpg"
+              alt="Nuestra Vision"
               className="w-full h-56 object-cover"
             />
             <div className="p-6 text-center">
@@ -74,7 +75,7 @@ export default function Nosotros() {
           {/* ======= QUÉ BUSCAMOS ======= */}
           <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
             <img
-              src="https://i.ibb.co/6JDHv55w/20250807-1016-Equipo-de-Cafeter-a-Activo-remix-01k22hh36ven6r5y1sc28w3xws.png"
+              src="/Buscamos.png"
               alt="¿Qué buscamos como empresa?"
               className="w-full h-56 object-cover"
             />

@@ -3,7 +3,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Testimonials from "../componentes/Testimonials"; // <-- 1. IMPORTAMOS EL NUEVO COMPONENTE
-import incono from "../componentes/Bom.png"
+import incono from "../componentes/img/Bom.png"
 export default function Inicio() {
   return (
     <>
