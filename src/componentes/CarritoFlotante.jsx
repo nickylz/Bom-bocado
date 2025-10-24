@@ -18,7 +18,7 @@ export function CarritoFlotante() {
   const [mostrarGracias, setMostrarGracias] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState(null);
 
-  // 🔁 Actualiza el usuario actual en tiempo real
+  
   useEffect(() => {
     const interval = setInterval(() => {
       const saved = localStorage.getItem("usuarioActual");
