@@ -20,7 +20,7 @@ export default function Inicio() {
               detalles únicos. Perfectos para regalar o disfrutar en familia.
             </p>
             <Link
-              to="/contacto"
+              to="/productos"
               className="inline-block px-8 py-3 bg-[#fff3f0] text-[#9c2007] font-semibold rounded-xl hover:bg-[#f5bfb2] transition"
             >
               Hacer pedido
