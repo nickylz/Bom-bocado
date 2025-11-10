@@ -8,15 +8,17 @@ export const Postres = [
     imagen:
       "https://i.pinimg.com/1200x/70/c9/14/70c914af01fd5f7490192f559a508c42.jpg",
   },
+
   {
     id: 2,
-    nombre: "Clásico Fresas & Crema",
+    nombre: "Clasico Fresas & Crema",
     descripcion: "Dulce y esponjoso",
     precio: 65.00,
     categoria: "Pasteles",
     imagen:
       "https://i.pinimg.com/736x/f6/b7/70/f6b7700c9ecd547d98470c67f8ed2870.jpg",
   },
+
   {
     id: 3,
     nombre: "Red Velvet con Fresas",
@@ -26,6 +28,7 @@ export const Postres = [
     imagen:
       "https://i.pinimg.com/736x/d7/d9/e5/d7d9e5701c0f734db4f914e967501f2d.jpg",
   },
+
   {
     id: 4,
     nombre: "Cheesecake de Fresas",
@@ -35,6 +38,7 @@ export const Postres = [
     imagen:
       "https://i.pinimg.com/1200x/95/8c/fc/958cfc0ca8d10651f1c29e76e3c00007.jpg",
   },
+
   {
     id: 5,
     nombre: "Fresas Glaseadas",
@@ -44,6 +48,7 @@ export const Postres = [
     imagen:
       "https://i.pinimg.com/1200x/3d/1e/ca/3d1eca4db29ad0f033fbb03c2165132e.jpg",
   },
+
   {
     id: 6,
     nombre: "Bocados de Fresa",
@@ -53,6 +58,7 @@ export const Postres = [
     imagen:
       "https://i.pinimg.com/1200x/59/dd/24/59dd2470430abe11a0482fa3e3c5a8b0.jpg",
   },
+  
   {
     id: 7,
     nombre: "Corazones Velvet",

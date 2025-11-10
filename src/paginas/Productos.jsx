@@ -1,14 +1,13 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useCarrito } from "../context/CarritoContext";
-import { Postres } from "../assets/postres";
+import { useState, useEffect } from "react";
+import { db } from "../lib/firebase";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import Filtros from "../componentes/Filtros";
-import incono from "../componentes/img/Bom.png"
-
+import FormProductos from "../componentes/FormProductos";
+import { useCarrito } from "../context/CarritoContext";
 
 export default function Productos() {
   const { agregarProducto } = useCarrito();
-
+  const [productos, setProductos] = useState([]);
   const [filtro, setFiltro] = useState({
     nombre: "",
     categoria: "",
@@ -16,66 +15,55 @@ export default function Productos() {
     max: "",
   });
 
-  const postresFiltrados = Postres.filter((p) => {
-    const matchNombre = p.nombre.toLowerCase().includes(filtro.nombre.toLowerCase());
-    const matchCategoria = filtro.categoria ? p.categoria === filtro.categoria : true;
-    const matchMin = filtro.min ? p.precio >= parseFloat(filtro.min) : true;
-    const matchMax = filtro.max ? p.precio <= parseFloat(filtro.max) : true;
+  useEffect(() => {
+    const q = query(collection(db, "productos"), orderBy("fechaCreacion", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const lista = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setProductos(lista);
+    });
+    return () => unsubscribe();
+  }, []);
 
-    return matchNombre && matchCategoria && matchMin && matchMax;
+  const productosFiltrados = productos.filter((p) => {
+    const cumpleNombre =
+      filtro.nombre === "" ||
+      p.nombre.toLowerCase().includes(filtro.nombre.toLowerCase());
+    const cumpleCategoria =
+      filtro.categoria === "" || p.categoria === filtro.categoria;
+    const cumpleMin = filtro.min === "" || p.precio >= parseFloat(filtro.min);
+    const cumpleMax = filtro.max === "" || p.precio <= parseFloat(filtro.max);
+
+    return cumpleNombre && cumpleCategoria && cumpleMin && cumpleMax;
   });
 
-  const handleComprar = (producto) => agregarProducto(producto);
+return (
+  <div className="bg-[#fff3f0] min-h-screen p-6">
+    {/* FORMULARIO */}
+    <div className="max-w-5xl mx-auto mb-12">
+      <FormProductos />
+    </div>
 
-  return (
-    <main className="bg-[#fff3f0] min-h-screen pb-20">
-      {/* ===== ENCABEZADO ===== */}
-      <section className="w-full flex flex-col md:flex-row items-center justify-center bg-[#d16170] text-white">
-        {/* TEXTO */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center py-16 space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold">Haz tu pedido favorito</h1>
-          <p className="text-[#fff3f0] text-lg leading-relaxed max-w-lg px-4">
-            En{" "}
-            <span className="font-semibold text-[#f5bfb2]">Bom Bocado</span>{" "}
-            cada postre está hecho con dedicación, frescura y amor. BOM BOCADO convierte lo dulce en momentos inolvidables.
-          </p>
+    {/* CONTENEDOR PRINCIPAL */}
+    <div className="max-w-7xl mx-auto px-6 md:px-12">
+      {/* TÍTULO + FILTROS */}
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 mb-8">
+        <h2 className="text-3xl font-bold text-[#9c2007] border-b-2 border-[#f5bfb2] pb-2 text-center md:text-left">
+          Explora Nuestros Postres
+        </h2>
+
+        <div className="shrink-0 w-full md:w-auto">
+          <Filtros filtro={filtro} setFiltro={setFiltro} />
         </div>
+      </div>
 
-        {/* IMAGEN */}
-        <div className="w-full md:w-1/2 flex justify-center py-10">
-          <img
-            src= {incono}
-            alt="Torta decorada"
-            className="w-[45%] md:w-[53%] h-auto object-contain"
-          />
-        </div>
-      </section>
-
-      {/* ===== FILTROS Y TÍTULO ===== */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 mt-10">
-        
-        {/* Contenedor principal de Título y Filtros */}
-        <div className="flex flex-col md:flex-row justify-between md:items-start gap-8 mb-10">
-          
-          {/* Título (izquierda) */}
-          <div className="flex-1">
-            <h2 className="text-3xl font-bold text-[#9c2007] mb-2 border-b-2 border-[#f5bfb2] pb-2 text-center md:text-left">
-              Explora Nuestros Postres
-            </h2>
-          </div>
-
-          {/* Filtros (derecha) */}
-          {/* Este div alinea el componente de filtros a la derecha en escritorio */}
-          <div className="shrink-0 w-full md:w-auto">
-            <Filtros filtro={filtro} setFiltro={setFiltro} />
-          </div>
-
-        </div>
-
-        {/* ===== PRODUCTOS ===== */}
-        {postresFiltrados.length > 0 ? (
-          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {postresFiltrados.map((p) => (
+      {/* LISTA DE PRODUCTOS */}
+      <div className="mt-10">
+        {productosFiltrados.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {productosFiltrados.map((p) => (
               <article
                 key={p.id}
                 className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden"
@@ -86,10 +74,15 @@ export default function Productos() {
                   className="w-full h-60 object-cover"
                 />
                 <div className="p-5 text-center">
-                  <h3 className="text-lg font-semibold text-[#9c2007]">{p.nombre}</h3>
-                  <p className="text-[#d8718c] font-bold mt-2">S/{p.precio.toFixed(2)}</p>
+                  <h3 className="text-lg font-semibold text-[#9c2007]">
+                    {p.nombre}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">{p.descripcion}</p>
+                  <p className="text-[#d8718c] font-bold mt-2">
+                    S/{p.precio?.toFixed(2)}
+                  </p>
                   <button
-                    onClick={() => handleComprar(p)}
+                    onClick={() => agregarProducto(p)}
                     className="bg-[#a34d5f] text-white px-5 py-2 rounded-full mt-3 hover:bg-[#912646] transition"
                   >
                     Comprar
@@ -100,11 +93,11 @@ export default function Productos() {
           </div>
         ) : (
           <p className="text-center text-gray-500 mt-16 text-lg">
-            No se encontraron postres con esos filtros 🍰
+            No se encontraron productos con esos filtros 
           </p>
         )}
       </div>
-    </main>
-
-  );
+    </div>
+  </div>
+);
 }
