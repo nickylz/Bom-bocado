@@ -4,6 +4,7 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import Filtros from "../componentes/Filtros";
 import FormProductos from "../componentes/FormProductos";
 import { useCarrito } from "../context/CarritoContext";
+import incono from "../componentes/img/Bom.png";
 
 export default function Productos() {
   const { agregarProducto } = useCarrito();
@@ -39,65 +40,81 @@ export default function Productos() {
     return cumpleNombre && cumpleCategoria && cumpleMin && cumpleMax;
   });
 
-return (
-  <div className="bg-[#fff3f0] min-h-screen p-6">
-    {/* FORMULARIO */}
-    <div className="max-w-5xl mx-auto mb-12">
-      <FormProductos />
-    </div>
+  return (
+    <div className="bg-[#fff3f0] min-h-screen pb-20">
+      
+      <section className="w-full flex flex-col md:flex-row items-center justify-center bg-[#d16170] text-white">
+        <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center py-16 space-y-6">
+          <h1 className="text-4xl md:text-5xl font-bold">Haz tu pedido favorito</h1>
+          <p className="text-[#fff3f0] text-lg leading-relaxed max-w-lg px-4">
+            En{" "}
+            <span className="font-semibold text-[#f5bfb2]">Bom Bocado</span>{" "}
+            cada postre está hecho con dedicación, frescura y amor. BOM BOCADO convierte lo dulce en momentos inolvidables.
+          </p>
+        </div>
 
-    {/* CONTENEDOR PRINCIPAL */}
-    <div className="max-w-7xl mx-auto px-6 md:px-12">
-      {/* TÍTULO + FILTROS */}
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 mb-8">
-        <h2 className="text-3xl font-bold text-[#9c2007] border-b-2 border-[#f5bfb2] pb-2 text-center md:text-left">
-          Explora Nuestros Postres
-        </h2>
+        <div className="w-full md:w-1/2 flex justify-center py-10">
+          <img
+            src={incono}
+            alt="Torta decorada"
+            className="w-[45%] md:w-[53%] h-auto object-contain"
+          />
+        </div>
+      </section>
 
-        <div className="shrink-0 w-full md:w-auto">
-          <Filtros filtro={filtro} setFiltro={setFiltro} />
+      <div className="max-w-5xl mx-auto mb-12 mt-12">
+        <FormProductos />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 mb-8">
+          <h2 className="text-3xl font-bold text-[#9c2007] border-b-2 border-[#f5bfb2] pb-2 text-center md:text-left">
+            Explora Nuestros Postres
+          </h2>
+
+          <div className="shrink-0 w-full md:w-auto">
+            <Filtros filtro={filtro} setFiltro={setFiltro} />
+          </div>
+        </div>
+
+        <div className="mt-10">
+          {productosFiltrados.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {productosFiltrados.map((p) => (
+                <article
+                  key={p.id}
+                  className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden"
+                >
+                  <img
+                    src={p.imagen}
+                    alt={p.nombre}
+                    className="w-full h-60 object-cover"
+                  />
+                  <div className="p-5 text-center">
+                    <h3 className="text-lg font-semibold text-[#9c2007]">
+                      {p.nombre}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">{p.descripcion}</p>
+                    <p className="text-[#d8718c] font-bold mt-2">
+                      S/{p.precio?.toFixed(2)}
+                    </p>
+                    <button
+                      onClick={() => agregarProducto(p)}
+                      className="bg-[#a34d5f] text-white px-5 py-2 rounded-full mt-3 hover:bg-[#912646] transition"
+                    >
+                      Comprar
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 mt-16 text-lg">
+              No se encontraron productos con esos filtros
+            </p>
+          )}
         </div>
       </div>
-
-      {/* LISTA DE PRODUCTOS */}
-      <div className="mt-10">
-        {productosFiltrados.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {productosFiltrados.map((p) => (
-              <article
-                key={p.id}
-                className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden"
-              >
-                <img
-                  src={p.imagen}
-                  alt={p.nombre}
-                  className="w-full h-60 object-cover"
-                />
-                <div className="p-5 text-center">
-                  <h3 className="text-lg font-semibold text-[#9c2007]">
-                    {p.nombre}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">{p.descripcion}</p>
-                  <p className="text-[#d8718c] font-bold mt-2">
-                    S/{p.precio?.toFixed(2)}
-                  </p>
-                  <button
-                    onClick={() => agregarProducto(p)}
-                    className="bg-[#a34d5f] text-white px-5 py-2 rounded-full mt-3 hover:bg-[#912646] transition"
-                  >
-                    Comprar
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-gray-500 mt-16 text-lg">
-            No se encontraron productos con esos filtros 
-          </p>
-        )}
-      </div>
     </div>
-  </div>
-);
+  );
 }
