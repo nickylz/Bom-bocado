@@ -102,6 +102,7 @@ export default function FormProducto() {
             "Galletas",
             "Postres fríos",
             "Otros",
+            "Temporada"
           ].map((cat) => (
             <option
               key={cat}
