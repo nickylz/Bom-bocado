@@ -1,68 +1,50 @@
-import { useState, useEffect } from "react";
+// src/components/Login.jsx
+import { useState } from "react";
+import { useAuth } from "../context/authContext";
+import { FcGoogle } from "react-icons/fc"; // 🔹 Ícono de Google
 
 export default function Login() {
-  const [usuarioActual, setUsuarioActual] = useState(null);
+  const {
+    usuarioActual,
+    iniciarSesion,
+    registrarUsuario,
+    iniciarConGoogle,
+    cerrarSesion,
+  } = useAuth();
+
   const [modalLogin, setModalLogin] = useState(false);
   const [modalRegistro, setModalRegistro] = useState(false);
 
-  const [loginUser, setLoginUser] = useState("");
+  const [loginCorreo, setLoginCorreo] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
   const [regCorreo, setRegCorreo] = useState("");
   const [regUser, setRegUser] = useState("");
   const [regPass, setRegPass] = useState("");
+  const [regFoto, setRegFoto] = useState(null);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("usuarioActual");
-    if (savedUser) setUsuarioActual(JSON.parse(savedUser));
-  }, []);
-
-  const handleLogin = (e) => {
+  // 🔹 LOGIN
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-    const encontrado = usuarios.find(
-      (u) =>
-        (u.user === loginUser || u.correo === loginUser) &&
-        u.contrasena === loginPass
-    );
-
-    if (encontrado) {
-      localStorage.setItem("usuarioActual", JSON.stringify(encontrado));
-      setUsuarioActual(encontrado);
+    try {
+      await iniciarSesion(loginCorreo, loginPass);
       setModalLogin(false);
-      alert(`Bienvenido, ${encontrado.user}!`);
-    } else {
-      alert("Usuario o contraseña incorrectos, o la cuenta no existe.");
+      alert("Inicio de sesión exitoso!");
+    } catch (err) {
+      alert("Error: " + err.message);
     }
   };
 
-  const handleRegistro = (e) => {
+  // 🔹 REGISTRO
+  const handleRegistro = async (e) => {
     e.preventDefault();
-    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-    if (usuarios.some((u) => u.user === regUser || u.correo === regCorreo)) {
-      alert("Ese usuario o correo ya está registrado.");
-      return;
+    try {
+      await registrarUsuario(regCorreo, regUser, regPass, regFoto);
+      setModalRegistro(false);
+      alert("Cuenta creada correctamente!");
+    } catch (err) {
+      alert("Error al registrar: " + err.message);
     }
-
-    const nuevo = {
-      correo: regCorreo,
-      user: regUser,
-      contrasena: regPass,
-    };
-
-    usuarios.push(nuevo);
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-    localStorage.setItem("usuarioActual", JSON.stringify(nuevo));
-    setUsuarioActual(nuevo);
-    setModalRegistro(false);
-    alert(`Cuenta creada para ${nuevo.user}!`);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("usuarioActual");
-    setUsuarioActual(null);
   };
 
   return (
@@ -70,11 +52,16 @@ export default function Login() {
       {/* ===== BOTÓN DE USUARIO / LOGIN ===== */}
       {usuarioActual ? (
         <div className="flex flex-col md:flex-row items-center gap-2">
+          <img
+            src={usuarioActual.fotoURL || "/default-user.png"}
+            alt="perfil"
+            className="w-10 h-10 rounded-full border border-[#d8718c]"
+          />
           <span className="text-[#7a1a0a] font-semibold">
             {usuarioActual.user}
           </span>
           <button
-            onClick={handleLogout}
+            onClick={cerrarSesion}
             className="bg-[#d8718c] text-white px-4 py-1 rounded-xl hover:bg-[#b84c68] transition"
           >
             Cerrar sesión
@@ -96,30 +83,40 @@ export default function Login() {
           onClick={(e) => e.target === e.currentTarget && setModalLogin(false)}
         >
           <div className="bg-[#fff3f0] rounded-2xl shadow-lg w-[90%] max-w-md p-8 text-center border border-[#f5bfb2]">
-            <h2 className="text-3xl font-bold text-[#8f2133] mb-6">
-              Bienvenido 
-            </h2>
+            <h2 className="text-3xl font-bold text-[#8f2133] mb-6">Bienvenido</h2>
             <form onSubmit={handleLogin} className="space-y-4">
               <input
-                type="text"
-                placeholder="Usuario o correo"
-                value={loginUser}
-                onChange={(e) => setLoginUser(e.target.value)}
-                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d8718c] transition"
+                type="email"
+                placeholder="Correo"
+                value={loginCorreo}
+                onChange={(e) => setLoginCorreo(e.target.value)}
+                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
               />
               <input
                 type="password"
                 placeholder="Contraseña"
                 value={loginPass}
                 onChange={(e) => setLoginPass(e.target.value)}
-                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d8718c] transition"
+                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
               />
-              <button
-                type="submit"
-                className="w-full bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
-              >
-                Iniciar sesión
-              </button>
+
+              {/* 🔸 Botones lado a lado */}
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                <button
+                  type="submit"
+                  className="bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
+                >
+                  Iniciar sesión
+                </button>
+
+                <button
+                  type="button"
+                  onClick={iniciarConGoogle}
+                  className="flex items-center justify-center gap-2 border border-[#d8718c] text-[#d8718c] py-3 rounded-xl hover:bg-[#f5bfb2] transition font-semibold"
+                >
+                  <FcGoogle className="text-xl" /> Google
+                </button>
+              </div>
             </form>
 
             <p className="text-[#7a1a0a] mt-5 text-sm">
@@ -142,13 +139,11 @@ export default function Login() {
       {modalRegistro && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          onClick={(e) =>
-            e.target === e.currentTarget && setModalRegistro(false)
-          }
+          onClick={(e) => e.target === e.currentTarget && setModalRegistro(false)}
         >
           <div className="bg-[#fff3f0] rounded-2xl shadow-lg w-[90%] max-w-md p-8 text-center border border-[#f5bfb2]">
             <h2 className="text-3xl font-bold text-[#8f2133] mb-6">
-              Crear cuenta 
+              Crear cuenta
             </h2>
             <form onSubmit={handleRegistro} className="space-y-4">
               <input
@@ -156,28 +151,46 @@ export default function Login() {
                 placeholder="Correo"
                 value={regCorreo}
                 onChange={(e) => setRegCorreo(e.target.value)}
-                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d8718c] transition"
+                className="w-full bg-white border border-[#f5bfb2] px-4 py-3 rounded-xl"
               />
               <input
                 type="text"
                 placeholder="Usuario"
                 value={regUser}
                 onChange={(e) => setRegUser(e.target.value)}
-                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d8718c] transition"
+                className="w-full bg-white border border-[#f5bfb2] px-4 py-3 rounded-xl"
               />
               <input
                 type="password"
                 placeholder="Contraseña"
                 value={regPass}
                 onChange={(e) => setRegPass(e.target.value)}
-                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d8718c] transition"
+                className="w-full bg-white border border-[#f5bfb2] px-4 py-3 rounded-xl"
               />
-              <button
-                type="submit"
-                className="w-full bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
-              >
-                Crear cuenta
-              </button>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setRegFoto(e.target.files[0])}
+                className="w-full bg-white border border-[#f5bfb2] px-4 py-3 rounded-xl"
+              />
+
+              {/* 🔸 Botones lado a lado */}
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                <button
+                  type="submit"
+                  className="bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
+                >
+                  Crear cuenta
+                </button>
+
+                <button
+                  type="button"
+                  onClick={iniciarConGoogle}
+                  className="flex items-center justify-center gap-2 border border-[#d8718c] text-[#d8718c] py-3 rounded-xl hover:bg-[#f5bfb2] transition font-semibold"
+                >
+                  <FcGoogle className="text-xl" /> Google
+                </button>
+              </div>
             </form>
 
             <p className="text-[#7a1a0a] mt-5 text-sm">
