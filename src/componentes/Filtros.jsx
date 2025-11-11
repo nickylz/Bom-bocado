@@ -33,6 +33,7 @@ export default function Filtros({ filtro, setFiltro }) {
           "Macarons",
           "Galletas",
           "Postres fríos",
+          "Otros",
         ].map((cat) => (
           <option key={cat} value={cat}>
             {cat}

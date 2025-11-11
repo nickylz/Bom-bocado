@@ -143,10 +143,10 @@ export const Postres = [
     id: 15,
     nombre: "Latido Dulce",
     descripcion: "Chocolate con crema suave",
-    precio: 7.50,
+    precio: 6.50,
     categoria: "Cupcakes",
     imagen:
-      "https://i.pinimg.com/736x/0c/4e/30/0c4e301ebb111d34551e62bc6d8707c4.jpg",
+      "https://i.pinimg.com/736x/8f/be/9c/8fbe9c618a5ebb275e1c9e3e612ea51a.jpg",
   },
 
   {
