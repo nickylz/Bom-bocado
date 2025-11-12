@@ -18,7 +18,6 @@ export function CarritoFlotante() {
   const [mostrarGracias, setMostrarGracias] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState(null);
 
-  
   useEffect(() => {
     const interval = setInterval(() => {
       const saved = localStorage.getItem("usuarioActual");
@@ -65,13 +64,11 @@ export function CarritoFlotante() {
       {/* === PANEL DEL CARRITO === */}
       {mostrarCarrito && (
         <>
-          {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/30 z-40"
             onClick={cerrarCarrito}
           ></div>
 
-          {/* Panel flotante animado */}
           <div
             className="fixed bottom-20 right-6 bg-[#fff3f0] w-80 rounded-2xl shadow-2xl p-6 border border-[#f5bfb2] z-50 animate-slide-left"
           >
@@ -89,43 +86,43 @@ export function CarritoFlotante() {
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-60">
               {carrito.length === 0 ? (
                 <p className="text-center text-[#9c2007]/70 italic">
-                  Tu carrito está vacío 
+                  Tu carrito está vacío
                 </p>
               ) : (
                 carrito.map((p) => (
                   <div
-                    key={p.nombre}
+                    key={p.id}
                     className="flex items-center justify-between bg-white/70 border border-[#f5bfb2] rounded-2xl p-3 shadow-sm"
                   >
                     <img
                       src={p.imagen}
-                      alt={p.nombre}
+                      alt={p.nombre || "Producto"}
                       className="w-16 h-16 object-cover rounded-xl border border-[#f5bfb2]"
                     />
                     <div className="flex-1 px-3">
                       <strong className="block text-[#7a1a0a]">
-                        {p.nombre}
+                        {p.nombre || p.nombreProducto || "Producto sin nombre"}
                       </strong>
                       <span className="text-sm text-gray-600">
-                        S/{p.precio.toFixed(2)} x {p.cantidad}
+                        S/{(p.precio || 0).toFixed(2)} x {p.cantidad || 1}
                       </span>
                     </div>
 
                     <div className="flex flex-col items-center gap-1">
                       <button
-                        onClick={() => cambiarCantidad(p.nombre, 1)}
+                        onClick={() => cambiarCantidad(p.id, 1)}
                         className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition"
                       >
                         +
                       </button>
                       <button
-                        onClick={() => cambiarCantidad(p.nombre, -1)}
+                        onClick={() => cambiarCantidad(p.id, -1)}
                         className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition"
                       >
                         -
                       </button>
                       <button
-                        onClick={() => eliminarProducto(p.nombre)}
+                        onClick={() => eliminarProducto(p.id)}
                         className="p-1.5 rounded-lg hover:bg-[#fff3f0] transition text-[#d16170]"
                         title="Eliminar producto"
                       >
@@ -228,13 +225,15 @@ export function CarritoFlotante() {
               ¡Gracias por tu compra!
             </h2>
             <img
-              src={`https://i.postimg.cc/${[
-                "SsLjzJ0b/1.png",
-                "50zK5WpV/2.png",
-                "nrtR0Sw-Q/3.png",
-                "R0HLyQt1/4.png",
-                "Jz9bNDFs/5.png",
-              ][Math.floor(Math.random() * 5)]}`}
+              src={`https://i.postimg.cc/${
+                [
+                  "SsLjzJ0b/1.png",
+                  "50zK5WpV/2.png",
+                  "nrtR0Sw-Q/3.png",
+                  "R0HLyQt1/4.png",
+                  "Jz9bNDFs/5.png",
+                ][Math.floor(Math.random() * 5)]
+              }`}
               alt="Gracias"
               className="rounded-2xl mx-auto w-48"
             />
