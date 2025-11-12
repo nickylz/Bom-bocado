@@ -1,58 +1,69 @@
-import React from "react";
-import { useCarrito } from "../context/CarritoContext"; // 👈 importa el contexto
+import React, { useState, useEffect } from "react";
+import { db } from "../lib/firebase";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { useCarrito } from "../context/CarritoContext";
 
 export default function Novedades() {
-  const { agregarProducto } = useCarrito(); // 👈 usamos la función para agregar productos
+  const { agregarProducto } = useCarrito();
+
+  const [productosTemporada, setProductosTemporada] = useState([]);
+
+  useEffect(() => {
+    const q = query(collection(db, "productos"), where("categoria", "==", "Temporada"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const lista = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setProductosTemporada(lista);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const lomasvendido = [
+    {
+      nombre: "Tarta Mix",
+      descripcion: "Refrescante y cremosa",
+      precio: 40.00,
+      categoria: "Tartas",
+      imagen:
+        "https://i.pinimg.com/736x/4c/07/44/4c07447203a816cbb5a470fbe7d14ee9.jpg",
+    },
+    {    
+      nombre: "Tiramisú Clásico",
+      descripcion: "Con café y mascarpone",
+      precio: 28.00,
+      categoria: "Postres fríos",
+      imagen:
+        "https://www.tasteofhome.com/wp-content/uploads/2024/11/EXPS_TOHD24_25469_EricKleinberg_6.jpg",
+    },
+    {
+      nombre: "Fresas Glaseadas",
+      descripcion: "Suaves y crocantes",
+      precio: 12.00,
+      categoria: "Galletas",
+      imagen:
+        "https://i.pinimg.com/1200x/3d/1e/ca/3d1eca4db29ad0f033fbb03c2165132e.jpg",
+    },
+    {
+      nombre: "Bombones de Frambuesa",
+      descripcion: "Rellenos con centro frutal",
+      precio: 18.00,
+      categoria: "Bombones",
+      imagen:
+        "https://i.pinimg.com/736x/83/27/51/832751dc0d1881d6467a3ec67e9501c8.jpg",
+    },
+    {
+      nombre: "Mousse de Fresa",
+      descripcion: "Ligero y tropical",
+      precio: 22.00,
+      categoria: "Postres fríos",
+      imagen:
+        "https://images.getrecipekit.com/20220607111638-mousse-de-fresa.jpg?aspect_ratio=4:3&quality=90&",
+    },
+  ];
 
   const productosNuevos = [
-    {
-      nombre: "Cheesecake de Arándanos",
-      descripcion: "Cremoso y fresco",
-      precio: 48,
-      imagen:
-        "https://i.pinimg.com/1200x/8f/d4/60/8fd4603b035327a5c02dc6e34ec3939f.jpg",
-    },
-    {
-      nombre: "Mini Tartas de Frutas",
-      descripcion: "Coloridas y naturales",
-      precio: 40,
-      imagen:
-        "https://i.pinimg.com/736x/e1/f6/20/e1f62045feef931f2f57858699d64696.jpg",
-    },
-    {
-      nombre: "Cupcakes de Vainilla Rosa",
-      descripcion: "Delicados y decorados a mano",
-      precio: 35,
-      imagen:
-        "https://i.pinimg.com/736x/3f/31/f9/3f31f9ed25d09d6b0a35e6c0a1cf8da0.jpg",
-    },
-  ];
-
-  const pasteles = [
-    {
-      nombre: "Delicia de Frambuesas",
-      descripcion: "Suave bizcocho con crema de frambuesa",
-      precio: 55,
-      imagen:
-        "https://i.pinimg.com/1200x/b2/3a/03/b23a03dbae3f92df0e023a0372796165.jpg",
-    },
-    {
-      nombre: "Sueño de Chocolate Blanco",
-      descripcion: "Esponjoso y delicado",
-      precio: 65,
-      imagen:
-        "https://i.pinimg.com/736x/c5/d3/54/c5d354b9d6382a66574314bc67476828.jpg",
-    },
-    {
-      nombre: "Pastel Caramelo & Nuez",
-      descripcion: "Dulce con un toque crocante",
-      precio: 70,
-      imagen:
-        "https://i.pinimg.com/736x/87/57/fe/8757fe48496277e663e2acb3656a4cac.jpg",
-    },
-  ];
-
-  const galletas = [
     {
       nombre: "Besitos de Coco",
       descripcion: "Suaves, doradas y con un toque tropical",
@@ -80,25 +91,17 @@ export default function Novedades() {
     productos.map((item, index) => (
       <article
         key={index}
-        className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden"
+        className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden shrink-0 w-72"
       >
-        <img
-          src={item.imagen}
-          alt={item.nombre}
-          className="w-full h-60 object-cover"
-        />
+        <img src={item.imagen} alt={item.nombre} className="w-full h-60 object-cover" />
         <div className="p-5 text-center">
           <h3 className="text-lg font-semibold text-[#9c2007]">{item.nombre}</h3>
           <p className="text-gray-600 text-sm mt-1">{item.descripcion}</p>
-          <p className="text-[#d8718c] font-bold mt-2">S/{item.precio}.00</p>
+          <p className="text-[#d8718c] font-bold mt-2">
+            S/{item.precio?.toFixed(2)}
+          </p>
           <button
-            onClick={() =>
-              agregarProducto({
-                nombre: item.nombre,
-                precio: item.precio,
-                imagen: item.imagen,
-              })
-            }
+            onClick={() => agregarProducto(item)}
             className="bg-[#a34d5f] text-white px-5 py-2 rounded-full mt-3 hover:bg-[#912646] transition"
           >
             Comprar
@@ -107,6 +110,42 @@ export default function Novedades() {
       </article>
     ));
 
+  const renderCarrusel = (productos) => (
+    <div className="overflow-hidden relative">
+      <div
+        className="flex animate-scroll gap-6"
+        style={{
+          animation: "scroll 20s linear infinite",
+        }}
+      >
+        {productos.concat(productos).map((item, index) => (
+          <article
+            key={index}
+            className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden shrink-0 w-72"
+          >
+            <img src={item.imagen} alt={item.nombre} className="w-full h-60 object-cover" />
+            <div className="p-5 text-center">
+              <h3 className="text-lg font-semibold text-[#9c2007]">{item.nombre}</h3>
+              <p className="text-gray-600 text-sm mt-1">{item.descripcion}</p>
+              <p className="text-[#d8718c] font-bold mt-2">
+                S/{item.precio?.toFixed(2)}
+              </p>
+              <button
+                onClick={() => agregarProducto(item)}
+                className="bg-[#a34d5f] text-white px-5 py-2 rounded-full mt-3 hover:bg-[#912646] transition"
+              >
+                Comprar
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="absolute top-0 left-0 w-20 h-full bg-linear-to-r from-[#fff3f0] to-transparent z-10"></div>
+      <div className="absolute top-0 right-0 w-20 h-full bg-linear-to-l from-[#fff3f0] to-transparent z-10"></div>
+    </div>
+  );
+
   return (
     <section className="bg-[#fff3f0] min-h-screen py-16">
       <div className="max-w-6xl mx-auto px-6 md:px-12">
@@ -114,36 +153,56 @@ export default function Novedades() {
           Novedades
         </h1>
 
-        {/* ======= PRODUCTOS NUEVOS ======= */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-[#9c2007] mb-6 border-b-2 border-[#f5bfb2] pb-2">
             Productos Nuevos
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {renderProductos(productosNuevos)}
-          </div>
+          {productosNuevos.length > 4 ? (
+            renderCarrusel(productosNuevos)
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {renderProductos(productosNuevos)}
+            </div>
+          )}
         </section>
 
-        {/* ======= PASTELES ======= */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-[#9c2007] mb-6 border-b-2 border-[#f5bfb2] pb-2">
-            Pasteles
+            Productos de Temporada
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {renderProductos(pasteles)}
-          </div>
+          {productosTemporada.length > 4 ? (
+            renderCarrusel(productosTemporada)
+          ) : productosTemporada.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {renderProductos(productosTemporada)}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 mt-10">
+              No hay productos de temporada por ahora 🌸
+            </p>
+          )}
         </section>
 
-        {/* ======= GALLETAS ======= */}
         <section>
           <h2 className="text-3xl font-bold text-[#9c2007] mb-6 border-b-2 border-[#f5bfb2] pb-2">
-            Galletas
+            Los favoritos de la casa ♡
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {renderProductos(galletas)}
-          </div>
+          {lomasvendido.length > 4 ? (
+            renderCarrusel(lomasvendido)
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {renderProductos(lomasvendido)}
+            </div>
+          )}
         </section>
       </div>
+
+      <style>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </section>
   );
 }

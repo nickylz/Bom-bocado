@@ -1,5 +1,3 @@
-// Index.jsx
-
 import React from "react";
 import { Link } from "react-router-dom";
 import Testimonials from "../componentes/Testimonials"; // <-- 1. IMPORTAMOS EL NUEVO COMPONENTE
@@ -56,7 +54,7 @@ export default function Inicio() {
                   Macaloves – Macarons de Amor
                 </h3>
                 <Link
-                  to="/novedades"
+                  to="/productos"
                   className="text-[#d8718c] font-medium hover:underline"
                 >
                   Ver más →
@@ -76,7 +74,7 @@ export default function Inicio() {
                   Strawberry Cloud Croissant
                 </h3>
                 <Link
-                  to="/novedades"
+                  to="/productos"
                   className="text-[#d8718c] font-medium hover:underline"
                 >
                   Ver más →
@@ -116,7 +114,7 @@ export default function Inicio() {
                   Cherry Kiss Pie
                 </h3>
                 <Link
-                  to="/novedades"
+                  to="/productos"
                   className="text-[#d8718c] font-medium hover:underline"
                 >
                   Ver más →
