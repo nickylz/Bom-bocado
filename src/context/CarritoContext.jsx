@@ -11,7 +11,7 @@ import {
   onSnapshot,
   getDocs,
 } from "firebase/firestore";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "./AuthContext";
 
 const CarritoContext = createContext();
 
@@ -20,26 +20,22 @@ export const CarritoProvider = ({ children }) => {
   const [carrito, setCarrito] = useState([]);
   const [mostrarCarrito, setMostrarCarrito] = useState(false);
 
-  // 🔹 Escuchar carrito en tiempo real desde Firestore
-  useEffect(() => {
-    console.log("🟢 useEffect ejecutado. Usuario:", user ? user.uid : "sin usuario");
-
-    if (!user) {
-      console.log("⚠️ No hay usuario, cargando carrito desde localStorage...");
-      const saved = localStorage.getItem("carrito");
-      if (saved) {
-        console.log("📦 Carrito cargado de localStorage:", JSON.parse(saved));
-        setCarrito(JSON.parse(saved));
-      } else {
-        console.log("🕳 No había carrito guardado localmente.");
-      }
-      return;
+  // 🔹 ID temporal si no hay usuario (guest)
+  const getGuestId = () => {
+    let guestId = sessionStorage.getItem("guestId");
+    if (!guestId) {
+      guestId = "guest-" + Math.random().toString(36).substring(2, 15);
+      sessionStorage.setItem("guestId", guestId);
     }
+    return guestId;
+  };
 
-    console.log("✅ Usuario detectado. Escuchando carrito desde Firestore...");
+  // 🔹 Escuchar carrito desde Firestore
+  useEffect(() => {
+    const uid = user ? user.uid : getGuestId();
+    console.log("🟢 Escuchando carrito para:", uid);
 
-    const q = query(collection(db, "carrito"), where("userId", "==", user.uid));
-
+    const q = query(collection(db, "carrito"), where("userId", "==", uid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const productos = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -50,64 +46,79 @@ export const CarritoProvider = ({ children }) => {
     });
 
     return () => {
-      console.log("🧹 Cancelando suscripción a Firestore (logout o cambio de usuario)");
+      console.log("🧹 Cancelando suscripción del carrito");
       unsubscribe();
     };
   }, [user]);
 
-  // 🔹 Guardar carrito local si no hay usuario
+  // 🔹 Fusionar carrito de invitado con el del usuario al iniciar sesión
   useEffect(() => {
-    if (!user) {
-      console.log("💾 Guardando carrito local:", carrito);
-      localStorage.setItem("carrito", JSON.stringify(carrito));
-    }
-  }, [carrito, user]);
+    const fusionarCarritos = async () => {
+      if (!user) return;
+      const guestId = sessionStorage.getItem("guestId");
+      if (!guestId) return;
+
+      const guestQ = query(collection(db, "carrito"), where("userId", "==", guestId));
+      const guestSnap = await getDocs(guestQ);
+
+      for (const d of guestSnap.docs) {
+        const data = d.data();
+        const q = query(
+          collection(db, "carrito"),
+          where("userId", "==", user.uid),
+          where("id", "==", data.id)
+        );
+        const userSnap = await getDocs(q);
+
+        if (userSnap.empty) {
+          await setDoc(doc(collection(db, "carrito")), {
+            ...data,
+            userId: user.uid,
+          });
+        } else {
+          userSnap.forEach(async (docUser) => {
+            const prod = docUser.data();
+            await updateDoc(doc(db, "carrito", docUser.id), {
+              cantidad: (prod.cantidad || 1) + (data.cantidad || 1),
+            });
+          });
+        }
+        // 🗑 Eliminar del carrito guest
+        await deleteDoc(doc(db, "carrito", d.id));
+      }
+      console.log("✅ Carrito guest fusionado con el de usuario.");
+      sessionStorage.removeItem("guestId");
+    };
+
+    fusionarCarritos();
+  }, [user]);
 
   // 🔹 Agregar producto
   const agregarProducto = async (producto) => {
     const id = producto.id || producto.productoId || producto.nombre;
-    if (!id) {
-      console.error("⚠️ Producto sin ID o nombre, no se puede agregar correctamente");
-      return;
-    }
+    if (!id) return console.error("⚠️ Producto sin ID");
 
-    console.log("🛒 Agregando producto:", producto, "Usuario:", user ? user.uid : "sin usuario");
-
-    if (!user) {
-      // solo localStorage
-      setCarrito((prev) => {
-        const existente = prev.find((p) => p.id === id);
-        if (existente) {
-          return prev.map((p) =>
-            p.id === id ? { ...p, cantidad: p.cantidad + 1 } : p
-          );
-        } else {
-          return [...prev, { ...producto, id, cantidad: 1 }];
-        }
-      });
-      return;
-    }
+    const uid = user ? user.uid : getGuestId();
+    console.log("🛒 Agregando producto:", producto, "para", uid);
 
     const q = query(
       collection(db, "carrito"),
-      where("userId", "==", user.uid),
+      where("userId", "==", uid),
       where("id", "==", id)
     );
-    const snapshot = await getDocs(q);
+    const snap = await getDocs(q);
 
-    if (snapshot.empty) {
+    if (snap.empty) {
       const ref = doc(collection(db, "carrito"));
-      console.log("📤 Guardando nuevo producto en Firestore:", { ...producto, id });
       await setDoc(ref, {
         ...producto,
         cantidad: 1,
-        userId: user.uid,
+        userId: uid,
         id,
       });
     } else {
-      snapshot.forEach(async (d) => {
+      snap.forEach(async (d) => {
         const data = d.data();
-        console.log("🔄 Actualizando cantidad en Firestore:", d.id);
         await updateDoc(doc(db, "carrito", d.id), {
           cantidad: (data.cantidad || 1) + 1,
         });
@@ -115,72 +126,45 @@ export const CarritoProvider = ({ children }) => {
     }
   };
 
-  // 🔹 Cambiar cantidad (+/-)
+  // 🔹 Cambiar cantidad
   const cambiarCantidad = async (id, delta) => {
-    console.log("🔧 Cambiar cantidad de", id, "en", delta, "Usuario:", user ? user.uid : "sin usuario");
-
-    if (!user) {
-      setCarrito((prev) =>
-        prev
-          .map((p) =>
-            p.id === id ? { ...p, cantidad: Math.max(1, p.cantidad + delta) } : p
-          )
-          .filter((p) => p.cantidad > 0)
-      );
-      return;
-    }
-
+    const uid = user ? user.uid : getGuestId();
     const q = query(
       collection(db, "carrito"),
-      where("userId", "==", user.uid),
+      where("userId", "==", uid),
       where("id", "==", id)
     );
-    const snapshot = await getDocs(q);
-    snapshot.forEach(async (d) => {
-      const producto = d.data();
-      const nuevaCantidad = Math.max(1, (producto.cantidad || 1) + delta);
-      console.log("⚙️ Actualizando producto", id, "a cantidad", nuevaCantidad);
+    const snap = await getDocs(q);
+    snap.forEach(async (d) => {
+      const prod = d.data();
+      const nuevaCantidad = Math.max(1, (prod.cantidad || 1) + delta);
       await updateDoc(doc(db, "carrito", d.id), { cantidad: nuevaCantidad });
     });
   };
 
   // 🔹 Eliminar producto
   const eliminarProducto = async (id) => {
-    console.log("❌ Eliminando producto", id, "Usuario:", user ? user.uid : "sin usuario");
-
-    if (!user) {
-      setCarrito((prev) => prev.filter((p) => p.id !== id));
-      return;
-    }
-
+    const uid = user ? user.uid : getGuestId();
     const q = query(
       collection(db, "carrito"),
-      where("userId", "==", user.uid),
+      where("userId", "==", uid),
       where("id", "==", id)
     );
-    const snapshot = await getDocs(q);
-    snapshot.forEach(async (d) => {
-      console.log("🗑 Eliminando documento de Firestore:", d.id);
-      await deleteDoc(doc(db, "carrito", d.id));
-    });
+    const snap = await getDocs(q);
+    snap.forEach(async (d) => await deleteDoc(doc(db, "carrito", d.id)));
   };
 
   // 🔹 Vaciar carrito
   const vaciarCarrito = async () => {
-    console.log("🚽 Vaciando carrito completo del usuario:", user ? user.uid : "sin usuario");
-
-    if (!user) {
-      setCarrito([]);
-      return;
-    }
-
-    const q = query(collection(db, "carrito"), where("userId", "==", user.uid));
-    const snapshot = await getDocs(q);
-    snapshot.forEach(async (d) => await deleteDoc(doc(db, "carrito", d.id)));
+    const uid = user ? user.uid : getGuestId();
+    const q = query(collection(db, "carrito"), where("userId", "==", uid));
+    const snap = await getDocs(q);
+    snap.forEach(async (d) => await deleteDoc(doc(db, "carrito", d.id)));
   };
 
-  const total = carrito.reduce((sum, p) => sum + (p.precio || 0) * (p.cantidad || 1), 0);
-  const totalProductos = carrito.reduce((sum, p) => sum + (p.cantidad || 0), 0);
+  // 🔹 Totales
+  const total = carrito.reduce((s, p) => s + (p.precio || 0) * (p.cantidad || 1), 0);
+  const totalProductos = carrito.reduce((s, p) => s + (p.cantidad || 0), 0);
 
   return (
     <CarritoContext.Provider
@@ -201,4 +185,5 @@ export const CarritoProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCarrito = () => useContext(CarritoContext);
