@@ -2,14 +2,55 @@ import { useState } from "react";
 import { db, storage } from "../lib/firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useAuth } from "../context/authContext";
 
 export default function FormProducto() {
+  const { usuarioActual } = useAuth();
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
   const [categoria, setCategoria] = useState("");
   const [imagen, setImagen] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
+
+  const correosPermitidos = [
+    "danportaleshinostroza@crackthecode.la",//ANEL
+    "zanadrianzenbohorquez@crackthecode.la",//NICOL
+    "marandersonsantillan@crackthecode.la",//SABRINA
+    "compa3@correo.com",
+  ];
+
+  if (!usuarioActual) {
+    return (
+      <div className="max-w-xl mx-auto bg-white shadow-md rounded-2xl p-6 border border-rose-100 text-center">
+        <h2 className="text-2xl font-bold text-rose-700 mb-3">
+          Inicia sesión para agregar productos 
+        </h2>
+        <p className="text-rose-500">
+          Solo los usuarios registrados pueden subir nuevos postres al catálogo.
+        </p>
+      </div>
+    );
+  }
+  const correoUsuario = usuarioActual?.correo?.toLowerCase().trim();
+
+  console.log("📋 Correos permitidos:", correosPermitidos);
+  console.log("📧 Correo del usuario:", correoUsuario);
+
+  const accesoPermitido = correosPermitidos.some(
+    (correo) => correo.toLowerCase().trim() === correoUsuario
+  );
+
+  if (!accesoPermitido) {
+    return (
+      <div className="max-w-xl mx-auto bg-white shadow-md rounded-2xl p-6 border border-rose-100 text-center">
+        <h2 className="text-2xl font-bold text-rose-700 mb-3">Acceso restringido</h2>
+        <p className="text-rose-500">
+          Tu cuenta no tiene permisos para agregar productos.
+        </p>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,12 +71,14 @@ export default function FormProducto() {
         nombre,
         descripcion,
         precio: parseFloat(precio),
-        categoria, 
+        categoria,
         imagen: url,
         fechaCreacion: Timestamp.now(),
+        creadoPor: usuarioActual.uid,
+        correoCreador: usuarioActual.email, 
       });
 
-      alert("Producto agregado exitosamente ");
+      alert("Producto agregado exitosamente 🧁");
       setNombre("");
       setDescripcion("");
       setPrecio("");
@@ -102,7 +145,7 @@ export default function FormProducto() {
             "Galletas",
             "Postres fríos",
             "Otros",
-            "Temporada"
+            "Temporada",
           ].map((cat) => (
             <option
               key={cat}
