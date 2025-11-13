@@ -1,96 +1,103 @@
 import React from "react";
-
+import incono from "../componentes/img/Bom.png"; 
 
 export default function Nosotros() {
   return (
-    <section className="bg-[#fff3f0] py-16">
-      <div className="max-w-6xl mx-auto px-6 md:px-12">
-        {/* ======= IMAGEN PRINCIPAL ======= */}
-        <div className="overflow-hidden rounded-3xl shadow-xl">
+    <div className="bg-[#fff3f0] min-h-screen pb-20">
+      
+      <section className="w-full flex flex-col md:flex-row items-center justify-center bg-[#d16170] text-white mb-16">
+        
+        <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center py-16 space-y-6 px-6">
+          <h1 className="text-4xl md:text-5xl font-bold">
+            Conoce Bom Bocado
+          </h1>
+          <p className="text-[#fff3f0] text-lg leading-relaxed max-w-lg px-4">
+            En <span className="font-semibold text-[#f5bfb2]">Bom Bocado </span> 
+            cada postre se prepara con <span className="font-semibold text-[#f5bfb2]">amor, dedicación </span> 
+            y los ingredientes más frescos.
+          </p>
+          <p className="text-[#fff3f0] text-lg leading-relaxed max-w-lg px-4">
+            Únete a nuestra familia de amantes del dulce y descubre por qué cada bocado es especial.
+          </p>
+        </div>
+
+        <div className="w-full md:w-1/2 flex justify-center py-10 px-6">
           <img
-            src="/Centro.png"
+            src={incono}
             alt="Equipo Bom Bocado"
-            className="w-full h-80 sm:h-[420px] md:h-[500px] object-cover hover:scale-105 transition-transform duration-700"
+            className="w-[45%] md:w-[53%] h-auto object-contain"
           />
         </div>
+      </section>
 
-        {/* ======= TEXTO PRINCIPAL ======= */}
-        <div className="text-center mt-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#9c2007] mb-4">
-            Sobre Nosotros
-          </h2>
-          <p className="text-gray-700 max-w-3xl mx-auto text-lg leading-relaxed">
-            En <span className="font-semibold text-[#d8718c]">Bom Bocado</span>,
-            preparamos nuestros postres con amor, dedicación y cuidado, para que
-            los disfrutes con toda tu familia.
-          </p>
-          <p className="text-gray-600 max-w-3xl mx-auto mt-4 leading-relaxed">
-            Somos una empresa peruana que convierte momentos familiares en dulces
-            y especiales, elaborando postres con ingredientes selectos y frescos.
-            Basamos nuestras recetas en el estilo casero tradicional, elaboradas
-            artesanalmente con pasión y compromiso.
+      <div className="max-w-6xl mx-auto px-6 md:px-12 ">
+        <div className="overflow-hidden rounded-3xl shadow-xl"> 
+          <img src="/Centro.png" 
+          alt="Equipo Bom Bocado" 
+          className="w-full h-80 sm:h-[420px] md:h-[500px] object-cover hover:scale-105 transition-transform duration-700" /> 
+        </div>
+      </div>
+
+      <section className="max-w-7xl mx-auto px-6 md:px-12 mt-16">
+        <div className="text-center mb-12 space-y-6">
+          <h2 className="text-4xl font-extrabold text-[#9c2007]">Nuestra Historia</h2>
+          <p className="text-gray-700 text-lg md:text-xl leading-relaxed max-w-3xl mx-auto">
+            Desde nuestros inicios, en <span className="font-semibold text-[#d8718c]">Bom Bocado</span> 
+            nos enfocamos en crear postres artesanales que transformen momentos cotidianos 
+            en experiencias inolvidables. Cada receta está hecha con pasión, tradición y creatividad.
           </p>
         </div>
 
-        {/* ======= SECCIÓN INFERIOR (Misión, Visión, Valores) ======= */}
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* ======= MISIÓN ======= */}
-          <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          
+          {/* MISIÓN */}
+          <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all overflow-hidden">
             <img
               src="/Mision.png"
               alt="Nuestra Misión"
-              className="w-full h-56 object-cover"
+              className="w-full h-60 object-cover rounded-t-3xl"
             />
             <div className="p-6 text-center">
-              <h3 className="text-xl font-semibold text-[#9c2007] mb-2">
-                Nuestra Misión
-              </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Alegrar a nuestros clientes con sabores únicos y artesanales,
-                elaborados con ingredientes naturales y siempre con pasión y
-                cuidado.
+              <h3 className="text-2xl font-semibold text-[#9c2007] mb-3">Nuestra Misión</h3>
+              <p className="text-gray-600 text-base leading-relaxed">
+                Alegrar a nuestros clientes con postres artesanales, frescos y deliciosos, 
+                preparados con pasión, amor y cuidado.
               </p>
             </div>
           </div>
 
-          {/* ======= VISIÓN ======= */}
-          <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
+          <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all overflow-hidden">
             <img
               src="/Vision.jpg"
-              alt="Nuestra Vision"
-              className="w-full h-56 object-cover"
+              alt="Nuestra Visión"
+              className="w-full h-60 object-cover rounded-t-3xl"
             />
             <div className="p-6 text-center">
-              <h3 className="text-xl font-semibold text-[#9c2007] mb-2">
-                Nuestra Visión
-              </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Ser reconocidos como la pastelería peruana que más transmite amor
-                a través de cada postre, expandiendo nuestro sabor artesanal a
-                todo el país.
+              <h3 className="text-2xl font-semibold text-[#9c2007] mb-3">Nuestra Visión</h3>
+              <p className="text-gray-600 text-base leading-relaxed">
+                Ser la pastelería peruana que más transmite amor y dedicación en cada creación, 
+                llevando el dulce a todos los rincones del país.
               </p>
             </div>
           </div>
 
-          {/* ======= QUÉ BUSCAMOS ======= */}
-          <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
+          <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all overflow-hidden">
             <img
               src="/Buscamos.png"
-              alt="¿Qué buscamos como empresa?"
-              className="w-full h-56 object-cover"
+              alt="Nuestros Valores"
+              className="w-full h-60 object-cover rounded-t-3xl"
             />
             <div className="p-6 text-center">
-              <h3 className="text-xl font-semibold text-[#9c2007] mb-2">
-                ¿Qué buscamos?
-              </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Mantener la esencia familiar y artesanal que nos caracteriza,
-                creando momentos dulces y memorables junto a nuestros clientes.
+              <h3 className="text-2xl font-semibold text-[#9c2007] mb-3">Nuestros Valores</h3>
+              <p className="text-gray-600 text-base leading-relaxed">
+                Compromiso, creatividad y pasión en cada detalle. Mantener la esencia artesanal 
+                que nos caracteriza y crear momentos dulces memorables.
               </p>
             </div>
           </div>
+
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
