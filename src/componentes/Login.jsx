@@ -58,8 +58,11 @@ export default function Login() {
             className="w-10 h-10 rounded-full border border-[#d8718c]"
           />
           <span className="text-[#7a1a0a] font-semibold">
-            {usuarioActual.user}
+            {usuarioActual.user.length > 15
+              ? usuarioActual.user.split(" ")[0]
+              : usuarioActual.user}
           </span>
+
           <button
             onClick={cerrarSesion}
             className="bg-[#d8718c] text-white px-4 py-1 rounded-xl hover:bg-[#b84c68] transition"
@@ -83,7 +86,9 @@ export default function Login() {
           onClick={(e) => e.target === e.currentTarget && setModalLogin(false)}
         >
           <div className="bg-[#fff3f0] rounded-2xl shadow-lg w-[90%] max-w-md p-8 text-center border border-[#f5bfb2]">
-            <h2 className="text-3xl font-bold text-[#8f2133] mb-6">Bienvenido</h2>
+            <h2 className="text-3xl font-bold text-[#8f2133] mb-6">
+              Bienvenido
+            </h2>
             <form onSubmit={handleLogin} className="space-y-4">
               <input
                 type="email"
@@ -139,7 +144,9 @@ export default function Login() {
       {modalRegistro && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          onClick={(e) => e.target === e.currentTarget && setModalRegistro(false)}
+          onClick={(e) =>
+            e.target === e.currentTarget && setModalRegistro(false)
+          }
         >
           <div className="bg-[#fff3f0] rounded-2xl shadow-lg w-[90%] max-w-md p-8 text-center border border-[#f5bfb2]">
             <h2 className="text-3xl font-bold text-[#8f2133] mb-6">
