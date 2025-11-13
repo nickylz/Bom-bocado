@@ -1,6 +1,7 @@
 import { useCarrito } from "../context/CarritoContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ShoppingCart, Trash2 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export function CarritoFlotante() {
   const {
@@ -14,17 +15,9 @@ export function CarritoFlotante() {
     totalProductos,
   } = useCarrito();
 
+  const { usuarioActual } = useAuth(); // 🔹 Traemos directamente el usuario autenticado
   const [mostrarPago, setMostrarPago] = useState(false);
   const [mostrarGracias, setMostrarGracias] = useState(false);
-  const [usuarioActual, setUsuarioActual] = useState(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const saved = localStorage.getItem("usuarioActual");
-      setUsuarioActual(saved ? JSON.parse(saved) : null);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const cerrarCarrito = () => setMostrarCarrito(false);
 
@@ -141,7 +134,12 @@ export function CarritoFlotante() {
                 </p>
                 <button
                   onClick={abrirPago}
-                  className="w-full bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
+                  className={`w-full py-3 rounded-xl font-semibold transition ${
+                    usuarioActual
+                      ? "bg-[#d16170] text-white hover:bg-[#b84c68]"
+                      : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  }`}
+                  disabled={!usuarioActual} // 🔒 Bloquea el botón si no hay sesión
                 >
                   Ir a pagar
                 </button>
