@@ -227,7 +227,7 @@ export default function Novedades() {
           </section>
 
       <section className="bg-[#fff3f0] min-h-screen py-16">
-        <div className="max-w-6xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
 
           <section className="mb-16">
             <h2 className="text-3xl font-bold text-[#9c2007] mb-6 border-b-2 border-[#f5bfb2] pb-2">
@@ -241,7 +241,7 @@ export default function Novedades() {
               </div>
             ) : (
               <p className="text-center text-gray-500 mt-10">
-                No hay productos de temporada por ahora 🌸
+                No hay productos de temporada por ahora 
               </p>
             )}
           </section>

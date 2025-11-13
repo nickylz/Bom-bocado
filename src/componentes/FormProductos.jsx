@@ -17,7 +17,7 @@ export default function FormProducto() {
     "danportaleshinostroza@crackthecode.la",//ANEL
     "zanadrianzenbohorquez@crackthecode.la",//NICOL
     "marandersonsantillan@crackthecode.la",//SABRINA
-    "compa3@correo.com",
+    "shavalerianoblas@crackthecode.la",//SHARON
   ];
 
   if (!usuarioActual) {
@@ -34,8 +34,8 @@ export default function FormProducto() {
   }
   const correoUsuario = usuarioActual?.correo?.toLowerCase().trim();
 
-  console.log("📋 Correos permitidos:", correosPermitidos);
-  console.log("📧 Correo del usuario:", correoUsuario);
+  console.log(" Correos permitidos:", correosPermitidos);
+  console.log(" Correo del usuario:", correoUsuario);
 
   const accesoPermitido = correosPermitidos.some(
     (correo) => correo.toLowerCase().trim() === correoUsuario
@@ -78,7 +78,7 @@ export default function FormProducto() {
         correoCreador: usuarioActual.email, 
       });
 
-      alert("Producto agregado exitosamente 🧁");
+      alert("Producto agregado exitosamente ");
       setNombre("");
       setDescripcion("");
       setPrecio("");
@@ -102,20 +102,20 @@ export default function FormProducto() {
         Agregar Producto
       </h2>
 
-      <div className="space-y-3">
+      <div className="space-y-3 ">
         <input
           type="text"
           placeholder="Nombre del producto"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          className="font-medium text-[#804754] w-full p-3 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-300"
+          className="font-medium text-[#804754] w-full p-3 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-300 bg-[#fff3f0]"
         />
 
         <textarea
           placeholder="Descripción"
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
-          className="font-medium text-[#804754] w-full p-3 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-300"
+          className="font-medium text-[#804754] w-full p-3 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-300 bg-[#fff3f0]"
         />
 
         <input
@@ -123,16 +123,16 @@ export default function FormProducto() {
           placeholder="Precio (S/.)"
           value={precio}
           onChange={(e) => setPrecio(e.target.value)}
-          className="font-medium text-[#804754] w-full p-3 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-300"
+          className="font-medium text-[#804754] w-full p-3 rounded-xl border border-rose-200 focus:ring-2 focus:ring-rose-300 bg-[#fff3f0]"
         />
 
         <select
           name="categoria"
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
-          className="font-medium text-[#804754] w-full p-3 rounded-xl border border-rose-200 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-300"
+          className="font-medium text-[#804754] w-full p-3 rounded-xl border border-rose-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-300 bg-[#fff3f0]"
         >
-          <option value="" className="text-gray-500">
+          <option value="" className="text-gray-500 bg-[#fff3f0]">
             Selecciona una categoría
           </option>
           {[
@@ -169,8 +169,8 @@ export default function FormProducto() {
         <button
           type="submit"
           disabled={subiendo}
-          className="w-full bg-rose-400 text-white py-2 rounded-xl font-semibold 
-                     hover:bg-rose-500 transition disabled:opacity-60"
+          className="w-full bg-rose-300 text-white py-2 rounded-xl font-semibold 
+                     hover:bg-[#d8718c] transition disabled:opacity-60"
         >
           {subiendo ? "Subiendo..." : "Agregar Producto"}
         </button>
