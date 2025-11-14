@@ -21,24 +21,24 @@ export default function FormProducto() {
   ];
 
   if (!usuarioActual) {
-return (
-  <div className="flex justify-center items-center py-10 bg-[#fff3f0]">
-    <div className="bg-white border border-[#f5bfb2] rounded-2xl shadow-lg w-[95%] max-w-2xl p-8 text-center flex flex-col md:flex-row items-center justify-between gap-6">
-      <div className="flex-1">
-        <h2 className="text-3xl font-bold text-[#8f2133] mb-2">
-          Inicia sesión para agregar productos 
-        </h2>
-        <p className="text-[#7a1a0a] text-base leading-relaxed max-w-2xl mx-auto">
-          Solo los{" "}
-          <span className="text-[#d8718c] font-semibold">
-            usuarios registrados
-          </span>{" "}
-          pueden subir nuevos postres al catálogo.
-        </p>
+    return (
+      <div className="flex justify-center items-center py-10 bg-[#fff3f0]">
+        <div className="bg-white border border-[#f5bfb2] rounded-2xl shadow-lg w-[95%] max-w-2xl p-8 text-center flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex-1">
+            <h2 className="text-3xl font-bold text-[#8f2133] mb-2">
+              Inicia sesión para agregar productos 
+            </h2>
+            <p className="text-[#7a1a0a] text-base leading-relaxed max-w-2xl mx-auto">
+              Solo los{" "}
+              <span className="text-[#d8718c] font-semibold">
+                usuarios registrados
+              </span>{" "}
+              pueden subir nuevos postres al catálogo.
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-);
+    );
 
 
   }
@@ -85,7 +85,7 @@ return (
         imagen: url,
         fechaCreacion: Timestamp.now(),
         creadoPor: usuarioActual.uid,
-        correoCreador: usuarioActual.email, 
+        correoCreador: usuarioActual.correo, 
       });
 
       alert("Producto agregado exitosamente ");
