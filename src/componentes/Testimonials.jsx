@@ -11,23 +11,37 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { FaStar, FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
+import { useAuth } from "../context/authContext";
 
 export default function Testimonials() {
+  const { usuarioActual } = useAuth(); // ✅ IMPORTANTE
   const [testimonios, setTestimonios] = useState([]);
 
-  // Estados para *editar* un testimonio
+  // Estados para editar
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({
     mensaje: "",
     estrellas: 0,
   });
 
-  // Índice actual para rotación automática
+  // Rotación automática
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Leer en tiempo real desde Firestore
+  // Correos permitidos (admins)
+  const correosPermitidos = [
+    "danportaleshinostroza@crackthecode.la",
+    "zanadrianzenbohorquez@crackthecode.la",
+    "marandersonsantillan@crackthecode.la",
+    "shavalerianoblas@crackthecode.la",
+    "pet123@gmail.com",
+  ];
+
+  // Leer testimonios
   useEffect(() => {
-    const q = query(collection(db, "testimonios"), orderBy("createdAt", "desc"));
+    const q = query(
+      collection(db, "testimonios"),
+      orderBy("createdAt", "desc")
+    );
     const unsub = onSnapshot(q, (snap) => {
       const arr = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setTestimonios(arr);
@@ -35,7 +49,7 @@ export default function Testimonials() {
     return () => unsub();
   }, []);
 
-  // Rotar testimonios cada 5 segundos
+  // Rotación cada 5s
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => {
@@ -43,14 +57,23 @@ export default function Testimonials() {
         return prev + 2 >= testimonios.length ? 0 : prev + 2;
       });
     }, 5000);
+
     return () => clearInterval(interval);
   }, [testimonios]);
 
-  // --- Funciones CRUD ---
+  // PERMISOS
+  const correoUsuario = usuarioActual?.email?.toLowerCase().trim();
 
-  // Eliminar testimonio
+  const esAdmin = usuarioActual && correosPermitidos.includes(correoUsuario);
+
+  const esAutor = (t) => usuarioActual && usuarioActual.uid === t.userUid;
+
+  const puedeEditarEliminar = (t) => esAdmin || esAutor(t);
+
+  // Eliminar
   const eliminar = async (id) => {
-    if (!window.confirm("¿Seguro que quieres eliminar este testimonio?")) return;
+    if (!window.confirm("¿Seguro que quieres eliminar este testimonio?"))
+      return;
     try {
       await deleteDoc(doc(db, "testimonios", id));
     } catch (err) {
@@ -60,16 +83,18 @@ export default function Testimonials() {
 
   // Empezar edición
   const comenzarEdicion = (t) => {
+    if (!puedeEditarEliminar(t)) return; // PROTECCIÓN
     setEditId(t.id);
     setEditForm({ mensaje: t.mensaje, estrellas: t.estrellas });
   };
 
-  // Guardar cambios de edición
+  // Guardar edición
   const guardarEdicion = async () => {
     if (!editForm.mensaje || editForm.estrellas === 0) {
       alert("El comentario y las estrellas no pueden estar vacíos.");
       return;
     }
+
     try {
       const ref = doc(db, "testimonios", editId);
       await updateDoc(ref, {
@@ -83,10 +108,10 @@ export default function Testimonials() {
     }
   };
 
-  // Cancelar edición
+  // Cancelar
   const cancelarEdicion = () => setEditId(null);
 
-  // Obtener los 2 testimonios que se muestran actualmente
+  // Mostrar 2 testimonios
   const visibles = testimonios.slice(currentIndex, currentIndex + 2);
 
   return (
@@ -95,31 +120,42 @@ export default function Testimonials() {
         Opiniones de nuestros clientes
       </h2>
 
-      <div
-        className="flex flex-col md:flex-row justify-center md:items-start gap-8 max-w-4xl mx-auto min-h-[250px] transition-all duration-500"
-      >
+      <div className="flex flex-col md:flex-row justify-center gap-8 max-w-4xl mx-auto min-h-[250px]">
         {visibles.length === 0 ? (
-          <p className="text-gray-500">Aún no hay testimonios publicados.</p>
+          <p className="text-gray-500">Aún no hay testimonios.</p>
         ) : (
           visibles.map((t) => {
             const enEdicion = editId === t.id;
+            const permisos = puedeEditarEliminar(t);
 
             return (
               <div
                 key={t.id}
-                className="bg-white rounded-2xl p-6 shadow-lg w-full md:w-1/2 flex flex-col justify-start text-left animate-fadeIn"
+                className="bg-[#f5bfb2] rounded-2xl p-6 shadow-lg w-full md:w-1/2 text-left"
               >
-                {/* CABECERA */}
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className="font-semibold text-lg text-[#7a1a0a]">
+                    <h4 className="font-semibold text-2xl text-[#7a1a0a] ">
                       {t.nombre}
                     </h4>
+                    {t.createdAt && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        {new Date(
+                          t.createdAt.seconds * 1000
+                        ).toLocaleDateString("es-PE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })}
+                      </p>
+                    )}
+
+                    {/* Estrellas */}
                     <div className="flex">
                       {[...Array(t.estrellas)].map((_, i) => (
                         <FaStar
                           key={i}
-                          size={18}
+                          size={22}
                           color="#ffc107"
                           className="mr-1"
                         />
@@ -127,46 +163,45 @@ export default function Testimonials() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 text-gray-600">
-                    {enEdicion ? (
-                      <>
-                        <button
-                          onClick={guardarEdicion}
-                          title="Guardar cambios"
-                          className="hover:text-green-600 transition"
-                        >
-                          <FaSave size={14} />
-                        </button>
-                        <button
-                          onClick={cancelarEdicion}
-                          title="Cancelar edición"
-                          className="hover:text-red-600 transition"
-                        >
-                          <FaTimes size={14} />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => comenzarEdicion(t)}
-                          title="Editar comentario"
-                          className="hover:text-blue-600 transition"
-                        >
-                          <FaEdit size={14} />
-                        </button>
-                        <button
-                          onClick={() => eliminar(t.id)}
-                          title="Eliminar comentario"
-                          className="hover:text-red-600 transition"
-                        >
-                          <FaTrash size={14} />
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  {permisos && (
+                    <div className="flex gap-2 text-gray-600">
+                      {enEdicion ? (
+                        <>
+                          <button
+                            onClick={guardarEdicion}
+                            className="hover:text-green-600"
+                          >
+                            <FaSave size={14} />
+                          </button>
+
+                          <button
+                            onClick={cancelarEdicion}
+                            className="hover:text-red-600"
+                          >
+                            <FaTimes size={14} />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => comenzarEdicion(t)}
+                            className="hover:text-blue-600"
+                          >
+                            <FaEdit size={14} />
+                          </button>
+
+                          <button
+                            onClick={() => eliminar(t.id)}
+                            className="hover:text-red-600"
+                          >
+                            <FaTrash size={14} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* CUERPO */}
                 {enEdicion ? (
                   <>
                     <textarea
@@ -174,9 +209,10 @@ export default function Testimonials() {
                       onChange={(e) =>
                         setEditForm({ ...editForm, mensaje: e.target.value })
                       }
-                      className="border rounded w-full p-2 my-3 text-sm h-24"
+                      className="border rounded w-full p-2 my-3 h-12"
                     />
-                    <div className="flex mb-2">
+
+                    <div className="flex mb-3">
                       {[...Array(5)].map((_, i) => (
                         <FaStar
                           key={i}
@@ -193,9 +229,7 @@ export default function Testimonials() {
                     </div>
                   </>
                 ) : (
-                  <p className="italic text-gray-700 text-sm leading-relaxed">
-                    "{t.mensaje}"
-                  </p>
+                  <p className="italic text-gray-700 text-xl">"{t.mensaje}"</p>
                 )}
               </div>
             );

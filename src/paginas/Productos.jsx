@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react";
 import { db } from "../lib/firebase";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  doc,
+  deleteDoc,
+} from "firebase/firestore";
 import Filtros from "../componentes/Filtros";
 import FormProductos from "../componentes/FormProductos";
 import { useCarrito } from "../context/CarritoContext";
 import incono from "../componentes/img/Bom.png";
+import { useAuth } from "../context/authContext";
+import { Trash2 } from "lucide-react";
 
 export default function Productos() {
   const { agregarProducto } = useCarrito();
@@ -16,12 +25,39 @@ export default function Productos() {
     max: "",
   });
 
+  const { usuarioActual } = useAuth();
+
+  // 🔐 correos que sí pueden borrar
+  const correosPermitidos = [
+    "danportaleshinostroza@crackthecode.la", // ANEL
+    "zanadrianzenbohorquez@crackthecode.la", // NICOLL
+    "marandersonsantillan@crackthecode.la", // SABRINA
+    "shavalerianoblas@crackthecode.la", // SHARON
+  ];
+
+  const correoUsuario = (usuarioActual?.correo || usuarioActual?.email || "")
+    .toLowerCase()
+    .trim();
+
+  const esAdmin =
+    correoUsuario &&
+    correosPermitidos.some(
+      (correo) => correo.toLowerCase().trim() === correoUsuario
+    );
+
+  console.log("👤 usuarioActual (Productos):", usuarioActual);
+  console.log("📧 correoUsuario (Productos):", correoUsuario);
+  console.log("🔐 esAdmin (Productos):", esAdmin);
+
   useEffect(() => {
-    const q = query(collection(db, "productos"), orderBy("fechaCreacion", "desc"));
+    const q = query(
+      collection(db, "productos"),
+      orderBy("fechaCreacion", "desc")
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const lista = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+      const lista = snapshot.docs.map((docu) => ({
+        id: docu.id,
+        ...docu.data(),
       }));
       setProductos(lista);
     });
@@ -40,15 +76,32 @@ export default function Productos() {
     return cumpleNombre && cumpleCategoria && cumpleMin && cumpleMax;
   });
 
+  const handleEliminar = async (id) => {
+    if (!esAdmin) return; // seguridad extra
+
+    const confirmar = window.confirm(
+      "¿Seguro que quieres eliminar este producto?"
+    );
+    if (!confirmar) return;
+
+    try {
+      await deleteDoc(doc(db, "productos", id));
+      // onSnapshot actualiza solo
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      alert("Hubo un problema al eliminar el producto");
+    }
+  };
+
   return (
     <div className="bg-[#fff3f0] min-h-screen pb-20">
-      
       <section className="w-full flex flex-col md:flex-row items-center justify-center bg-[#d16170] text-white">
         <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center py-16 space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold">Haz tu pedido favorito</h1>
+          <h1 className="text-4xl md:text-5xl font-bold">
+            Haz tu pedido favorito
+          </h1>
           <p className="text-[#fff3f0] text-lg leading-relaxed max-w-lg px-4">
-            En{" "}
-            <span className="font-semibold text-[#f5bfb2]">BomBocado</span>{" "}
+            En <span className="font-semibold text-[#f5bfb2]">BomBocado</span>{" "}
             cada postre está hecho con dedicación, frescura y amor.{" "}
             <span className="font-semibold text-[#f5bfb2]">BomBocado</span>{" "}
             convierte lo dulce en momentos inolvidables.
@@ -96,16 +149,31 @@ export default function Productos() {
                     <h3 className="text-lg font-semibold text-[#9c2007]">
                       {p.nombre}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">{p.descripcion}</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {p.descripcion}
+                    </p>
                     <p className="text-[#d8718c] font-bold mt-2">
                       S/{p.precio?.toFixed(2)}
                     </p>
-                    <button
-                      onClick={() => agregarProducto(p)}
-                      className="bg-[#a34d5f] text-white px-5 py-2 rounded-full mt-3 hover:bg-[#912646] transition"
-                    >
-                      Comprar
-                    </button>
+
+                    <div className="mt-3 flex items-center justify-center gap-3">
+                      <button
+                        onClick={() => agregarProducto(p)}
+                        className="bg-[#a34d5f] text-white px-5 py-2 rounded-full hover:bg-[#912646] transition"
+                      >
+                        Comprar
+                      </button>
+
+                      {esAdmin && (
+                        <button
+                          onClick={() => handleEliminar(p.id)}
+                          className="w-10 h-10 flex items-center justify-center rounded-full bg-[#a34d5f] text-white hover:bg-[#912646] transition"
+                          title="Eliminar producto"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </article>
               ))}

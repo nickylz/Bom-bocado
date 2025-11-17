@@ -1,11 +1,12 @@
-// Contacto.jsx
-
 import React, { useState } from "react";
 import { FaEnvelope, FaUser, FaCommentDots, FaStar } from "react-icons/fa";
 import { db } from "../lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "../context/authContext";
 
 export default function Contacto() {
+  const { usuarioActual } = useAuth();
+
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
 
@@ -17,6 +18,13 @@ export default function Contacto() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // auto-expand textarea con límite
+    if (name === "mensaje") {
+      e.target.style.height = "auto";
+      e.target.style.height = `${Math.min(e.target.scrollHeight, 250)}px`;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -35,6 +43,8 @@ export default function Contacto() {
         mensaje: formData.mensaje,
         estrellas: rating,
         createdAt: serverTimestamp(),
+        userUid: usuarioActual?.uid || null,
+        userCorreo: usuarioActual?.email || null,
       });
 
       alert("¡Gracias por tu comentario y calificación!");

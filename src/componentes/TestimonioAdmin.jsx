@@ -13,8 +13,11 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { FaStar } from "react-icons/fa";
+import { useAuth } from "../context/authContext";
 
 export function TestimoniosAdmin() {
+  const { usuarioActual } = useAuth();
+
   const [testimonios, setTestimonios] = useState([]);
   const [form, setForm] = useState({
     nombre: "",
@@ -23,7 +26,6 @@ export function TestimoniosAdmin() {
     estrellas: 0,
   });
 
-  // Estados para edición
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({
     nombre: "",
@@ -31,7 +33,14 @@ export function TestimoniosAdmin() {
     estrellas: 0,
   });
 
-  // Cargar en tiempo real
+  const correosPermitidos = [
+    "danportaleshinostroza@crackthecode.la",
+    "zanadrianzenbohorquez@crackthecode.la",
+    "marandersonsantillan@crackthecode.la",
+    "shavalerianoblas@crackthecode.la",
+    "",
+  ];
+
   useEffect(() => {
     const q = query(collection(db, "testimonios"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -41,9 +50,9 @@ export function TestimoniosAdmin() {
     return () => unsubscribe();
   }, []);
 
-  // Crear nuevo testimonio manualmente (opcional)
   const guardarTestimonio = async (e) => {
     e.preventDefault();
+
     if (!form.nombre || !form.mensaje || form.estrellas === 0) {
       alert("Completa todos los campos antes de guardar");
       return;
@@ -53,16 +62,19 @@ export function TestimoniosAdmin() {
       await addDoc(collection(db, "testimonios"), {
         ...form,
         createdAt: serverTimestamp(),
+        userUid: usuarioActual?.uid || null,
+        userCorreo: usuarioActual?.email || null,
       });
+
       setForm({ nombre: "", correo: "", mensaje: "", estrellas: 0 });
     } catch (err) {
       console.error("Error al guardar testimonio:", err);
     }
   };
 
-  // Eliminar
   const eliminarTestimonio = async (id) => {
     if (!window.confirm("¿Eliminar este testimonio?")) return;
+
     try {
       await deleteDoc(doc(db, "testimonios", id));
     } catch (err) {
@@ -70,7 +82,6 @@ export function TestimoniosAdmin() {
     }
   };
 
-  // Editar
   const comenzarEdicion = (t) => {
     setEditId(t.id);
     setEditForm({
@@ -101,8 +112,7 @@ export function TestimoniosAdmin() {
         Administrar Testimonios
       </h1>
 
-      {/* FORMULARIO NUEVO TESTIMONIO */}
-      <form onSubmit={guardarTestimonio} className="form-group space-y-3 mb-10">
+      <form onSubmit={guardarTestimonio} className="space-y-3 mb-10">
         <input
           type="text"
           placeholder="Nombre del cliente"
@@ -110,6 +120,7 @@ export function TestimoniosAdmin() {
           onChange={(e) => setForm({ ...form, nombre: e.target.value })}
           className="border rounded p-2 w-full"
         />
+
         <input
           type="email"
           placeholder="Correo (opcional)"
@@ -117,6 +128,7 @@ export function TestimoniosAdmin() {
           onChange={(e) => setForm({ ...form, correo: e.target.value })}
           className="border rounded p-2 w-full"
         />
+
         <textarea
           placeholder="Comentario del cliente"
           value={form.mensaje}
@@ -144,21 +156,31 @@ export function TestimoniosAdmin() {
         </button>
       </form>
 
-      {/* LISTA DE TESTIMONIOS */}
       <div>
         <h3 className="text-2xl font-semibold mb-4">Testimonios Recientes</h3>
+
         {testimonios.length === 0 ? (
           <p>No hay testimonios aún.</p>
         ) : (
           <ul className="space-y-4">
             {testimonios.map((t) => {
               const enEdicion = editId === t.id;
+
+              const correoUsuario = usuarioActual?.email?.toLowerCase().trim();
+
+              const esAdmin =
+                usuarioActual && correosPermitidos.includes(correoUsuario);
+
+              const esAutor =
+                usuarioActual && usuarioActual.uid === t.userUid;
+
+              const puedeEditarEliminar = esAdmin || esAutor;
+
               return (
                 <li
                   key={t.id}
                   className="border rounded-lg p-4 flex justify-between items-start"
                 >
-                  {/* CONTENIDO */}
                   <div className="w-full">
                     {enEdicion ? (
                       <>
@@ -170,6 +192,7 @@ export function TestimoniosAdmin() {
                           }
                           className="border rounded p-1 w-full mb-2"
                         />
+
                         <textarea
                           value={editForm.mensaje}
                           onChange={(e) =>
@@ -180,6 +203,7 @@ export function TestimoniosAdmin() {
                           }
                           className="border rounded p-1 w-full mb-2"
                         />
+
                         <div className="flex space-x-2 mb-3">
                           {[...Array(5)].map((_, i) => (
                             <FaStar
@@ -187,10 +211,15 @@ export function TestimoniosAdmin() {
                               size={22}
                               className="cursor-pointer"
                               color={
-                                i + 1 <= editForm.estrellas ? "#ffc107" : "#ccc"
+                                i + 1 <= editForm.estrellas
+                                  ? "#ffc107"
+                                  : "#ccc"
                               }
                               onClick={() =>
-                                setEditForm({ ...editForm, estrellas: i + 1 })
+                                setEditForm({
+                                  ...editForm,
+                                  estrellas: i + 1,
+                                })
                               }
                             />
                           ))}
@@ -204,6 +233,7 @@ export function TestimoniosAdmin() {
                         <p className="italic text-gray-600 mb-2">
                           "{t.mensaje}"
                         </p>
+
                         <div className="flex">
                           {[...Array(t.estrellas)].map((_, i) => (
                             <FaStar
@@ -218,38 +248,41 @@ export function TestimoniosAdmin() {
                     )}
                   </div>
 
-                  {/* BOTONES */}
-                  <div className="flex flex-col gap-2 ml-4">
-                    {enEdicion ? (
-                      <>
+                  {puedeEditarEliminar && (
+                    <div className="flex flex-col gap-2 ml-4">
+                      {enEdicion ? (
+                        <>
+                          <button
+                            onClick={guardarEdicion}
+                            className="text-green-600"
+                          >
+                            💾
+                          </button>
+
+                          <button
+                            onClick={cancelarEdicion}
+                            className="text-red-600"
+                          >
+                            ❌
+                          </button>
+                        </>
+                      ) : (
                         <button
-                          onClick={guardarEdicion}
-                          className="text-green-600"
+                          onClick={() => comenzarEdicion(t)}
+                          className="text-blue-600"
                         >
-                          💾
+                          ✏️
                         </button>
-                        <button
-                          onClick={cancelarEdicion}
-                          className="text-red-600"
-                        >
-                          ❌
-                        </button>
-                      </>
-                    ) : (
+                      )}
+
                       <button
-                        onClick={() => comenzarEdicion(t)}
-                        className="text-blue-600"
+                        onClick={() => eliminarTestimonio(t.id)}
+                        className="text-red-600"
                       >
-                        ✏️
+                        🗑️
                       </button>
-                    )}
-                    <button
-                      onClick={() => eliminarTestimonio(t.id)}
-                      className="text-red-600"
-                    >
-                      🗑️
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </li>
               );
             })}
