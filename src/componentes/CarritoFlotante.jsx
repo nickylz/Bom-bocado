@@ -13,11 +13,19 @@ export function CarritoFlotante() {
     mostrarCarrito,
     setMostrarCarrito,
     totalProductos,
+    realizarPago,
+    cargandoPago,
+    errorPago,
   } = useCarrito();
 
-  const { usuarioActual } = useAuth(); // 🔹 Traemos directamente el usuario autenticado
+  const { usuarioActual } = useAuth();
   const [mostrarPago, setMostrarPago] = useState(false);
   const [mostrarGracias, setMostrarGracias] = useState(false);
+
+  // estados para formulario de pago
+  const [nombre, setNombre] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [metodoPago, setMetodoPago] = useState("");
 
   const cerrarCarrito = () => setMostrarCarrito(false);
 
@@ -31,12 +39,24 @@ export function CarritoFlotante() {
 
   const cerrarPago = () => setMostrarPago(false);
 
-  const finalizarCompra = (e) => {
+  const finalizarCompra = async (e) => {
     e.preventDefault();
-    vaciarCarrito();
-    setMostrarPago(false);
-    setMostrarGracias(true);
-    setTimeout(() => setMostrarGracias(false), 4000);
+    try {
+      await realizarPago({ nombre, direccion, metodoPago });
+      setMostrarPago(false);
+      setMostrarCarrito(false);
+      setMostrarGracias(true);
+
+      // Limpiar form
+      setNombre("");
+      setDireccion("");
+      setMetodoPago("");
+
+      setTimeout(() => setMostrarGracias(false), 4000);
+    } catch (err) {
+      console.error(err);
+      alert("Hubo un problema al procesar tu pedido. Intenta de nuevo.");
+    }
   };
 
   return (
@@ -62,9 +82,7 @@ export function CarritoFlotante() {
             onClick={cerrarCarrito}
           ></div>
 
-          <div
-            className="fixed bottom-20 right-6 bg-[#fff3f0] w-80 rounded-2xl shadow-2xl p-6 border border-[#f5bfb2] z-50 animate-slide-left"
-          >
+          <div className="fixed bottom-20 right-6 bg-[#fff3f0] w-80 rounded-2xl shadow-2xl p-6 border border-[#f5bfb2] z-50 animate-slide-left">
             <button
               className="text-3xl text-[#d8718c] hover:text-[#b84c68] transition absolute top-2 right-4"
               onClick={cerrarCarrito}
@@ -128,10 +146,11 @@ export function CarritoFlotante() {
             </div>
 
             {carrito.length > 0 && (
-              <div className="mt-5">
-                <p className="font-semibold text-[#7a1a0a] mb-2 text-center">
+              <div className="mt-5 space-y-2">
+                <p className="font-semibold text-[#7a1a0a] text-center">
                   Total: S/{total.toFixed(2)}
                 </p>
+
                 <button
                   onClick={abrirPago}
                   className={`w-full py-3 rounded-xl font-semibold transition ${
@@ -139,9 +158,16 @@ export function CarritoFlotante() {
                       ? "bg-[#d16170] text-white hover:bg-[#b84c68]"
                       : "bg-gray-300 text-gray-600 cursor-not-allowed"
                   }`}
-                  disabled={!usuarioActual} // 🔒 Bloquea el botón si no hay sesión
+                  disabled={!usuarioActual}
                 >
                   Ir a pagar
+                </button>
+
+                <button
+                  onClick={vaciarCarrito}
+                  className="w-full py-2 rounded-xl text-sm border border-[#d8718c] text-[#d8718c] hover:bg-[#f5bfb2]/50 transition"
+                >
+                  Vaciar carrito
                 </button>
               </div>
             )}
@@ -159,21 +185,34 @@ export function CarritoFlotante() {
             <h2 className="text-2xl font-bold text-[#9c2007] mb-4 text-center">
               Finaliza tu compra
             </h2>
+
+            {errorPago && (
+              <p className="mb-3 text-sm text-red-600 text-center">
+                {errorPago}
+              </p>
+            )}
+
             <form onSubmit={finalizarCompra} className="space-y-4">
               <input
                 type="text"
                 placeholder="Nombre completo"
                 required
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
                 className="border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c]"
               />
               <input
                 type="text"
                 placeholder="Dirección de envío"
                 required
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
                 className="border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c]"
               />
               <select
                 required
+                value={metodoPago}
+                onChange={(e) => setMetodoPago(e.target.value)}
                 className="border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c]"
               >
                 <option value="">Método de pago</option>
@@ -198,9 +237,10 @@ export function CarritoFlotante() {
               <div className="flex gap-3 mt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
+                  disabled={cargandoPago}
+                  className="flex-1 bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Finalizar compra
+                  {cargandoPago ? "Procesando..." : "Finalizar compra"}
                 </button>
                 <button
                   type="button"

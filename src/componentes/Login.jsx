@@ -1,6 +1,6 @@
 // src/components/Login.jsx
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 import { FcGoogle } from "react-icons/fc"; // 🔹 Ícono de Google
 
 
