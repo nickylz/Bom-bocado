@@ -3,6 +3,16 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { FcGoogle } from "react-icons/fc"; // 🔹 Ícono de Google
 
+
+// CUENTA DE PRUEBA 1
+// correo: pet123@gmail.com
+// contraseña : 123qwedsacxz
+
+// CUENTA DE PRUEBA 2
+// correo: marlizqe@gmail.com
+// contraseña : cxzdsa123
+
+
 export default function Login() {
   const {
     usuarioActual,
