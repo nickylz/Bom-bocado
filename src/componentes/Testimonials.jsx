@@ -115,7 +115,7 @@ export default function Testimonials() {
   const visibles = testimonios.slice(currentIndex, currentIndex + 2);
 
   return (
-    <section className="text-center px-6 md:px-12 py-12 bg-[#fffaf9]">
+    <section className="text-center px-6 md:px-12 py-12 bg-[#fff3f0]">
       <h2 className="text-3xl md:text-4xl font-bold text-[#8f2133] mb-10">
         Opiniones de nuestros clientes
       </h2>
@@ -131,7 +131,7 @@ export default function Testimonials() {
             return (
               <div
                 key={t.id}
-                className="bg-[#f5bfb2] rounded-2xl p-6 shadow-lg w-full md:w-1/2 text-left"
+                className="bg-white rounded-2xl p-6 shadow-lg w-full md:w-1/2 text-left"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
