@@ -2,7 +2,7 @@ import { useState } from "react";
 import { db, storage } from "../lib/firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 export default function FormProducto() {
   const { usuarioActual } = useAuth();

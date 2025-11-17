@@ -2,51 +2,49 @@
 
 import React, { useState } from "react";
 import { FaEnvelope, FaUser, FaCommentDots, FaStar } from "react-icons/fa";
+import { db } from "../lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function Contacto() {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
-  
-  // Estado para los campos del formulario
+
   const [formData, setFormData] = useState({
     nombre: "",
     correo: "",
     mensaje: "",
   });
 
-  // Manejador para actualizar el estado del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Manejador para enviar el formulario
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevenimos el envío real del formulario
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    // 1. Validar que se haya dado una calificación
     if (rating === 0) {
       alert("Por favor, selecciona una calificación de estrellas.");
       return;
     }
 
-    // 2. Obtener las calificaciones existentes de localStorage
-    // Usamos una clave específica solo para las calificaciones
-    const existingRatings = JSON.parse(localStorage.getItem("bomBocadoRatings")) || [];
+    try {
+      await addDoc(collection(db, "testimonios"), {
+        nombre: formData.nombre,
+        correo: formData.correo,
+        mensaje: formData.mensaje,
+        estrellas: rating,
+        createdAt: serverTimestamp(),
+      });
 
-    // 3. Agregar la nueva calificación (solo el número)
-    existingRatings.push(rating);
-
-    // 4. Guardar el array actualizado en localStorage
-    localStorage.setItem("bomBocadoRatings", JSON.stringify(existingRatings));
-
-    // 5. Mostrar mensaje y limpiar el formulario
-    alert("¡Muchas gracias por tu calificación!");
-    
-    // 6. Limpiamos el formulario
-    setFormData({ nombre: "", correo: "", mensaje: "" });
-    setRating(0);
-    setHover(0);
+      alert("¡Gracias por tu comentario y calificación!");
+      setFormData({ nombre: "", correo: "", mensaje: "" });
+      setRating(0);
+      setHover(0);
+    } catch (error) {
+      console.error("Error al enviar testimonio:", error);
+      alert("Hubo un error al enviar tu testimonio. Inténtalo nuevamente.");
+    }
   };
 
   return (
@@ -70,10 +68,9 @@ export default function Contacto() {
         {/* ======= FORMULARIO ======= */}
         <form
           aria-label="Formulario de contacto y calificación"
-          onSubmit={handleSubmit} // <--- MANEJADOR AÑADIDO
+          onSubmit={handleSubmit}
           className="bg-white border border-[#f5bfb2] rounded-3xl shadow-xl p-8 space-y-5"
         >
-          {/* ... campos de nombre, correo y mensaje (igual que antes) ... */}
           <div className="relative">
             <FaUser className="absolute left-3 top-3.5 text-[#d8718c]" />
             <input
@@ -82,8 +79,8 @@ export default function Contacto() {
               name="nombre"
               placeholder="Tu nombre"
               required
-              value={formData.nombre} 
-              onChange={handleChange} 
+              value={formData.nombre}
+              onChange={handleChange}
               className="w-full border border-rose-200 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] transition"
             />
           </div>
@@ -96,8 +93,8 @@ export default function Contacto() {
               name="correo"
               placeholder="Tu correo electrónico"
               required
-              value={formData.correo} 
-              onChange={handleChange} 
+              value={formData.correo}
+              onChange={handleChange}
               className="w-full border border-rose-200 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] transition"
             />
           </div>
@@ -110,8 +107,8 @@ export default function Contacto() {
               rows="4"
               placeholder="Escríbenos un mensaje..."
               required
-              value={formData.mensaje} 
-              onChange={handleChange} 
+              value={formData.mensaje}
+              onChange={handleChange}
               className="w-full border border-rose-200 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] resize-none transition"
             ></textarea>
           </div>
@@ -122,7 +119,7 @@ export default function Contacto() {
               ¡Califícanos!
             </label>
             <div className="flex justify-center text-4xl text-gray-300 cursor-pointer">
-              {[...Array(5)].map((star, index) => {
+              {[...Array(5)].map((_, index) => {
                 const ratingValue = index + 1;
                 return (
                   <label key={index}>
@@ -132,17 +129,14 @@ export default function Contacto() {
                       value={ratingValue}
                       onClick={() => setRating(ratingValue)}
                       className="hidden"
-                      required // <-- Importante para la validación
                     />
                     <FaStar
-                      className="star transition-colors duration-200"
                       color={
-                        ratingValue <= (hover || rating)
-                          ? "#ffc107"
-                          : "#e4e5e9"
+                        ratingValue <= (hover || rating) ? "#ffc107" : "#e4e5e9"
                       }
                       onMouseEnter={() => setHover(ratingValue)}
                       onMouseLeave={() => setHover(0)}
+                      className="transition-transform duration-200 hover:scale-110"
                     />
                   </label>
                 );
@@ -155,7 +149,7 @@ export default function Contacto() {
               type="submit"
               className="bg-[#a34d5f] text-white font-semibold px-10 py-3 rounded-xl hover:bg-[#9c2007] transition duration-300 shadow-lg"
             >
-              Enviarnos tu comentario y Calificación
+              Enviar comentario y calificación
             </button>
           </div>
         </form>

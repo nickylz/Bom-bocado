@@ -11,7 +11,7 @@ import {
   onSnapshot,
   getDocs,
 } from "firebase/firestore";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./authContext";
 
 const CarritoContext = createContext();
 

@@ -1,7 +1,7 @@
 import { useCarrito } from "../context/CarritoContext";
 import { useState } from "react";
 import { ShoppingCart, Trash2 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 export function CarritoFlotante() {
   const {
