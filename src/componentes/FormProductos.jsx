@@ -14,10 +14,10 @@ export default function FormProducto() {
   const [subiendo, setSubiendo] = useState(false);
 
   const correosPermitidos = [
-    "danportaleshinostroza@crackthecode.la",//ANEL
-    "zanadrianzenbohorquez@crackthecode.la",//NICOLL
-    "marandersonsantillan@crackthecode.la",//SABRINA
-    "shavalerianoblas@crackthecode.la",//SHARON
+    "danportaleshinostroza@crackthecode.la", //ANEL
+    "zanadrianzenbohorquez@crackthecode.la", //NICOLL
+    "marandersonsantillan@crackthecode.la", //SABRINA
+    "shavalerianoblas@crackthecode.la", //SHARON
   ];
 
   if (!usuarioActual) {
@@ -26,7 +26,7 @@ export default function FormProducto() {
         <div className="bg-white border border-[#f5bfb2] rounded-2xl shadow-lg w-[95%] max-w-2xl p-8 text-center flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex-1">
             <h2 className="text-3xl font-bold text-[#8f2133] mb-2">
-              Inicia sesión para agregar productos 
+              Inicia sesión para agregar productos
             </h2>
             <p className="text-[#7a1a0a] text-base leading-relaxed max-w-2xl mx-auto">
               Solo los{" "}
@@ -39,8 +39,6 @@ export default function FormProducto() {
         </div>
       </div>
     );
-
-
   }
   const correoUsuario = usuarioActual?.correo?.toLowerCase().trim();
 
@@ -53,11 +51,16 @@ export default function FormProducto() {
 
   if (!accesoPermitido) {
     return (
-      <div className="max-w-xl mx-auto bg-white shadow-md rounded-2xl p-6 border border-rose-100 text-center">
-        <h2 className="text-2xl font-bold text-rose-700 mb-3">Acceso restringido</h2>
-        <p className="text-rose-500">
-          Tu cuenta no tiene permisos para agregar productos.
-        </p>
+      <div className="flex justify-center items-center py-10 bg-[#fff3f0]">
+        <div className="bg-white border border-[#f5bfb2] rounded-2xl shadow-lg w-[95%] max-w-2xl p-8 text-center flex flex-col items-center gap-4">
+          <h2 className="text-4xl font-bold text-[#8f2133] mb-2">
+            Acceso restringido
+          </h2>
+
+          <p className="text-[#7a1a0a] text-base leading-relaxed">
+            Tu cuenta no tiene permisos para agregar productos.
+          </p>
+        </div>
       </div>
     );
   }
@@ -85,7 +88,7 @@ export default function FormProducto() {
         imagen: url,
         fechaCreacion: Timestamp.now(),
         creadoPor: usuarioActual.uid,
-        correoCreador: usuarioActual.correo, 
+        correoCreador: usuarioActual.correo,
       });
 
       alert("Producto agregado exitosamente ");
@@ -110,7 +113,7 @@ export default function FormProducto() {
         className="bg-white border border-[#f5bfb2] rounded-2xl shadow-lg w-[90%] max-w-md p-8 text-center"
       >
         <h2 className="text-3xl font-bold text-[#8f2133] mb-6">
-          Agregar Producto 
+          Agregar Producto
         </h2>
 
         <div className="space-y-4">
@@ -196,5 +199,4 @@ export default function FormProducto() {
       </form>
     </div>
   );
-  
 }
