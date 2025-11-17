@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NavBar from "./componentes/NavBar";
 import { CarritoProvider } from "./context/CarritoContext";
 import { CarritoFlotante } from "./componentes/CarritoFlotante";
-import { AuthProvider } from "./context/authContext";
+import { AuthProvider } from "./context/AuthContext";
 import Footer from "./componentes/Footer";
 
 // Páginas

@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
   const [usuarioActual, setUsuarioActual] = useState(null);
   const [cargando, setCargando] = useState(true);
 
-  // 🔹 Escucha los cambios en la sesión de Firebase
+  //  Escucha los cambios en la sesión de Firebase
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -30,17 +30,17 @@ export function AuthProvider({ children }) {
         const refUser = doc(db, "usuarios", user.uid);
         const snap = await getDoc(refUser);
 
-        // ✅ Usa los datos de Firestore si existen, pero con respaldo desde Auth
+        //  Usa los datos de Firestore si existen, pero con respaldo desde Auth
         if (snap.exists()) {
           const data = snap.data();
           setUsuarioActual({
             uid: user.uid,
             correo: data.correo || user.email,
             user: data.user || user.displayName,
-            fotoURL: data.fotoURL || user.photoURL, // 🧠 si Firestore no tiene foto, usa la del auth
+            fotoURL: data.fotoURL || user.photoURL, 
           });
         } else {
-          // 🔸 Si no existe, crea el doc mínimo con datos del Auth
+          //  Si no existe, crea el doc mínimo con datos del Auth
           await setDoc(refUser, {
             correo: user.email,
             user: user.displayName || "Usuario",
@@ -64,7 +64,7 @@ export function AuthProvider({ children }) {
     return () => unsub();
   }, []);
 
-  // 🔹 Registro con correo, usuario, contraseña y foto personalizada
+  //  Registro con correo, usuario, contraseña y foto personalizada
   const registrarUsuario = async (correo, user, contrasena, foto) => {
     const cred = await createUserWithEmailAndPassword(auth, correo, contrasena);
 
@@ -87,11 +87,11 @@ export function AuthProvider({ children }) {
     });
   };
 
-  // 🔹 Login normal con correo y contraseña
+  //  Login normal con correo y contraseña
   const iniciarSesion = (correo, contrasena) =>
     signInWithEmailAndPassword(auth, correo, contrasena);
 
-  // 🔹 Login con Google (corregido)
+  //  Login con Google (corregido)
   const iniciarConGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
@@ -106,7 +106,7 @@ export function AuthProvider({ children }) {
         uid: user.uid,
       });
     } else {
-      // 🔥 Si el doc ya existe, actualiza datos por si cambian
+      //  Si el doc ya existe, actualiza datos por si cambian
       await updateDoc(refUser, {
         user: user.displayName,
         fotoURL: user.photoURL,
@@ -114,7 +114,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 🔹 Cierra sesión
+  //  Cierra sesión
   const cerrarSesion = () => signOut(auth);
 
   return (

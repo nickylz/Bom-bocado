@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaBars, FaTimes, FaShoppingCart } from "react-icons/fa";
-import Login from "./Login"; // 👈 importas tu componente nuevo
+import { FaBars, FaTimes } from "react-icons/fa";
+import Login from "./Login";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -17,7 +17,7 @@ export default function NavBar() {
           BOM<span className="text-[#8a152e]">BOCADO</span>
         </Link>
 
-        {/* BOTÓN HAMBURGUESA */}
+        {/* BOTÓN HAMBURGUESA (solo móvil) */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="text-[#7a1a0a] text-2xl md:hidden transition-transform duration-300"
@@ -29,30 +29,52 @@ export default function NavBar() {
         {/* LINKS */}
         <nav
           className={`${
-            menuOpen ? "max-h-80 py-4" : "max-h-0"
+            menuOpen ? "max-h-112 py-4" : "max-h-0"
           } md:max-h-none md:py-0 
           overflow-hidden flex flex-col md:flex-row md:items-center md:gap-6 
           absolute md:static top-full left-0 w-full md:w-auto bg-[#fff3f0] md:bg-transparent 
           shadow-md md:shadow-none transition-all duration-500 ease-in-out text-center`}
         >
-          <Link to="/" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">
+          <Link
+            to="/"
+            className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
+          >
             Inicio
           </Link>
-          <Link to="/productos" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">
+          <Link
+            to="/productos"
+            className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
+          >
             Productos
           </Link>
-          <Link to="/nosotros" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">
+          <Link
+            to="/nosotros"
+            className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
+          >
             Nosotros
           </Link>
-          <Link to="/contacto" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">
+          <Link
+            to="/contacto"
+            className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
+          >
             Contacto
           </Link>
-          <Link to="/novedades" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">
+          <Link
+            to="/novedades"
+            className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
+          >
             Novedades
           </Link>
 
-          {/* LOGIN / USUARIO */}
-          <Login /> {/* 👈 Aquí aparece todo el sistema de login */}
+          {/* LOGIN SOLO EN ESCRITORIO */}
+          <div className="hidden md:block">
+            <Login />
+          </div>
+
+          {/* LOGIN SOLO EN MÓVIL (abajo del menú) */}
+          <div className="block md:hidden mt-4 border-t border-[#f5bfb2] pt-4">
+            <Login />
+          </div>
         </nav>
       </div>
     </header>
