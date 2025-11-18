@@ -19,7 +19,6 @@ export default function Login() {
     iniciarSesion,
     registrarUsuario,
     iniciarConGoogle,
-    cerrarSesion,
   } = useAuth();
 
   const [modalLogin, setModalLogin] = useState(false);
@@ -73,12 +72,6 @@ export default function Login() {
               : usuarioActual.user}
           </span>
 
-          <button
-            onClick={cerrarSesion}
-            className="bg-[#d8718c] text-white px-4 py-1 rounded-xl hover:bg-[#b84c68] transition"
-          >
-            Cerrar sesión
-          </button>
         </div>
       ) : (
         <button
