@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/authContext";
 import { FcGoogle } from "react-icons/fc"; // 🔹 Ícono de Google
-
+import Ajustes from "./ajustes";
 
 // CUENTA DE PRUEBA 1
 // correo: pet123@gmail.com
@@ -26,6 +26,8 @@ export default function Login() {
 
   const [loginCorreo, setLoginCorreo] = useState("");
   const [loginPass, setLoginPass] = useState("");
+
+  const [modalAjustes, setModalAjustes] = useState(false);
 
   const [regCorreo, setRegCorreo] = useState("");
   const [regUser, setRegUser] = useState("");
@@ -65,6 +67,7 @@ export default function Login() {
             src={usuarioActual.fotoURL || "/default-user.png"}
             alt="perfil"
             className="w-10 h-10 rounded-full border border-[#d8718c]"
+            onClick={() => setModalAjustes(true)}
           />
           <span className="text-[#7a1a0a] font-semibold">
             {usuarioActual.user.length > 15
@@ -217,6 +220,19 @@ export default function Login() {
             </p>
           </div>
         </div>
+      )}
+        
+        {usuarioActual && (
+          <Ajustes
+            isOpen={modalAjustes}
+            onClose={() => setModalAjustes(false)}
+            user={{
+              uid: usuarioActual.uid,
+              email: usuarioActual.correo,
+              displayName: usuarioActual.user,
+              photoURL: usuarioActual.fotoURL,
+            }}
+        />
       )}
     </>
   );
