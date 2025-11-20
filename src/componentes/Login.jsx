@@ -8,10 +8,6 @@ import Ajustes from "./ajustes";
 // correo: pet123@gmail.com
 // contraseña : 123qwedsacxz
 
-// CUENTA DE PRUEBA 2
-// correo: marlizqe@gmail.com
-// contraseña : cxzdsa123
-
 
 export default function Login() {
   const {

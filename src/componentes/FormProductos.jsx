@@ -18,6 +18,7 @@ export default function FormProducto() {
     "zanadrianzenbohorquez@crackthecode.la", //NICOLL
     "marandersonsantillan@crackthecode.la", //SABRINA
     "shavalerianoblas@crackthecode.la", //SHARON
+    "pet123@gmail.com", //PRUEBA
   ];
 
   if (!usuarioActual) {
