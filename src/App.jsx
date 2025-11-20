@@ -17,7 +17,7 @@ import "./App.css";
 
 function App() {
   return (
-    <Router basename="/Bom-bocado">  
+    <Router>  
       <AuthProvider>
         <CarritoProvider>
           <NavBar />
