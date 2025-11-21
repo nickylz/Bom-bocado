@@ -9,12 +9,11 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth, googleProvider, db, storage } from "../lib/firebase";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const AuthContext = createContext();
 
-// Hook personalizado para acceder fácilmente al contexto
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
@@ -26,33 +25,41 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Referencia al documento del usuario
+        // Referencia al documento del usuario en Firestore
         const refUser = doc(db, "usuarios", user.uid);
         const snap = await getDoc(refUser);
 
-        //  Usa los datos de Firestore si existen, pero con respaldo desde Auth
         if (snap.exists()) {
+          // Si el documento existe, usamos sus datos
           const data = snap.data();
           setUsuarioActual({
             uid: user.uid,
             correo: data.correo || user.email,
             user: data.user || user.displayName,
-            fotoURL: data.fotoURL || user.photoURL, 
+            fotoURL: data.fotoURL || user.photoURL,
+            rol: data.rol || "usuario",
+            fechaCreacion: data.fechaCreacion || null,
           });
         } else {
-          //  Si no existe, crea el doc mínimo con datos del Auth
+          // Si no existe, creamos el doc mínimo con datos del Auth
+          const fechaCreacion = Timestamp.now();
+
           await setDoc(refUser, {
             correo: user.email,
             user: user.displayName || "Usuario",
             fotoURL: user.photoURL || "",
             uid: user.uid,
+            rol: "usuario",
+            fechaCreacion, // se guarda solo una vez
           });
 
           setUsuarioActual({
             uid: user.uid,
             correo: user.email,
-            user: user.displayName,
-            fotoURL: user.photoURL,
+            user: user.displayName || "Usuario",
+            fotoURL: user.photoURL || "",
+            rol: "usuario",
+            fechaCreacion,
           });
         }
       } else {
@@ -75,6 +82,8 @@ export function AuthProvider({ children }) {
       fotoURL = await getDownloadURL(storageRef);
     }
 
+    const fechaCreacion = Timestamp.now();
+
     // Se actualiza el perfil de Firebase Auth
     await updateProfile(cred.user, { displayName: user, photoURL: fotoURL });
 
@@ -84,6 +93,8 @@ export function AuthProvider({ children }) {
       user,
       fotoURL,
       uid: cred.user.uid,
+      rol: "usuario", // por defecto rol usuario
+      fechaCreacion,
     });
   };
 
@@ -91,7 +102,7 @@ export function AuthProvider({ children }) {
   const iniciarSesion = (correo, contrasena) =>
     signInWithEmailAndPassword(auth, correo, contrasena);
 
-  //  Login con Google (corregido)
+  //  Login con Google
   const iniciarConGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
@@ -99,14 +110,18 @@ export function AuthProvider({ children }) {
     const snap = await getDoc(refUser);
 
     if (!snap.exists()) {
+      const fechaCreacion = Timestamp.now();
+
       await setDoc(refUser, {
         correo: user.email,
         user: user.displayName,
         fotoURL: user.photoURL,
         uid: user.uid,
+        rol: "usuario",
+        fechaCreacion,
       });
     } else {
-      //  Si el doc ya existe, actualiza datos por si cambian
+      //  Si el doc ya existe, actualiza datos básicos (no tocamos rol ni fechaCreacion)
       await updateDoc(refUser, {
         user: user.displayName,
         fotoURL: user.photoURL,
@@ -117,10 +132,11 @@ export function AuthProvider({ children }) {
   //  Cierra sesión
   const cerrarSesion = () => signOut(auth);
 
-  return (
+return (
     <AuthContext.Provider
       value={{
         usuarioActual,
+        cargando,
         registrarUsuario,
         iniciarSesion,
         iniciarConGoogle,

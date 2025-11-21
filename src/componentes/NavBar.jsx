@@ -13,8 +13,9 @@ const correosPermitidos = [
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { usuarioActual } = useAuth();
+  console.log("usuarioActual NAVBAR:", usuarioActual);
 
-  const correoUsuario = usuarioActual?.email?.toLowerCase().trim();
+  const correoUsuario = usuarioActual?.correo?.toLowerCase().trim();
   const esAdmin = correoUsuario
     ? correosPermitidos.some(
         (correo) => correo.toLowerCase().trim() === correoUsuario
@@ -81,7 +82,9 @@ export default function NavBar() {
           </Link>
 
           {esAdmin && (
-            <Link to="/intranet" className="...">
+            <Link to="/intranet"
+              className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
+            >
               Intranet
             </Link>
           )}

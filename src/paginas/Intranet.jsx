@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, doc, updateDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "../context/authContext";
 
@@ -16,9 +16,7 @@ export default function Intranet() {
   ];
 
   // calculamos el acceso aquí, sin returns todavía
-  const correoUsuario = usuarioActual?.email
-    ?.toLowerCase()
-    .trim();
+  const correoUsuario = usuarioActual?.correo?.toLowerCase().trim();
 
   const accesoPermitido = correoUsuario
     ? correosPermitidos.some(
@@ -30,15 +28,15 @@ export default function Intranet() {
   useEffect(() => {
     if (!accesoPermitido) return;
 
-    const coleccionRef = collection(db, "usuarios"); // cambia el nombre si tu colección es otra
-    const q = query(coleccionRef, orderBy("createdAt", "desc"));
+    const coleccionRef = collection(db, "usuarios");
+    const q = query(coleccionRef, orderBy("fechaCreacion", "desc"));
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const data = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
         }));
         setUsuarios(data);
         setCargando(false);
@@ -52,8 +50,6 @@ export default function Intranet() {
     return () => unsubscribe();
   }, [accesoPermitido]);
 
-  // 🔻 A PARTIR DE AQUÍ recién hacemos returns condicionales 🔻
-
   // si no hay usuario logueado, no mostramos nada
   if (!usuarioActual) {
     return null;
@@ -64,6 +60,20 @@ export default function Intranet() {
     return null;
   }
 
+  // función para cambiar el rol de un usuario
+  const manejarCambioRol = async (idUsuario, nuevoRol) => {
+    try {
+      const refUsuario = doc(db, "usuarios", idUsuario);
+      await updateDoc(refUsuario, { rol: nuevoRol });
+      // no hace falta actualizar el estado a mano porque onSnapshot ya trae el cambio
+    } catch (error) {
+      console.error("Error al actualizar rol:", error);
+    }
+  };
+
+  // Filtramos solo los usuarios con rol "usuario"
+  const usuariosFiltrados = usuarios.filter((u) => u.rol === "usuario");
+
   // vista solo para administradores
   return (
     <div className="min-h-screen bg-[#fff3f0] py-10">
@@ -72,13 +82,13 @@ export default function Intranet() {
           Intranet - Administración
         </h1>
         <p className="text-gray-600 mb-6">
-          Bienvenido, {usuarioActual.email}. Aquí puedes ver la lista de usuarios.
+          Bienvenido, {usuarioActual.correo}. Aquí puedes ver y administrar a los usuarios.
         </p>
 
         {cargando ? (
           <p className="text-gray-500">Cargando usuarios...</p>
-        ) : usuarios.length === 0 ? (
-          <p className="text-gray-500">No hay usuarios registrados aún.</p>
+        ) : usuariosFiltrados.length === 0 ? (
+          <p className="text-gray-500">No hay usuarios con rol "usuario".</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
@@ -91,7 +101,10 @@ export default function Intranet() {
                     Nombre
                   </th>
                   <th className="border px-3 py-2 text-left text-sm font-semibold">
-                    Email
+                    Correo
+                  </th>
+                  <th className="border px-3 py-2 text-left text-sm font-semibold">
+                    Rol
                   </th>
                   <th className="border px-3 py-2 text-left text-sm font-semibold">
                     Fecha registro
@@ -99,16 +112,26 @@ export default function Intranet() {
                 </tr>
               </thead>
               <tbody>
-                {usuarios.map((u, index) => (
+                {usuariosFiltrados.map((u, index) => (
                   <tr key={u.id} className="hover:bg-gray-50">
                     <td className="border px-3 py-2 text-sm">{index + 1}</td>
                     <td className="border px-3 py-2 text-sm">
-                      {u.nombre || "Sin nombre"}
+                      {u.user || "Sin nombre"}
                     </td>
-                    <td className="border px-3 py-2 text-sm">{u.email}</td>
+                    <td className="border px-3 py-2 text-sm">{u.correo}</td>
                     <td className="border px-3 py-2 text-sm">
-                      {u.createdAt?.toDate
-                        ? u.createdAt.toDate().toLocaleString()
+                      <select
+                        value={u.rol || "usuario"}
+                        onChange={(e) => manejarCambioRol(u.id, e.target.value)}
+                        className="border rounded px-2 py-1 text-sm"
+                      >
+                        <option value="usuario">Usuario</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </td>
+                    <td className="border px-3 py-2 text-sm">
+                      {u.fechaCreacion?.toDate
+                        ? u.fechaCreacion.toDate().toLocaleString()
                         : "—"}
                     </td>
                   </tr>
