@@ -35,8 +35,8 @@ export default function PerfilForm({ user }) {
         correo,
         fotoURL,
       });
-      alert("Perfil actualizado correctamente");
-    } catch (err) {
+      alert("Perfil ac1tualizado correctamente");
+    } catch {
       alert("Error al guardar");
     }
     setGuardando(false);

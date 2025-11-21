@@ -208,6 +208,7 @@ export const CarritoProvider = ({ children }) => {
       await setDoc(pedidoRef, {
         id: pedidoRef.id,
         userId: user.uid,
+        correoUsuario: user.correo,
         nombreCliente: nombre,
         direccionEnvio: direccion,
         metodoPago,
@@ -223,6 +224,7 @@ export const CarritoProvider = ({ children }) => {
         subtotal: total,
         totalFinal,
         fechaCreacion: serverTimestamp(),
+        estado: "pendiente",
       });
 
       // Vaciar carrito en Firestore

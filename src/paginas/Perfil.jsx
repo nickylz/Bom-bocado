@@ -7,9 +7,19 @@ import PerfilForm from "../componentes/PerfilForm";
 import ComprasList from "../componentes/ComprasList";
 
 export default function PerfilPage() {
-  const { usuarioActual } = useAuth();
+  const { usuarioActual, cargando } = useAuth();
   const user = usuarioActual;
 
+  //  Mientras Firebase carga el usuario
+  if (cargando) {
+    return (
+      <div className="min-h-screen bg-[#fff3f0] flex items-center justify-center">
+        <p className="text-[#7a1a0a] font-semibold">Cargando tu perfil...</p>
+      </div>
+    );
+  }
+
+  //  Si no hay usuario
   if (!user) {
     return (
       <div className="min-h-screen bg-[#fff3f0] flex items-center justify-center">
@@ -20,6 +30,7 @@ export default function PerfilPage() {
     );
   }
 
+  //  Si ya cargó Firebase y hay usuario
   return (
     <div className="min-h-screen bg-[#fff3f0] py-10">
       <div className="max-w-5xl mx-auto px-4">
