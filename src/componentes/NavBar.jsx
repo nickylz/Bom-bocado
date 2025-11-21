@@ -2,9 +2,24 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Login from "./Login";
+import { useAuth } from "../context/authContext";
+
+const correosPermitidos = [
+  "danportaleshinostroza@crackthecode.la",
+  "zanadrianzenbohorquez@crackthecode.la",
+  "marandersonsantillan@crackthecode.la",
+  "shavalerianoblas@crackthecode.la",
+];
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { usuarioActual } = useAuth();
 
+  const correoUsuario = usuarioActual?.email?.toLowerCase().trim();
+  const esAdmin = correoUsuario
+    ? correosPermitidos.some(
+        (correo) => correo.toLowerCase().trim() === correoUsuario
+      )
+    : false;
   return (
     <header className="bg-[#ffc8ce] shadow-md sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -65,12 +80,11 @@ export default function NavBar() {
             Novedades
           </Link>
 
-          <Link
-            to="/intranet"
-            className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
-          >
-            Novedades
-          </Link>
+          {esAdmin && (
+            <Link to="/intranet" className="...">
+              Intranet
+            </Link>
+          )}
 
           {/* LOGIN SOLO EN ESCRITORIO */}
           <div className="hidden md:block">
