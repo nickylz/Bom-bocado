@@ -65,6 +65,13 @@ export default function NavBar() {
             Novedades
           </Link>
 
+          <Link
+            to="/intranet"
+            className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]"
+          >
+            Novedades
+          </Link>
+
           {/* LOGIN SOLO EN ESCRITORIO */}
           <div className="hidden md:block">
             <Login />
