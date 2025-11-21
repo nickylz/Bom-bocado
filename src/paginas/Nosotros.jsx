@@ -1,5 +1,10 @@
 import React from "react";
-import incono from "../componentes/img/Bom.png";
+import Bom from "../componentes/img/Bom.png";
+import Buscamos from "../componentes/img/Buscamos.png";
+import Centro from "../componentes/img/Centro.png";
+import Centro2 from "../componentes/img/Centro2.png";
+import Mision from "../componentes/img/Mision.png";
+import Vision from "../componentes/img/Vision.jpg";
 
 export default function Nosotros() {
   return (
@@ -25,7 +30,7 @@ export default function Nosotros() {
 
         <div className="w-full md:w-1/2 flex justify-center py-10 px-6">
           <img
-            src={incono}
+            src={Bom}
             alt="Equipo Bom Bocado"
             className="w-[45%] md:w-[53%] h-auto object-contain"
           />
@@ -52,7 +57,7 @@ export default function Nosotros() {
           {/* Imagen 1 */}
           <div className="overflow-hidden rounded-3xl shadow-xl border border-[#f5bfb2] bg-white group">
             <img
-              src="/Centro.png"
+              src={Centro}
               alt="Equipo Bom Bocado"
               className="w-full h-80 md:h-[450px] object-cover group-hover:scale-105 transition-transform duration-700"
             />
@@ -61,7 +66,7 @@ export default function Nosotros() {
           {/* Imagen 2 */}
           <div className="overflow-hidden rounded-3xl shadow-xl border border-[#f5bfb2] bg-white group">
             <img
-              src="/Centro2.png"
+              src={Centro2}
               alt="Taller de postres"
               className="w-full h-80 md:h-[450px] object-cover group-hover:scale-105 transition-transform duration-700"
             />
@@ -79,7 +84,7 @@ export default function Nosotros() {
           {/* MISIÓN */}
           <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all overflow-hidden">
             <img
-              src="/Mision.png"
+              src={Mision}
               alt="Nuestra Misión"
               className="w-full h-60 object-cover rounded-t-3xl"
             />
@@ -97,7 +102,7 @@ export default function Nosotros() {
           {/* VISIÓN */}
           <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all overflow-hidden">
             <img
-              src="/Vision.jpg"
+              src={Vision}
               alt="Nuestra Visión"
               className="w-full h-60 object-cover rounded-t-3xl"
             />
@@ -115,7 +120,7 @@ export default function Nosotros() {
           {/* VALORES */}
           <div className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all overflow-hidden">
             <img
-              src="/Buscamos.png"
+              src={Buscamos}
               alt="Nuestros Valores"
               className="w-full h-60 object-cover rounded-t-3xl"
             />
