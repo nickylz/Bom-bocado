@@ -10,6 +10,7 @@ import {
   where,
   onSnapshot,
   getDocs,
+  serverTimestamp,
 } from "firebase/firestore";
 import { useAuth } from "./authContext";
 
@@ -185,10 +186,7 @@ export const CarritoProvider = ({ children }) => {
     (s, p) => s + (p.precio || 0) * (p.cantidad || 1),
     0
   );
-  const totalProductos = carrito.reduce(
-    (s, p) => s + (p.cantidad || 0),
-    0
-  );
+  const totalProductos = carrito.reduce((s, p) => s + (p.cantidad || 0), 0);
 
   // 🔹 Registrar la compra en Firestore
   const realizarPago = async ({ nombre, direccion, metodoPago }) => {
@@ -203,7 +201,7 @@ export const CarritoProvider = ({ children }) => {
     setErrorPago(null);
 
     try {
-      const  delivery= 5; // fijo, como en tu modal
+      const delivery = 5; // fijo, como en tu modal
       const totalFinal = total + delivery;
 
       const pedidoRef = doc(collection(db, "pedidos"));
@@ -215,8 +213,7 @@ export const CarritoProvider = ({ children }) => {
         metodoPago,
         items: carrito.map((item) => ({
           id: item.id,
-          nombre:
-            item.nombre || item.nombreProducto || "Producto sin nombre",
+          nombre: item.nombre || item.nombreProducto || "Producto sin nombre",
           precio: item.precio || 0,
           cantidad: item.cantidad || 1,
           imagen: item.imagen || null,
@@ -225,7 +222,7 @@ export const CarritoProvider = ({ children }) => {
         totalProductos,
         subtotal: total,
         totalFinal,
-        fechaCreacion: new Date(),
+        fechaCreacion: serverTimestamp(),
       });
 
       // Vaciar carrito en Firestore
