@@ -12,6 +12,7 @@ import Productos from "./paginas/Productos";
 import Novedades from "./paginas/Novedades";
 import Contacto from "./paginas/Contacto";
 import Perfil from "./paginas/Perfil";
+import Intranet from "./paginas/Intranet";
 
 import "./App.css";
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/novedades" element={<Novedades />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/perfil" element={<Perfil />} />
+            <Route path="/intranet" element={<Intranet />} />
           </Routes>
           <CarritoFlotante />
           <Footer />
