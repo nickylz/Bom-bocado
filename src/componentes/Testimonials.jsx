@@ -28,14 +28,6 @@ export default function Testimonials() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const correosPermitidos = [
-    "danportaleshinostroza@crackthecode.la",
-    "zanadrianzenbohorquez@crackthecode.la",
-    "marandersonsantillan@crackthecode.la",
-    "shavalerianoblas@crackthecode.la",
-    "pet123@gmail.com",
-  ];
-
   useEffect(() => {
     const q = query(
       collection(db, "testimonios"),
@@ -56,11 +48,10 @@ export default function Testimonials() {
     return () => clearInterval(interval);
   }, [testimonios]);
 
-  const esAdmin = usuarioActual && correosPermitidos.includes(usuarioActual.email.toLowerCase());
-
+  // Lógica de permisos con roles de moderador (admin y editor)
+  const esModerador = usuarioActual && (usuarioActual.rol === 'admin' || usuarioActual.rol === 'editor');
   const esAutor = (t) => usuarioActual && usuarioActual.uid === t.userUid;
-
-  const puedeEditarEliminar = (t) => esAdmin || esAutor(t);
+  const puedeEditarEliminar = (t) => esModerador || esAutor(t);
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar este testimonio?")) return;

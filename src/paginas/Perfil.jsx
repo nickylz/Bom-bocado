@@ -1,57 +1,68 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/authContext";
 import { db } from "../lib/firebase";
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore"; // Se quita orderBy
 
 // Componentes
 import PerfilForm from "../componentes/PerfilForm";
 import ComprasList from "../componentes/ComprasList";
 
 export default function PerfilPage() {
-  const { usuarioActual, cargando } = useAuth();
+  const { usuarioActual, cargando: cargandoAuth } = useAuth();
   const [compras, setCompras] = useState([]);
   const [cargandoCompras, setCargandoCompras] = useState(true);
 
-  // ===================================
-  //   CARGAR COMPRAS DEL USUARIO
-  // ===================================
+  // ========================================================
+  //   VERSIÓN FINAL: CONSULTA SIMPLE + ORDENACIÓN LOCAL
+  // ========================================================
   useEffect(() => {
-    // Si la autenticación aún está cargando o no hay usuario, reiniciamos el estado.
-    if (cargando || !usuarioActual) {
-      setCompras([]);
-      setCargandoCompras(false);
-      return;
-    }
-
-    // Si tenemos un usuario, procedemos a cargar sus compras.
-    setCargandoCompras(true);
-    const q = query(
-      collection(db, "pedidos"),
-      where("userId", "==", usuarioActual.uid),
-      orderBy("fechaCreacion", "desc")
-    );
-
-    const unsub = onSnapshot(
-      q,
-      (snapshot) => {
-        const lista = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setCompras(lista);
+    const cargarCompras = async () => {
+      if (!usuarioActual) {
+        setCompras([]);
         setCargandoCompras(false);
-      },
-      (error) => {
-        console.error("Error obteniendo compras:", error);
+        return;
+      }
+
+      setCargandoCompras(true);
+      try {
+        // 1. Consulta simplificada: solo filtramos por usuario.
+        const q = query(
+          collection(db, "pedidos"),
+          where("userId", "==", usuarioActual.uid)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        let lista = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        // 2. Ordenación en el cliente: robusta y sin índices.
+        lista.sort((a, b) => {
+            const fechaA = a.fechaCreacion?.toDate ? a.fechaCreacion.toDate() : 0;
+            const fechaB = b.fechaCreacion?.toDate ? b.fechaCreacion.toDate() : 0;
+            return fechaB - fechaA; // Orden descendente (más nuevas primero)
+        });
+
+        setCompras(lista);
+
+      } catch (error) {
+        console.error("Error definitivo obteniendo compras:", error);
+        setCompras([]);
+      } finally {
         setCargandoCompras(false);
       }
-    );
+    };
 
-    // Limpiamos la suscripción al desmontar el componente o si el usuario cambia.
-    return () => unsub();
-  }, [usuarioActual, cargando]); // El efecto depende del usuario y del estado de carga.
+    cargarCompras();
 
-  if (cargando) {
+  }, [usuarioActual]);
+
+  // ----------------------------------------------------------------
+  // Renderizado (sin cambios)
+  // ----------------------------------------------------------------
+
+  if (cargandoAuth) {
     return (
       <div className="min-h-screen bg-[#fff3f0] flex items-center justify-center">
         <p className="text-[#7a1a0a] font-semibold">Cargando tu perfil...</p>
@@ -80,7 +91,7 @@ export default function PerfilPage() {
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#d8718c]">
             <img
               src={
-                usuarioActual.fotoURL ||
+                usuarioActual.photoURL ||
                 "https://cdn-icons-png.flaticon.com/512/847/847969.png"
               }
               alt="Foto de perfil"
@@ -90,10 +101,10 @@ export default function PerfilPage() {
 
           <div className="text-center md:text-left">
             <h2 className="text-2xl font-bold text-[#7a1a0a]">
-              {usuarioActual.user || "Usuario"}
+              {usuarioActual.displayName || "Usuario"}
             </h2>
             <p className="text-sm text-gray-600 mt-1">
-              {usuarioActual.correo || ""}
+              {usuarioActual.email || ""}
             </p>
             <p className="text-xs text-gray-500 mt-1">
               UID: <span className="font-mono">{usuarioActual.uid}</span>

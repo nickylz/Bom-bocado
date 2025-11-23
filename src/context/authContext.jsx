@@ -76,7 +76,6 @@ export const AuthProvider = ({ children }) => {
   // --- EFECTO DE OBSERVACIÓN DEL ESTADO DE AUTH --- 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCargando(true);
       if (user) {
         const docRef = doc(db, "usuarios", user.uid);
         const docSnap = await getDoc(docRef);
@@ -93,6 +92,7 @@ export const AuthProvider = ({ children }) => {
             photoURL: user.photoURL || firestoreData.fotoURL,
           });
         } else {
+          // Si el usuario existe en Auth pero no en Firestore (ej. 1er login con Google)
           const userRole = adminEmails.includes(user.email.toLowerCase()) ? "admin" : "cliente";
           const newUserDoc = {
             correo: user.email,
@@ -128,5 +128,5 @@ export const AuthProvider = ({ children }) => {
     cerrarSesion,
   };
 
-  return <AuthContext.Provider value={value}>{!cargando && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
