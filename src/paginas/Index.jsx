@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Testimonials from "../componentes/Testimonials"; // <-- 1. IMPORTAMOS EL NUEVO COMPONENTE
+import Testimonials from "../componentes/Testimonials";
 import incono from "../componentes/img/Bom.png"
+
 export default function Inicio() {
   return (
     <>
@@ -123,10 +124,9 @@ export default function Inicio() {
             </div>
           </div>
         </section>
-
+        
         {/* ===== SECCIÓN DE COMENTARIOS ===== */}
-        <div className="bg-[#fff3f0]"><Testimonials /> </div>
-  
+        <Testimonials />
 
       </main>
     </>

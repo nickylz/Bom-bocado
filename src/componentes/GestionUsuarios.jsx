@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { format } from 'date-fns';
 import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import { ModalContext } from '../context/ModalContext';
 
 const functions = getFunctions();
 const deleteUser = httpsCallable(functions, 'deleteUser');
@@ -14,6 +15,7 @@ export default function GestionUsuarios() {
   const [error, setError] = useState(null);
   const [editandoId, setEditandoId] = useState(null);
   const [nuevoRol, setNuevoRol] = useState('');
+  const { showModal } = useContext(ModalContext);
 
   const fetchUsuarios = async () => {
     try {
@@ -37,11 +39,11 @@ export default function GestionUsuarios() {
 
   const handleGuardarRol = async (id, rolActual) => {
     if (rolActual === 'admin' && usuarios.filter(u => u.rol === 'admin').length <= 1 && nuevoRol !== 'admin') {
-      alert('¡Error! No puedes quitar el rol al único administrador que queda.');
+      showModal('¡Error! No puedes quitar el rol al único administrador que queda.');
       return;
     }
     if (nuevoRol === '') {
-      alert('Por favor, selecciona un nuevo rol.');
+      showModal('Por favor, selecciona un nuevo rol.');
       return;
     }
     try {
@@ -50,9 +52,9 @@ export default function GestionUsuarios() {
       setUsuarios(usuarios.map(u => u.id === id ? { ...u, rol: nuevoRol } : u));
       setEditandoId(null);
       setNuevoRol('');
-      alert('Rol actualizado con éxito.');
+      showModal('Rol actualizado con éxito.');
     } catch (err) {
-      alert('Error al actualizar el rol. ' + err.message);
+      showModal('Error al actualizar el rol. ' + err.message);
     }
   };
 
@@ -71,14 +73,14 @@ export default function GestionUsuarios() {
     try {
       const result = await deleteUser({ uid: id });
       if (result.data.success) {
-        alert(`Usuario ${correo} eliminado con éxito.`);
+        showModal(`Usuario ${correo} eliminado con éxito.`);
         setUsuarios(usuarios.filter(u => u.id !== id));
       } else {
         throw new Error(result.data.message || 'Error desconocido al eliminar usuario.');
       }
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
-      alert(`Error al eliminar el usuario: ${error.message}`);
+      showModal(`Error al eliminar el usuario: ${error.message}`);
     }
   };
 

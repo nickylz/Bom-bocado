@@ -110,7 +110,7 @@ export default function Testimonials() {
                   <div key={star} className="flex items-center gap-3 mb-1">
                     <span className="text-sm font-medium text-gray-700 w-16">{star} {star > 1 ? 'estrellas' : 'estrella'}</span>
                     <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                      <div className="bg-[#d16170] h-4 rounded-full" style={{ width: `${ratingPercentages[star]}%` }}></div>
+                      <div className="bg-[#d16170] h-4 rounded-full progress-bar-fill" style={{ width: `${ratingPercentages[star]}%` }}></div>
                     </div>
                     <span className="text-sm font-semibold text-gray-600 w-10 text-right">{Math.round(ratingPercentages[star])}%</span>
                   </div>
@@ -129,7 +129,7 @@ export default function Testimonials() {
               const enEdicion = editId === t.id;
               const permisos = puedeEditarEliminar(t);
               return (
-                <div key={t.id} className="bg-white rounded-2xl p-6 shadow-lg text-left flex flex-col sm:flex-row gap-6 items-start">
+                <div key={t.id} className="testimonial-card bg-white rounded-2xl p-6 shadow-lg text-left flex flex-col sm:flex-row gap-6 items-start transform hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
                   {/* --- AVATAR: Foto de perfil o inicial --- */}
                   <div className="flex-shrink-0">
                     {t.userPhotoURL ? (
@@ -148,7 +148,10 @@ export default function Testimonials() {
                         <div className="flex items-baseline gap-3">
                             <h4 className="font-semibold text-xl text-[#7a1a0a]">{t.nombre}</h4>
                             {t.createdAt && !enEdicion && (
-                                <p className="text-xs text-gray-400">{new Date(t.createdAt.seconds * 1000).toLocaleDateString("es-PE")}</p>
+                                <p className="text-xs text-gray-400">
+                                  {new Date(t.createdAt.seconds * 1000).toLocaleDateString("es-PE")}
+                                  {t.updatedAt && <span className="text-gray-400 italic ml-2">(editado)</span>}
+                                </p>
                             )}
                         </div>
                         {!enEdicion && renderStars(t.estrellas)}
