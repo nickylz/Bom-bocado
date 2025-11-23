@@ -2,27 +2,9 @@ import { useCarrito } from "../context/CarritoContext";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
-import MapaInteractivo from "../componentes/MapaInteractivo";
-import { ArrowLeft, Trash2 } from "lucide-react"; // <-- IMPORTAMOS EL ICONO
+import { ArrowLeft, Trash2 } from "lucide-react";
 
-// --- Función para calcular la distancia (Fórmula de Haversine) ---
-function getDistance(from, to) {
-  if (!from || !to) return 0;
-  const R = 6371; // Radio de la Tierra en km
-  const dLat = (to.lat - from.lat) * (Math.PI / 180);
-  const dLon = (to.lng - from.lng) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(from.lat * (Math.PI / 180)) *
-      Math.cos(to.lat * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c; // Distancia en km
-  return distance;
-}
-
-const TIENDA_UBICACION = { lat: -12.0883, lng: -77.0049 };
+const COSTO_ENVIO_FIJO = 10.00;
 
 export default function Checkout() {
   const {
@@ -31,7 +13,6 @@ export default function Checkout() {
     realizarPago,
     cargandoPago,
     errorPago: errorDePago,
-    // --- ✨ FUNCIONES PARA MODIFICAR CARRITO ---
     cambiarCantidad,
     eliminarProducto,
   } = useCarrito();
@@ -41,8 +22,6 @@ export default function Checkout() {
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
   const [metodoPago, setMetodoPago] = useState("");
-  const [ubicacion, setUbicacion] = useState(null);
-  const [costoEnvio, setCostoEnvio] = useState(0);
 
   useEffect(() => {
     if (!usuarioActual) {
@@ -58,29 +37,18 @@ export default function Checkout() {
     setNombre(usuarioActual.displayName || "");
   }, [usuarioActual, carrito, navigate]);
 
-  const handleUbicacionSeleccionada = (coords, direccionFormateada) => {
-    setUbicacion(coords);
-    if (direccionFormateada) {
-      setDireccion(direccionFormateada);
-    }
-
-    const distancia = getDistance(TIENDA_UBICACION, coords);
-    let costo = 3.5 + distancia * 1.5;
-    setCostoEnvio(costo);
-  };
-
   const finalizarCompra = async (e) => {
     e.preventDefault();
-    if (!ubicacion) {
-      alert("Por favor, selecciona tu ubicación en el mapa.");
-      return;
+    if (!direccion.trim()) {
+        alert("Por favor, ingresa tu dirección de entrega.");
+        return;
     }
     try {
       const idPedido = await realizarPago({
         nombre,
         direccion,
         metodoPago,
-        costoEnvio,
+        costoEnvio: COSTO_ENVIO_FIJO,
       });
       navigate(`/gracias?pedido=${idPedido}`);
     } catch (err) {
@@ -88,7 +56,7 @@ export default function Checkout() {
     }
   };
 
-  const totalFinal = total + costoEnvio;
+  const totalFinal = total + COSTO_ENVIO_FIJO;
 
   if (carrito.length === 0) {
     return (
@@ -134,8 +102,14 @@ export default function Checkout() {
 
               <div>
                 <label className="text-sm font-semibold text-[#8f2133]">Dirección de Entrega</label>
-                <MapaInteractivo onUbicacionSeleccionada={handleUbicacionSeleccionada} />
-                <input type="hidden" value={direccion} required />
+                <textarea
+                  placeholder="Ej: Av. Siempre Viva 123, Sprinfield"
+                  required
+                  value={direccion}
+                  onChange={(e) => setDireccion(e.target.value)}
+                  rows={3}
+                  className="mt-1 border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c] outline-none resize-y"
+                />
               </div>
               
               <div>
@@ -158,7 +132,7 @@ export default function Checkout() {
 
               <button
                 type="submit"
-                disabled={cargandoPago || costoEnvio === 0}
+                disabled={cargandoPago}
                 className="w-full bg-[#d16170] text-white py-4 rounded-xl hover:bg-[#b84c68] transition font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cargandoPago ? "Procesando..." : `Pagar S/${totalFinal.toFixed(2)}`}
@@ -166,7 +140,7 @@ export default function Checkout() {
             </form>
           </div>
 
-          {/* Columna de Resumen (¡AHORA CON PODERES!) */}
+          {/* Columna de Resumen */}
           <div className="bg-white/80 p-6 sm:p-8 rounded-2xl shadow-lg border border-[#f5bfb2]">
             <h2 className="text-2xl font-bold text-[#9c2007] mb-6">Resumen de tu compra</h2>
             <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
@@ -197,7 +171,7 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between">
                     <p className="text-[#7a1a0a]">Envío:</p>
-                    <p className="font-semibold text-[#7a1a0a]">{costoEnvio > 0 ? `S/${costoEnvio.toFixed(2)}` : '---'}</p>
+                    <p className="font-semibold text-[#7a1a0a]">S/{COSTO_ENVIO_FIJO.toFixed(2)}</p>
                 </div>
                 <div className="flex justify-between text-xl">
                     <p className="font-bold text-[#9c2007]">Total:</p>

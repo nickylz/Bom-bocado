@@ -43,23 +43,3 @@ exports.deleteUser = functions.https.onCall(async (data, context) => {
     );
   }
 });
-
-
-exports.resetPassword = functions.https.onCall(async (data, context) => {
-  await checkIfAdmin(context);
-
-  const email = data.email;
-  try {
-    const link = await admin.auth().generatePasswordResetLink(email);
-    
-    return { success: true, message: `Se ha enviado un correo para restablecer la contraseña a ${email}.` };
-
-  } catch (error) {
-    console.error("Error al iniciar reseteo de contraseña:", error);
-    throw new functions.https.HttpsError(
-      "internal",
-      "No se pudo iniciar el proceso de reseteo de contraseña.",
-      error.message
-    );
-  }
-});

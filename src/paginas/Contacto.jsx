@@ -142,7 +142,7 @@ export default function Contacto() {
                     />
                     <FaStar
                       color={
-                        ratingValue <= (hover || rating) ? "#ffc107" : "#e4e5e9"
+                        ratingValue <= (hover || rating) ? "#d16170" : "#e4e5e9"
                       }
                       onMouseEnter={() => setHover(ratingValue)}
                       onMouseLeave={() => setHover(0)}

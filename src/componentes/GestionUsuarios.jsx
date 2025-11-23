@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { db, auth } from '../lib/firebase';
+import { db } from '../lib/firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { sendPasswordResetEmail } from "firebase/auth";
 import { format } from 'date-fns';
-import { FaEdit, FaKey, FaTrash, FaSave, FaTimes } from 'react-icons/fa'; // Importando los iconos
+import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa'; // Importando los iconos sin FaKey
 
 const functions = getFunctions();
 const deleteUser = httpsCallable(functions, 'deleteUser');
@@ -65,17 +64,6 @@ export default function GestionUsuarios() {
   const handleCancelar = () => {
     setEditandoId(null);
     setNuevoRol('');
-  };
-
-  const handlePasswordReset = async (correo) => {
-    if (!window.confirm(`¿Seguro que quieres enviar un correo para resetear la contraseña a ${correo}?`)) return;
-    try {
-      await sendPasswordResetEmail(auth, correo);
-      alert(`Se ha enviado un correo de restablecimiento de contraseña a ${correo}.`);
-    } catch (error) {
-      console.error("Error al enviar correo de reseteo:", error);
-      alert(`Error al enviar el correo: ${error.message}`);
-    }
   };
 
   const handleDeleteUser = async (id, correo) => {
@@ -143,8 +131,7 @@ export default function GestionUsuarios() {
                   ) : (
                     <div className="flex items-center justify-center gap-3">
                         <button onClick={() => handleEmpezarEdicion(usuario.id, usuario.rol)} className="text-[#d16170] hover:text-[#b84c68] text-lg" title="Editar Rol"><FaEdit /></button>
-                        <button onClick={() => handlePasswordReset(usuario.correo)} className="text-blue-500 hover:text-blue-700 text-lg" title="Resetear Contraseña"><FaKey /></button>
-                        <button onClick={() => handleDeleteUser(usuario.id, usuario.correo)} className="text-red-600 hover:text-red-800 text-lg" title="Eliminar Usuario"><FaTrash /></button>
+                        <button onClick={() => handleDeleteUser(usuario.id, usuario.correo)} className="text-[#d16170] hover:text-[#b84c68] text-lg" title="Eliminar Usuario"><FaTrash /></button>
                     </div>
                   )}
                 </td>
