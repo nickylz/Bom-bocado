@@ -16,13 +16,14 @@ import { useAuth } from "./authContext";
 
 const CarritoContext = createContext();
 
+// ... (mensajes de recordatorio sin cambios)
 const reminderMessages = [
-  "¡No dejes que se enfríe! Tus productos te esperan.",
-  "Tu carrito te extraña. ¿Listo para finalizar tu compra?",
-  "¡Psst! Esos bocaditos en tu carrito se ven deliciosos.",
-  "Estás a un paso de la felicidad. ¡Completa tu pedido!",
-  "¡No te lo pierdas! Finaliza tu compra antes de que se agoten."
-];
+    "¡No dejes que se enfríe! Tus productos te esperan.",
+    "Tu carrito te extraña. ¿Listo para finalizar tu compra?",
+    "¡Psst! Esos bocaditos en tu carrito se ven deliciosos.",
+    "Estás a un paso de la felicidad. ¡Completa tu pedido!",
+    "¡No te lo pierdas! Finaliza tu compra antes de que se agoten."
+  ];
 
 export const CarritoProvider = ({ children }) => {
   const { usuarioActual: user } = useAuth();
@@ -44,64 +45,58 @@ export const CarritoProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    if (!user && !sessionStorage.getItem("guestId")) return; // No hacer nada si no hay usuario ni invitado
     const uid = user ? user.uid : getGuestId();
     const q = query(collection(db, "carrito"), where("userId", "==", uid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const productos = snapshot.docs.map((docu) => ({
-        id: docu.id,
-        ...docu.data(),
-      }));
+      const productos = snapshot.docs.map((docu) => ({ id: docu.id, ...docu.data() }));
       setCarrito(productos);
+    }, (error) => {
+        console.error("Error al escuchar el carrito: ", error);
     });
     return () => unsubscribe();
   }, [user]);
 
   useEffect(() => {
     const fusionarCarritos = async () => {
-        if (!user) return;
-        const guestId = sessionStorage.getItem("guestId");
-        if (!guestId) return;
-  
-        const guestQ = query(
+      if (!user) return;
+      const guestId = sessionStorage.getItem("guestId");
+      if (!guestId) return;
+
+      const guestQ = query(collection(db, "carrito"), where("userId", "==", guestId));
+      const guestSnap = await getDocs(guestQ);
+
+      for (const d of guestSnap.docs) {
+        const data = d.data();
+        const qUser = query(
           collection(db, "carrito"),
-          where("userId", "==", guestId)
+          where("userId", "==", user.uid),
+          where("id", "==", data.id)
         );
-        const guestSnap = await getDocs(guestQ);
-  
-        for (const d of guestSnap.docs) {
-          const data = d.data();
-          const qUser = query(
-            collection(db, "carrito"),
-            where("userId", "==", user.uid),
-            where("id", "==", data.id)
-          );
-          const userSnap = await getDocs(qUser);
-  
-          if (userSnap.empty) {
-            await setDoc(doc(collection(db, "carrito")), {
-              ...data,
-              userId: user.uid,
-            });
-          } else {
-            userSnap.forEach(async (docUser) => {
-              const prod = docUser.data();
-              await updateDoc(doc(db, "carrito", docUser.id), {
-                cantidad: (prod.cantidad || 1) + (data.cantidad || 1),
-              });
-            });
-          }
-  
-          await deleteDoc(doc(db, "carrito", d.id));
+        const userSnap = await getDocs(qUser);
+
+        if (userSnap.empty) {
+          await setDoc(doc(db, "carrito", d.id), { ...data, userId: user.uid });
+        } else {
+          const userDoc = userSnap.docs[0];
+          await updateDoc(userDoc.ref, {
+            cantidad: (userDoc.data().cantidad || 0) + (data.cantidad || 0),
+          });
+          await deleteDoc(d.ref);
         }
-        sessionStorage.removeItem("guestId");
-      };
-  
+      }
+      sessionStorage.removeItem("guestId");
+    };
+
+    if (user) {
       fusionarCarritos();
+    }
   }, [user]);
-  
+
   const totalProductos = carrito.reduce((s, p) => s + (p.cantidad || 0), 0);
-  
-  const agregarProducto = async (producto) => {
+
+  // ========= FUNCIÓN MODIFICADA =========
+  const agregarProducto = async (producto, cantidadAAgregar = 1) => {
     const isFirstProduct = totalProductos === 0;
     const id = producto.id || producto.productoId || producto.nombre;
     if (!id) return console.error("Producto sin ID");
@@ -112,22 +107,24 @@ export const CarritoProvider = ({ children }) => {
       where("userId", "==", uid),
       where("id", "==", id)
     );
+
     const snap = await getDocs(qExistente);
 
     if (snap.empty) {
+      // Si no existe, lo creamos con la cantidad especificada
       const ref = doc(collection(db, "carrito"));
       await setDoc(ref, {
         ...producto,
-        cantidad: 1,
+        cantidad: cantidadAAgregar,
         userId: uid,
         id,
       });
     } else {
-      snap.forEach(async (d) => {
-        const data = d.data();
-        await updateDoc(doc(db, "carrito", d.id), {
-          cantidad: (data.cantidad || 1) + 1,
-        });
+      // Si ya existe, actualizamos la cantidad
+      const docExistente = snap.docs[0];
+      const data = docExistente.data();
+      await updateDoc(doc(db, "carrito", docExistente.id), {
+        cantidad: (data.cantidad || 0) + cantidadAAgregar, 
       });
     }
 
@@ -136,50 +133,38 @@ export const CarritoProvider = ({ children }) => {
       setTimeout(() => setShowFirstItemToast(false), 4000);
     }
   };
+  // =====================================
 
   const cambiarCantidad = async (id, delta) => {
     const uid = user ? user.uid : getGuestId();
-    const qCarrito = query(
-      collection(db, "carrito"),
-      where("userId", "==", uid),
-      where("id", "==", id)
-    );
+    const qCarrito = query(collection(db, "carrito"), where("userId", "==", uid), where("id", "==", id));
     const snap = await getDocs(qCarrito);
+    if (snap.empty) return;
 
-    snap.forEach(async (d) => {
-      const prod = d.data();
-      const nuevaCantidad = Math.max(1, (prod.cantidad || 1) + delta);
-      await updateDoc(doc(db, "carrito", d.id), {
-        cantidad: nuevaCantidad,
-      });
-    });
+    const docCambiar = snap.docs[0];
+    const nuevaCantidad = (docCambiar.data().cantidad || 0) + delta;
+
+    if (nuevaCantidad <= 0) {
+        await eliminarProducto(id); // Elimina si la cantidad es 0 o menos
+    } else {
+        await updateDoc(docCambiar.ref, { cantidad: nuevaCantidad });
+    }
   };
 
   const eliminarProducto = async (id) => {
     const uid = user ? user.uid : getGuestId();
-    const qCarrito = query(
-      collection(db, "carrito"),
-      where("userId", "==", uid),
-      where("id", "==", id)
-    );
+    const qCarrito = query(collection(db, "carrito"), where("userId", "==", uid), where("id", "==", id));
     const snap = await getDocs(qCarrito);
-
-    snap.forEach(async (d) => {
-      await deleteDoc(doc(db, "carrito", d.id));
-    });
+    const promesasDeBorrado = snap.docs.map(d => deleteDoc(d.ref));
+    await Promise.all(promesasDeBorrado);
   };
 
   const vaciarCarrito = async () => {
     const uid = user ? user.uid : getGuestId();
-    const qCarrito = query(
-      collection(db, "carrito"),
-      where("userId", "==", uid)
-    );
+    const qCarrito = query(collection(db, "carrito"), where("userId", "==", uid));
     const snap = await getDocs(qCarrito);
-
-    snap.forEach(async (d) => {
-      await deleteDoc(doc(db, "carrito", d.id));
-    });
+    const promesasDeBorrado = snap.docs.map(d => deleteDoc(d.ref));
+    await Promise.all(promesasDeBorrado);
   };
 
   useEffect(() => {
@@ -217,62 +202,45 @@ export const CarritoProvider = ({ children }) => {
     };
   }, [carrito, showReminder]);
 
-  const closeReminder = () => {
-    setShowReminder(false);
-  };
+  const closeReminder = () => setShowReminder(false);
 
-  const total = carrito.reduce(
-    (s, p) => s + (p.precio || 0) * (p.cantidad || 1),
-    0
-  );
+  const total = carrito.reduce((s, p) => s + (p.precio || 0) * (p.cantidad || 1), 0);
   
   const realizarPago = async ({ nombre, direccion, metodoPago, costoEnvio }) => {
-    if (!user) {
-        throw new Error("Debes iniciar sesión para realizar el pago");
-      }
-      if (carrito.length === 0) {
-        throw new Error("Tu carrito está vacío");
-      }
-  
-      setCargandoPago(true);
-      setErrorPago(null);
-  
-      try {
-        const totalFinal = total + costoEnvio;
-  
-        const pedidoRef = doc(collection(db, "pedidos"));
-        await setDoc(pedidoRef, {
-          id: pedidoRef.id,
-          userId: user.uid,
-          correoUsuario: user.correo,
-          nombreCliente: nombre,
-          direccionEnvio: direccion,
-          metodoPago,
-          items: carrito.map((item) => ({
-            id: item.id,
-            nombre: item.nombre || item.nombreProducto || "Producto sin nombre",
-            precio: item.precio || 0,
-            cantidad: item.cantidad || 1,
-            imagen: item.imagen || null,
-          })),
-          delivery: costoEnvio,
-          totalProductos,
-          subtotal: total,
-          totalFinal,
-          fechaCreacion: serverTimestamp(),
-          estado: "pendiente",
-        });
-  
-        await vaciarCarrito();
-  
-        setCargandoPago(false);
-        return pedidoRef.id;
-      } catch (error) {
-        console.error(" Error al registrar pedido:", error);
-        setErrorPago(error.message);
-        setCargandoPago(false);
-        throw error;
-      }
+    if (!user) throw new Error("Debes iniciar sesión para realizar el pago");
+    if (carrito.length === 0) throw new Error("Tu carrito está vacío");
+
+    setCargandoPago(true);
+    setErrorPago(null);
+
+    try {
+      const totalFinal = total + costoEnvio;
+      const pedidoRef = doc(collection(db, "pedidos"));
+      await setDoc(pedidoRef, {
+        id: pedidoRef.id,
+        userId: user.uid,
+        correoUsuario: user.email || "No especificado",
+        nombreCliente: nombre,
+        direccionEnvio: direccion,
+        metodoPago,
+        items: carrito.map(item => ({ ...item })),
+        delivery: costoEnvio,
+        totalProductos,
+        subtotal: total,
+        totalFinal,
+        fechaCreacion: serverTimestamp(),
+        estado: "pendiente",
+      });
+
+      await vaciarCarrito();
+      return pedidoRef.id;
+    } catch (error) {
+      console.error(" Error al registrar pedido:", error);
+      setErrorPago(error.message);
+      throw error;
+    } finally {
+      setCargandoPago(false);
+    }
   };
 
   return (

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { db, storage } from "../lib/firebase"; // Import storage
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db, storage } from "../lib/firebase";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { getAuth, updateProfile } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import storage functions
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function PerfilForm({ user }) {
   const [nombre, setNombre] = useState("");
+  const [username, setUsername] = useState("");
   const [correo, setCorreo] = useState("");
   const [fotoURL, setFotoURL] = useState("");
-  const [nuevaFoto, setNuevaFoto] = useState(null); // State for the new file
+  const [nuevaFoto, setNuevaFoto] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
 
@@ -20,6 +21,7 @@ export default function PerfilForm({ user }) {
       if (snap.exists()) {
         const data = snap.data();
         setNombre(data.nombre || "");
+        setUsername(data.username || "");
         setCorreo(data.correo || user.email || "");
         setFotoURL(data.fotoURL || "");
       }
@@ -33,23 +35,30 @@ export default function PerfilForm({ user }) {
     setGuardando(true);
 
     try {
+      const usernameLower = username.toLowerCase();
+      if (usernameLower !== user.username) {
+        const q = query(collection(db, "usuarios"), where("username", "==", usernameLower));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          throw new Error("El nombre de usuario ya está en uso.");
+        }
+      }
+
       let finalFotoURL = fotoURL;
 
-      // 1. If a new photo is selected, upload it
       if (nuevaFoto) {
-        const storageRef = ref(storage, `perfiles/${user.uid}`);
+        const storageRef = ref(storage, `fotos-perfil/${user.uid}`);
         await uploadBytes(storageRef, nuevaFoto);
         finalFotoURL = await getDownloadURL(storageRef);
       }
 
-      // 2. Update Firestore
       await updateDoc(doc(db, "usuarios", user.uid), {
         nombre: nombre,
+        username: usernameLower,
         correo,
         fotoURL: finalFotoURL,
       });
 
-      // 3. Update Firebase Authentication
       const auth = getAuth();
       const currentUser = auth.currentUser;
 
@@ -61,11 +70,10 @@ export default function PerfilForm({ user }) {
       }
 
       alert("Perfil actualizado correctamente");
-      // Refresh the page to see the changes reflected everywhere
       window.location.reload();
     } catch (error) {
       console.error("Error al guardar:", error);
-      alert("Error al guardar el perfil");
+      alert(`Error al guardar el perfil: ${error.message}`);
     }
     setGuardando(false);
   };
@@ -80,7 +88,7 @@ export default function PerfilForm({ user }) {
 
         <div>
           <label className="block text-sm font-semibold text-[#7a1a0a] mb-1">
-            Nombre de usuario
+            Nombre completo
           </label>
           <input
             type="text"
@@ -92,32 +100,32 @@ export default function PerfilForm({ user }) {
 
         <div>
           <label className="block text-sm font-semibold text-[#7a1a0a] mb-1">
-            Correo
+            Nombre de usuario
           </label>
           <input
-            type="email"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="w-full bg-white border border-[#f5bfb2] px-4 py-2.5 rounded-xl"
           />
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-[#7a1a0a] mb-1">
-            Foto de perfil (URL)
+            Correo
           </label>
           <input
-            type="text"
-            placeholder="Pega la URL de una imagen"
-            value={fotoURL}
-            onChange={(e) => setFotoURL(e.target.value)}
-            className="w-full bg-white border border-[#f5bfb2] px-4 py-2.5 rounded-xl"
+            type="email"
+            value={correo}
+            disabled
+            title="El correo no se puede cambiar desde aquí por seguridad."
+            className="w-full bg-gray-100 border border-[#f5bfb2] px-4 py-2.5 rounded-xl cursor-not-allowed"
           />
         </div>
         
         <div>
           <label className="block text-sm font-semibold text-[#7a1a0a] mb-1">
-            O subir desde tu dispositivo
+            Subir nueva foto de perfil
           </label>
           <input
             type="file"

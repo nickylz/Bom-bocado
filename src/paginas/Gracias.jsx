@@ -1,55 +1,100 @@
-import { useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { useCarrito } from '../context/CarritoContext';
+import { useEffect, useState } from "react";
+import { useLocation, Link } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { CheckCircle, Package } from "lucide-react";
 
-const postresDeAgradecimiento = [
-    "https://i.postimg.cc/SsLjzJ0b/1.png",
-    "https://i.postimg.cc/50zK5WpV/2.png",
-    "https://i.postimg.cc/nrtR0Sw-Q/3.png",
-    "https://i.postimg.cc/R0HLyQt1/4.png",
-    "https://i.postimg.cc/Jz9bNDFs/5.png"
-];
-
-const imagenAleatoria = postresDeAgradecimiento[Math.floor(Math.random() * postresDeAgradecimiento.length)];
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
 
 export default function Gracias() {
-    const { vaciarCarrito } = useCarrito();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const idPedido = queryParams.get('pedido');
+  const query = useQuery();
+  const pedidoId = query.get("pedido");
+  const [pedido, setPedido] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        // Limpiamos el carrito en cuanto se monta la página
-        vaciarCarrito(); 
+  useEffect(() => {
+    const fetchPedido = async () => {
+      if (!pedidoId) {
+        setError("No se proporcionó un ID de pedido.");
+        setCargando(false);
+        return;
+      }
 
-        // Si no hay ID de pedido, redirigimos
-        if (!idPedido) {
-            navigate('/');
+      try {
+        const pedidoRef = doc(db, "pedidos", pedidoId);
+        const pedidoSnap = await getDoc(pedidoRef);
+
+        if (pedidoSnap.exists()) {
+          setPedido({ id: pedidoSnap.id, ...pedidoSnap.data() });
+        } else {
+          setError("El pedido no fue encontrado.");
         }
-    }, [idPedido, navigate, vaciarCarrito]);
+      } catch (err) {
+        console.error("Error al recuperar el pedido:", err);
+        setError("Ocurrió un error al buscar tu pedido.");
+      } finally {
+        setCargando(false);
+      }
+    };
 
-    return (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] bg-[#fff3f0] text-center px-4">
-            <div className="bg-white/80 p-8 rounded-3xl shadow-2xl border border-[#f5bfb2] max-w-md mx-auto">
-                <h1 className="text-3xl sm:text-4xl font-bold text-[#9c2007] mb-3">¡Gracias por tu compra!</h1>
-                <p className="text-gray-600 mb-4">Tu pedido ha sido registrado y está siendo procesado.</p>
-                
-                <img src={imagenAleatoria} alt="Postre de agradecimiento" className="rounded-2xl mx-auto w-56 sm:w-64 shadow-lg my-6" />
+    fetchPedido();
+  }, [pedidoId]);
 
-                {idPedido && (
-                    <div className="text-sm text-gray-500 bg-[#f5bfb2]/30 rounded-lg py-2 px-4">
-                        <p>ID de tu pedido: <span className="font-semibold text-gray-700">{idPedido}</span></p>
-                    </div>
-                )}
-
-                <Link 
-                    to="/productos"
-                    className="mt-8 inline-block bg-[#d16170] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#b84c68] transition-transform duration-300 transform hover:scale-105"
-                >
-                    Seguir comprando
-                </Link>
+  return (
+    <div className="min-h-[70vh] bg-[#fff3f0] flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg p-8 max-w-2xl w-full text-center border-2 border-[#f5bfb2] transform hover:-translate-y-2 transition-all duration-500 ease-out hover:shadow-2xl cursor-pointer">
+        {cargando ? (
+          <div>
+            <h1 className="text-2xl font-semibold text-[#8f2133]">Cargando confirmación...</h1>
+            <div className="animate-pulse mt-4">
+              <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto mt-2"></div>
             </div>
-        </div>
-    );
+          </div>
+        ) : error ? (
+          <div>
+            <h1 className="text-3xl font-bold text-red-600">Error</h1>
+            <p className="text-gray-600 mt-4">{error}</p>
+            <Link
+              to="/productos"
+              className="mt-6 inline-block bg-[#d16170] text-white font-bold py-2 px-6 rounded-xl hover:bg-[#b84c68] transition"
+            >
+              Volver a la tienda
+            </Link>
+          </div>
+        ) : pedido ? (
+          <div>
+            <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+              <CheckCircle className="text-gray-400 w-full h-full animate-pulse shadow-lg rounded-full" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#8f2133]">
+              ¡Gracias por tu compra, {pedido.nombreCliente}!
+            </h1>
+            <p className="text-gray-600 mt-4 text-lg">
+              Hemos recibido tu pedido y lo estamos procesando.
+            </p>
+            <div className="mt-6 text-left bg-[#fff3f0] p-4 rounded-xl border border-[#f5bfb2]">
+              <p className="text-sm text-[#8f2133] flex items-center justify-center">
+                <Package size={18} className="mr-2" />
+                <span className="font-bold">Número de Pedido:</span>
+                <span className="ml-2 bg-white px-2 py-1 text-sm rounded-md font-mono">{pedido.id}</span>
+              </p>
+            </div>
+            <p className="text-gray-500 mt-6 text-sm">
+              Recibirás una confirmación por correo electrónico en breve.
+            </p>
+            <Link
+              to="/productos"
+              className="mt-8 inline-block bg-[#d16170] text-white font-bold py-3 px-8 rounded-xl hover:bg-[#b84c68] transition"
+            >
+              Seguir Comprando
+            </Link>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
 }

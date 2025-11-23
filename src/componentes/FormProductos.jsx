@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { db, storage } from "../lib/firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -11,9 +11,22 @@ export default function FormProducto() {
   const [precio, setPrecio] = useState("");
   const [categoria, setCategoria] = useState("");
   const [imagen, setImagen] = useState(null);
+  const [nombreImagen, setNombreImagen] = useState("Ningún archivo seleccionado");
   const [subiendo, setSubiendo] = useState(false);
+  
+  const inputFileRef = useRef(null);
 
   const tienePermiso = usuarioActual?.rol === 'admin' || usuarioActual?.rol === 'editor';
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagen(file);
+      setNombreImagen(file.name);
+    } else {
+      setNombreImagen("Ningún archivo seleccionado");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +60,10 @@ export default function FormProducto() {
       setPrecio("");
       setCategoria("");
       setImagen(null);
-      e.target.reset();
+      setNombreImagen("Ningún archivo seleccionado");
+      if(inputFileRef.current) {
+        inputFileRef.current.value = "";
+      }
       alert("¡Producto agregado con éxito!");
     } catch (error) {
       console.error("Error al agregar el producto:", error);
@@ -61,7 +77,6 @@ export default function FormProducto() {
     return null;
   }
 
-  // --- REVERTIMOS AL ESTILO ORIGINAL SIN PADDINGS EXTRA ---
   return (
     <div>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -86,10 +101,30 @@ export default function FormProducto() {
             <option value="Bocaditos">Bocaditos</option>
           </select>
         </div>
+        
+        {/* --- NUEVO INPUT DE ARCHIVO PERSONALIZADO --- */}
         <div>
-          <label htmlFor="imagen" className="block text-sm font-medium text-[#8f2133]">Imagen del Producto</label>
-          <input type="file" id="imagen" onChange={(e) => setImagen(e.target.files[0])} accept="image/*" required className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#fff3f0] file:text-[#d16170] hover:file:bg-[#f5bfb2] border border-[#f5bfb2]" />
+            <label className="block text-sm font-medium text-[#8f2133]">Imagen del Producto</label>
+            <div className="mt-1 flex items-center">
+                <input 
+                    type="file" 
+                    id="imagen" 
+                    ref={inputFileRef}
+                    onChange={handleFileChange} 
+                    accept="image/*" 
+                    required 
+                    className="hidden" 
+                />
+                <label 
+                    htmlFor="imagen"
+                    className="cursor-pointer bg-[#fff3f0] text-[#d16170] font-semibold py-2 px-4 rounded-xl hover:bg-[#f5bfb2] transition-colors"
+                >
+                    Elegir archivo
+                </label>
+                <span className="ml-4 text-gray-500">{nombreImagen}</span>
+            </div>
         </div>
+
         <button type="submit" disabled={subiendo} className="w-full flex justify-center py-3 px-4 rounded-xl shadow-sm text-sm font-semibold text-white bg-[#d16170] hover:bg-[#b84c68] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d8718c] disabled:opacity-50 transition-colors">
           {subiendo ? "Agregando..." : "Agregar Producto"}
         </button>

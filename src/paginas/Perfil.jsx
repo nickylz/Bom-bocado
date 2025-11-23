@@ -12,9 +12,6 @@ export default function PerfilPage() {
   const [compras, setCompras] = useState([]);
   const [cargandoCompras, setCargandoCompras] = useState(true);
 
-  // ========================================================
-  //   VERSIÓN FINAL: CONSULTA SIMPLE + ORDENACIÓN LOCAL
-  // ========================================================
   useEffect(() => {
     const cargarCompras = async () => {
       if (!usuarioActual) {
@@ -25,7 +22,6 @@ export default function PerfilPage() {
 
       setCargandoCompras(true);
       try {
-        // 1. Consulta simplificada: solo filtramos por usuario.
         const q = query(
           collection(db, "pedidos"),
           where("userId", "==", usuarioActual.uid)
@@ -37,11 +33,10 @@ export default function PerfilPage() {
             ...doc.data(),
         }));
 
-        // 2. Ordenación en el cliente: robusta y sin índices.
         lista.sort((a, b) => {
             const fechaA = a.fechaCreacion?.toDate ? a.fechaCreacion.toDate() : 0;
             const fechaB = b.fechaCreacion?.toDate ? b.fechaCreacion.toDate() : 0;
-            return fechaB - fechaA; // Orden descendente (más nuevas primero)
+            return fechaB - fechaA; // Orden descendente
         });
 
         setCompras(lista);
@@ -57,10 +52,6 @@ export default function PerfilPage() {
     cargarCompras();
 
   }, [usuarioActual]);
-
-  // ----------------------------------------------------------------
-  // Renderizado (sin cambios)
-  // ----------------------------------------------------------------
 
   if (cargandoAuth) {
     return (
@@ -103,11 +94,8 @@ export default function PerfilPage() {
             <h2 className="text-2xl font-bold text-[#7a1a0a]">
               {usuarioActual.displayName || "Usuario"}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {usuarioActual.email || ""}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              UID: <span className="font-mono">{usuarioActual.uid}</span>
+            <p className="text-md font-semibold text-[#d8718c]">
+              @{usuarioActual.username || "username"}
             </p>
           </div>
         </div>

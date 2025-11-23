@@ -3,7 +3,7 @@ import { db } from '../lib/firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { format } from 'date-fns';
-import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa'; // Importando los iconos sin FaKey
+import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
 
 const functions = getFunctions();
 const deleteUser = httpsCallable(functions, 'deleteUser');
@@ -92,6 +92,7 @@ export default function GestionUsuarios() {
         <table className="min-w-full divide-y divide-[#f5bfb2]">
           <thead className="bg-[#fff3f0]">
             <tr>
+              <th className="px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">Username</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">Correo</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">Rol</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">Fecha de Creación</th>
@@ -101,6 +102,7 @@ export default function GestionUsuarios() {
           <tbody className="bg-white divide-y divide-[#f5bfb2]">
             {usuarios.map((usuario) => (
               <tr key={usuario.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">@{usuario.username}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{usuario.correo}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
                   {editandoId === usuario.id ? (

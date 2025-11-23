@@ -23,26 +23,39 @@ export default function Checkout() {
   const [direccion, setDireccion] = useState("");
   const [metodoPago, setMetodoPago] = useState("");
 
+  // ULTIMATE FIX v3: Estado local para bloquear la redirección durante el proceso de pago.
+  const [intentoDePago, setIntentoDePago] = useState(false);
+
   useEffect(() => {
     if (!usuarioActual) {
       alert("Debes iniciar sesión para continuar.");
       navigate("/productos");
       return;
     }
-    if (carrito.length === 0) {
+
+    // Si el carrito está vacío y NUNCA se ha intentado pagar, redirigir.
+    // Esto previene la redirección si el carrito se vacía como resultado de un pago exitoso.
+    if (carrito.length === 0 && !intentoDePago) {
       console.warn("El carrito está vacío, redirigiendo...");
       navigate("/productos");
       return;
     }
-    setNombre(usuarioActual.displayName || "");
-  }, [usuarioActual, carrito, navigate]);
+
+    if (usuarioActual) {
+      setNombre(usuarioActual.displayName || "");
+    }
+  }, [usuarioActual, carrito, navigate, intentoDePago]);
 
   const finalizarCompra = async (e) => {
     e.preventDefault();
     if (!direccion.trim()) {
-        alert("Por favor, ingresa tu dirección de entrega.");
-        return;
+      alert("Por favor, ingresa tu dirección de entrega.");
+      return;
     }
+
+    // Levantar la bandera local INMEDIATAMENTE para prevenir la carrera.
+    setIntentoDePago(true);
+
     try {
       const idPedido = await realizarPago({
         nombre,
@@ -50,25 +63,29 @@ export default function Checkout() {
         metodoPago,
         costoEnvio: COSTO_ENVIO_FIJO,
       });
+      // La navegación a la página de gracias ahora es la única que puede ocurrir.
       navigate(`/gracias?pedido=${idPedido}`);
     } catch (err) {
-      console.error(err);
+      console.error("Fallo al finalizar la compra:", err);
+      alert(`¡Uy! Hubo un problema al procesar tu pedido. Por favor, inténtalo de nuevo o contacta a soporte si el problema persiste. (Error: ${err.message})`);
+      // Si el pago falla, bajamos la bandera para permitir un nuevo intento.
+      setIntentoDePago(false);
     }
   };
 
   const totalFinal = total + COSTO_ENVIO_FIJO;
-
-  if (carrito.length === 0) {
+  
+  // No renderizar el formulario si ya se completó la compra, 
+  // esto previene interacciones mientras se redirige.
+  if (intentoDePago && cargandoPago) {
     return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] bg-[#fff3f0]">
-            <h1 className="text-2xl text-[#9c2007]">Tu carrito está vacío</h1>
-            <p className="text-gray-600 mb-4">Añade algunos productos para continuar.</p>
-            <button onClick={() => navigate('/productos')} className="bg-[#d16170] text-white px-6 py-2 rounded-xl">
-                Ver productos
-            </button>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-[#fff3f0]">
+        <h1 className="text-2xl text-[#9c2007]">Finalizando tu compra...</h1>
+        <p className="text-gray-600 mb-4">Espera un momento, estamos registrando tu pedido.</p>
+      </div>
     )
   }
+
 
   return (
     <div className="bg-[#fff3f0] min-h-screen py-8 sm:py-12">
@@ -132,7 +149,7 @@ export default function Checkout() {
 
               <button
                 type="submit"
-                disabled={cargandoPago}
+                disabled={cargandoPago || intentoDePago}
                 className="w-full bg-[#d16170] text-white py-4 rounded-xl hover:bg-[#b84c68] transition font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cargandoPago ? "Procesando..." : `Pagar S/${totalFinal.toFixed(2)}`}

@@ -126,8 +126,7 @@ export default function Inicio() {
 
         {/* ===== SECCIÓN DE COMENTARIOS ===== */}
         <div className="bg-[#fff3f0]"><Testimonials /> </div>
-        
-        {/* <-- 2. AÑADIMOS EL COMPONENTE AQUÍ */}
+  
 
       </main>
     </>

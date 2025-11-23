@@ -31,7 +31,7 @@ export default function Nosotros() {
         <div className="w-full md:w-1/2 flex justify-center py-10 px-6">
           <img
             src={Bom}
-            alt="Logo de Bom Bocado"
+            alt="Equipo Bom Bocado"
             className="w-[45%] md:w-[53%] h-auto object-contain"
           />
         </div>
@@ -58,7 +58,7 @@ export default function Nosotros() {
           <div className="overflow-hidden rounded-3xl shadow-xl border border-[#f5bfb2] bg-white group">
             <img
               src={Centro}
-              alt="Interior de la pastelería Bom Bocado"
+              alt="Equipo Bom Bocado"
               className="w-full h-80 md:h-[450px] object-cover group-hover:scale-105 transition-transform duration-700"
             />
           </div>
@@ -67,7 +67,7 @@ export default function Nosotros() {
           <div className="overflow-hidden rounded-3xl shadow-xl border border-[#f5bfb2] bg-white group">
             <img
               src={Centro2}
-              alt="Taller de postres Bom Bocado"
+              alt="Taller de postres"
               className="w-full h-80 md:h-[450px] object-cover group-hover:scale-105 transition-transform duration-700"
             />
           </div>

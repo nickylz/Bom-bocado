@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/authContext";
+import { useModal } from "../context/ModalContext"; // 1. Importamos el hook para modales
 import { FcGoogle } from "react-icons/fc";
 import Ajustes from "./Ajustes";
 
@@ -10,43 +11,55 @@ export default function Login() {
     registrarUsuario,
     iniciarConGoogle,
   } = useAuth();
+  
+  // 2. Traemos la función para mostrar nuestro modal personalizado
+  const { mostrarModal } = useModal();
 
   const [modalLogin, setModalLogin] = useState(false);
   const [modalRegistro, setModalRegistro] = useState(false);
   const [modalAjustes, setModalAjustes] = useState(false);
 
-  const [loginCorreo, setLoginCorreo] = useState("");
+  const [loginIdentifier, setLoginIdentifier] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
   const [regCorreo, setRegCorreo] = useState("");
   const [regNombre, setRegNombre] = useState("");
+  const [regUsername, setRegUsername] = useState("");
   const [regPass, setRegPass] = useState("");
   const [regFoto, setRegFoto] = useState(null);
 
+  // 3. Reemplazamos la alerta fea por nuestro modal "insano"
   useEffect(() => {
     if (usuarioActual && modalLogin) {
       setModalLogin(false);
-      alert("Inicio de sesión exitoso!");
+      // ¡Aquí está la magia!
+      mostrarModal(
+        `¡Bienvenido, ${usuarioActual.nombre.split(' ')[0]}!`,
+        "Tu inicio de sesión fue exitoso. ¡Disfruta de nuestros postres!"
+      );
     }
-  }, [usuarioActual, modalLogin]);
+  }, [usuarioActual, modalLogin, mostrarModal]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await iniciarSesion(loginCorreo, loginPass);
+      await iniciarSesion(loginIdentifier, loginPass);
     } catch (err) {
-      alert("Error: " + err.message);
+      // También para los errores
+      mostrarModal("Error al iniciar sesión", err.message);
     }
   };
 
   const handleRegistro = async (e) => {
     e.preventDefault();
     try {
-      await registrarUsuario(regCorreo, regNombre, regPass, regFoto);
+      await registrarUsuario(regCorreo, regNombre, regUsername, regPass, regFoto);
       setModalRegistro(false);
-      alert("Cuenta creada correctamente!");
+      // Y para el registro exitoso
+      mostrarModal("¡Cuenta Creada!", "Tu registro fue exitoso. Ahora puedes iniciar sesión.");
     } catch (err) {
-      alert("Error al registrar: " + err.message);
+      // Y para los errores de registro
+      mostrarModal("Error en el registro", err.message);
     }
   };
 
@@ -84,10 +97,10 @@ export default function Login() {
             <h2 className="text-3xl font-bold text-[#8f2133] mb-6">Bienvenido</h2>
             <form onSubmit={handleLogin} className="space-y-4">
               <input
-                type="email"
-                placeholder="Correo"
-                value={loginCorreo}
-                onChange={(e) => setLoginCorreo(e.target.value)}
+                type="text"
+                placeholder="Correo o Nombre de usuario"
+                value={loginIdentifier}
+                onChange={(e) => setLoginIdentifier(e.target.value)}
                 className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
               />
               <input
@@ -106,7 +119,14 @@ export default function Login() {
                 </button>
                 <button
                   type="button"
-                  onClick={iniciarConGoogle}
+                  onClick={async () => {
+                      try {
+                          await iniciarConGoogle();
+                          // El useEffect se encargará de mostrar el modal de bienvenida
+                      } catch (err) {
+                          mostrarModal("Error con Google", err.message);
+                      }
+                  }}
                   className="flex items-center justify-center gap-2 border border-[#d8718c] text-[#d8718c] py-3 rounded-xl hover:bg-[#f5bfb2] transition font-semibold"
                 >
                   <FcGoogle className="text-xl" /> Google
@@ -135,7 +155,8 @@ export default function Login() {
             <h2 className="text-3xl font-bold text-[#8f2133] mb-6">Crear cuenta</h2>
             <form onSubmit={handleRegistro} className="space-y-4">
               <input type="email" placeholder="Correo" value={regCorreo} onChange={(e) => setRegCorreo(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
-              <input type="text" placeholder="Nombre" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
+              <input type="text" placeholder="Nombre completo" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
+              <input type="text" placeholder="Nombre de usuario" value={regUsername} onChange={(e) => setRegUsername(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
               <input type="password" placeholder="Contraseña" value={regPass} onChange={(e) => setRegPass(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
               <label htmlFor="foto-perfil" className="block text-sm font-medium text-[#8f2133] text-left">Foto de Perfil (Opcional)</label>
               <input type="file" id="foto-perfil" accept="image/*" onChange={(e) => setRegFoto(e.target.files[0])} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#fff3f0] file:text-[#d16170] hover:file:bg-[#f5bfb2] border border-[#f5bfb2] rounded-xl" />
@@ -170,6 +191,7 @@ export default function Login() {
             email: usuarioActual.correo,
             displayName: usuarioActual.nombre,
             photoURL: usuarioActual.fotoURL,
+            username: usuarioActual.username
           }}
         />
       )}

@@ -25,16 +25,11 @@ export default function Ajustes({ isOpen, onClose, user }) {
         className="
           bg-[#fff3f0] shadow-xl border border-[#f5bfb2] relative 
           text-center md:text-left 
-          
-          /* Estilos de Móvil (Modal Centrado) */
           w-[90%] max-w-sm p-6 rounded-3xl 
-
-          /* Estilos de Desktop (Dropdown) */
           md:absolute md:top-16 md:right-4 
           md:w-72 md:p-4 md:rounded-2xl
         "
       >
-        {/* BOTÓN DE CERRAR: Con colores del tema */}
         <button
           onClick={onClose}
           className="absolute text-[#d16170] hover:text-[#b84c68] top-3 right-4 md:top-2 md:right-3 text-2xl md:text-lg"
@@ -42,7 +37,6 @@ export default function Ajustes({ isOpen, onClose, user }) {
           &times;
         </button>
 
-        {/* INFO DE USUARIO: Layout responsive y colores unificados */}
         <div className="flex flex-col items-center md:flex-row md:items-center gap-3 mb-6 md:mb-4">
           <div className="w-20 h-20 md:w-12 md:h-12 rounded-full overflow-hidden border-4 md:border-2 border-white md:border-[#d8718c] shadow-md flex-shrink-0">
             <img
@@ -55,13 +49,12 @@ export default function Ajustes({ isOpen, onClose, user }) {
             <span className="text-xl md:text-base font-bold md:font-semibold text-[#8f2133] leading-tight">
               {user?.displayName || "Usuario"}
             </span>
-            <span className="text-sm md:text-xs text-gray-500 font-medium">
-              {user?.email}
+            <span className="text-md md:text-sm font-semibold text-[#d8718c]">
+              @{user?.username || "username"}
             </span>
           </div>
         </div>
 
-        {/* ACCIONES */}
         <div className="space-y-3">
           <Link
             to="/perfil"

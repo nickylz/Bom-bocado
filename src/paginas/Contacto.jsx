@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaEnvelope, FaUser, FaCommentDots, FaStar } from "react-icons/fa";
 import { db } from "../lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "../context/authContext";
+import toast from 'react-hot-toast'; // 1. Importar toast
 
 export default function Contacto() {
   const { usuarioActual } = useAuth();
+  // Se elimina useModal
 
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -16,10 +18,19 @@ export default function Contacto() {
     mensaje: "",
   });
 
+  useEffect(() => {
+    if (usuarioActual) {
+      setFormData((prev) => ({
+        ...prev,
+        nombre: usuarioActual.displayName || "",
+        correo: usuarioActual.email || "",
+      }));
+    }
+  }, [usuarioActual]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // auto-expand textarea con límite
     if (name === "mensaje") {
       e.target.style.height = "auto";
       e.target.style.height = `${Math.min(e.target.scrollHeight, 250)}px`;
@@ -32,35 +43,42 @@ export default function Contacto() {
     e.preventDefault();
 
     if (rating === 0) {
-      alert("Por favor, selecciona una calificación de estrellas.");
+      // 2. Reemplazar modal por toast de error
+      toast.error("Por favor, selecciona una calificación de estrellas.");
       return;
     }
 
     try {
-      await addDoc(collection(db, "testimonios"), {
+      const promise = addDoc(collection(db, "testimonios"), {
         nombre: formData.nombre,
         correo: formData.correo,
         mensaje: formData.mensaje,
         estrellas: rating,
         createdAt: serverTimestamp(),
         userUid: usuarioActual?.uid || null,
+        userPhotoURL: usuarioActual?.photoURL || null, 
         userCorreo: usuarioActual?.email || null,
       });
 
-      alert("¡Gracias por tu comentario y calificación!");
+      // 3. Usar toast.promise para una UX increíble
+      await toast.promise(promise, {
+         loading: 'Enviando tu comentario...',
+         success: '¡Gracias por tu opinión!',
+         error: 'No se pudo enviar tu comentario.',
+      });
+
       setFormData({ nombre: "", correo: "", mensaje: "" });
       setRating(0);
       setHover(0);
     } catch (error) {
       console.error("Error al enviar testimonio:", error);
-      alert("Hubo un error al enviar tu testimonio. Inténtalo nuevamente.");
+      // El toast.promise ya maneja el mensaje de error
     }
   };
 
   return (
     <section className="bg-[#fff3f0] py-16">
       <div className="max-w-6xl mx-auto px-6 md:px-12 grid md:grid-cols-2 gap-12 items-center">
-        {/* ======= COLUMNA IZQUIERDA ======= */}
         <div className="text-center md:text-left">
           <h1 className="text-5xl font-bold text-[#9c2007] mb-4">¡Hablemos!</h1>
           <p className="text-gray-700 text-lg leading-relaxed mb-6">
@@ -75,11 +93,10 @@ export default function Contacto() {
           </p>
         </div>
 
-        {/* ======= FORMULARIO ======= */}
         <form
           aria-label="Formulario de contacto y calificación"
           onSubmit={handleSubmit}
-          className="bg-white border border-[#f5bfb2] rounded-3xl shadow-xl p-8 space-y-5"
+          className="bg-white border border-[#f5bfb2] rounded-3xl shadow-xl p-8 space-y-5 transform hover:-translate-y-2 transition-all duration-500 ease-out hover:shadow-2xl cursor-pointer"
         >
           <div className="relative">
             <FaUser className="absolute left-3 top-3.5 text-[#d8718c]" />
@@ -123,7 +140,6 @@ export default function Contacto() {
             ></textarea>
           </div>
 
-          {/* Sistema de Calificación */}
           <div className="text-center">
             <label className="block text-lg font-semibold text-[#9c2007] mb-3">
               ¡Califícanos!

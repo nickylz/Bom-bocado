@@ -278,4 +278,14 @@ export const Postres = [
     imagen:
       "https://campograndeperu.com/wp-content/uploads/2024/03/gelatina-de-fresa-natural-1-1024x684.jpg",
   },
+
+  {
+    id: 29,
+    nombre: "Tarta Tilín Insana",
+    descripcion: "¡Wow Tilín! Una tarta para campeones. Vaya Tilín.",
+    precio: 99.99,
+    categoria: "Tartas",
+    imagen:
+      "https://i.ytimg.com/vi/y325y2E1-I8/maxresdefault.jpg",
+  },
 ];

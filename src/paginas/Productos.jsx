@@ -9,13 +9,12 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import Filtros from "../componentes/Filtros";
-import { useCarrito } from "../context/CarritoContext";
+import ProductoCard from "../componentes/ProductoCard"; // ¡Importamos la tarjeta reutilizable!
 import incono from "../componentes/img/Bom.png";
 import { useAuth } from "../context/authContext";
 import { Trash2 } from "lucide-react";
 
 export default function Productos() {
-  const { agregarProducto } = useCarrito();
   const [productos, setProductos] = useState([]);
   const [filtro, setFiltro] = useState({
     nombre: "",
@@ -26,61 +25,42 @@ export default function Productos() {
 
   const { usuarioActual } = useAuth();
 
-  // 🔐 Correos autorizados para eliminar
+  // --- Lógica de Admin ---
   const correosPermitidos = [
     "danportaleshinostroza@crackthecode.la",
     "zanadrianzenbohorquez@crackthecode.la",
     "marandersonsantillan@crackthecode.la",
     "shavalerianoblas@crackthecode.la",
   ];
+  const correoUsuario = (usuarioActual?.correo || usuarioActual?.email || "").toLowerCase().trim();
+  const esAdmin = correoUsuario && correosPermitidos.some(c => c.toLowerCase().trim() === correoUsuario);
 
-  const correoUsuario = (usuarioActual?.correo || usuarioActual?.email || "")
-    .toLowerCase()
-    .trim();
-
-  const esAdmin =
-    correoUsuario &&
-    correosPermitidos.some(
-      (correo) => correo.toLowerCase().trim() === correoUsuario
-    );
-
+  // --- Carga de Productos ---
   useEffect(() => {
-    const q = query(
-      collection(db, "productos"),
-      orderBy("fechaCreacion", "desc")
-    );
+    const q = query(collection(db, "productos"), orderBy("fechaCreacion", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const lista = snapshot.docs.map((docu) => ({
-        id: docu.id,
-        ...docu.data(),
-      }));
+      const lista = snapshot.docs.map((docu) => ({ id: docu.id, ...docu.data() }));
       setProductos(lista);
     });
     return () => unsubscribe();
   }, []);
 
+  // --- Filtrado de Productos ---
   const productosFiltrados = productos.filter((p) => {
-    const cumpleNombre =
-      filtro.nombre === "" ||
-      p.nombre.toLowerCase().includes(filtro.nombre.toLowerCase());
-    const cumpleCategoria =
-      filtro.categoria === "" || p.categoria === filtro.categoria;
-    const cumpleMin = filtro.min === "" || p.precio >= parseFloat(filtro.min);
-    const cumpleMax = filtro.max === "" || p.precio <= parseFloat(filtro.max);
-
-    return cumpleNombre && cumpleCategoria && cumpleMin && cumpleMax;
+    return (
+      (filtro.nombre === "" || p.nombre.toLowerCase().includes(filtro.nombre.toLowerCase())) &&
+      (filtro.categoria === "" || p.categoria === filtro.categoria) &&
+      (filtro.min === "" || p.precio >= parseFloat(filtro.min)) &&
+      (filtro.max === "" || p.precio <= parseFloat(filtro.max))
+    );
   });
 
   const postresNombres = productos.map(p => p.nombre);
 
+  // --- Eliminar Producto (Admin) ---
   const handleEliminar = async (id) => {
     if (!esAdmin) return;
-
-    const confirmar = window.confirm(
-      "¿Seguro que quieres eliminar este producto?"
-    );
-    if (!confirmar) return;
-
+    if (!window.confirm("¿Seguro que quieres eliminar este producto?")) return;
     try {
       await deleteDoc(doc(db, "productos", id));
     } catch (error) {
@@ -91,87 +71,50 @@ export default function Productos() {
 
   return (
     <div className="bg-[#fff3f0] min-h-screen pb-20">
+      {/* --- Header -- */}
       <section className="w-full flex flex-col md:flex-row items-center justify-center bg-[#d16170] text-white">
         <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center py-16 space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Haz tu pedido favorito
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold">Haz tu pedido favorito</h1>
           <p className="text-[#fff3f0] text-lg leading-relaxed max-w-lg px-4">
-            En <span className="font-semibold text-[#f5bfb2]">BomBocado</span>{" "}
-            cada postre está hecho con dedicación, frescura y amor.{" "}
-            <span className="font-semibold text-[#f5bfb2]">BomBocado</span>{" "}
-            convierte lo dulce en momentos inolvidables.
+            En <span className="font-semibold text-[#f5bfb2]">BomBocado</span> cada postre está hecho con dedicación, frescura y amor.
           </p>
         </div>
-
         <div className="w-full md:w-1/2 flex justify-center py-10">
-          <img
-            src={incono}
-            alt="Torta decorada"
-            className="w-[45%] md:w-[53%] h-auto object-contain"
-          />
+          <img src={incono} alt="Torta decorada" className="w-[45%] md:w-[53%] h-auto object-contain" />
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 mt-12">
+        {/* --- Filtros y Título -- */}
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 mb-8">
           <h2 className="text-3xl font-bold text-[#9c2007] border-b-2 border-[#f5bfb2] pb-2 text-center md:text-left">
             Explora Nuestros Postres
           </h2>
-
           <div className="shrink-0 w-full md:w-auto">
-            <Filtros 
-              filtro={filtro} 
-              setFiltro={setFiltro} 
-              postresNombres={postresNombres} // <-- Aquí pasamos los nombres
-            />
+            <Filtros filtro={filtro} setFiltro={setFiltro} postresNombres={postresNombres} />
           </div>
         </div>
 
+        {/* --- Grid de Productos -- */}
         <div className="mt-10">
           {productosFiltrados.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
               {productosFiltrados.map((p) => (
-                <article
-                  key={p.id}
-                  className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2 overflow-hidden"
-                >
-                  <img
-                    src={p.imagen}
-                    alt={p.nombre}
-                    className="w-full h-60 object-cover"
-                  />
-                  <div className="p-5 text-center">
-                    <h3 className="text-lg font-semibold text-[#9c2007]">
-                      {p.nombre}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {p.descripcion}
-                    </p>
-                    <p className="text-[#d8718c] font-bold mt-2">
-                      S/{p.precio?.toFixed(2)}
-                    </p>
-
-                    <div className="mt-3 flex items-center justify-center gap-3">
-                      <button
-                        onClick={() => agregarProducto(p)}
-                        className="bg-[#a34d5f] text-white px-5 py-2 rounded-full hover:bg-[#912646] transition"
-                      >
-                        Comprar
-                      </button>
-
-                      {esAdmin && (
-                        <button
-                          onClick={() => handleEliminar(p.id)}
-                          className="w-10 h-10 flex items-center justify-center rounded-full bg-[#a34d5f] text-white hover:bg-[#912646] transition"
-                          title="Eliminar producto"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </article>
+                <div key={p.id} className="relative group">
+                  {/* Usamos el componente ProductoCard */}
+                  <ProductoCard producto={p} />
+                  
+                  {/* Botón de eliminar para el admin (se superpone) */}
+                  {esAdmin && (
+                    <button
+                      onClick={() => handleEliminar(p.id)}
+                      className="absolute top-2 right-2 w-10 h-10 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition opacity-0 group-hover:opacity-100"
+                      title="Eliminar producto"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           ) : (
