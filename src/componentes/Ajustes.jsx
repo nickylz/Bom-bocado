@@ -38,7 +38,7 @@ export default function Ajustes({ isOpen, onClose, user }) {
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#d8718c]">
               <img
                 src={
-                  user?.photoURL ||
+                  user?.fotoURL ||
                   "https://cdn-icons-png.flaticon.com/512/847/847969.png"
                 }
                 alt="Foto de perfil"
@@ -47,7 +47,7 @@ export default function Ajustes({ isOpen, onClose, user }) {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-[#7a1a0a]">
-                {user?.displayName || user?.user || "Usuario"}
+                {user?.user || "Usuario"}
               </span>
               
             </div>

@@ -1,42 +1,6 @@
-import { useEffect, useState } from "react";
-import { db } from "../lib/firebase";
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import React from 'react';
 
-export default function ComprasList({ user }) {
-  const [compras, setCompras] = useState([]);
-  const [cargando, setCargando] = useState(true);
-
-  // ==========================
-  //   CARGAR COMPRAS EN TIEMPO REAL
-  // ==========================
-useEffect(() => {
-  if (!user?.uid) return;
-
-  const q = query(
-    collection(db, "pedidos"),
-    where("userId", "==", user.uid),
-    orderBy("fechaCreacion", "desc")
-  );
-
-  const unsub = onSnapshot(
-    q,
-    (snapshot) => {
-      const lista = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setCompras(lista);
-      setCargando(false);
-    },
-    (error) => {
-      console.error("Error obteniendo compras:", error);
-      setCargando(false);
-    }
-  );
-
-  return () => unsub();
-}, [user?.uid]);
-
+export default function ComprasList({ compras, cargando }) {
 
   // ==========================
   //   FORMATEAR FECHA

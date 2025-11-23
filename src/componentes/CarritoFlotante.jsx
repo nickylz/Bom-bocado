@@ -112,7 +112,7 @@ export function CarritoFlotante() {
                     />
                     <div className="flex-1 px-3">
                       <strong className="block text-[#7a1a0a]">
-                        {p.nombre || p.nombreProducto || "Producto sin nombre"}
+                        {p.nombre || "Producto sin nombre"}
                       </strong>
                       <span className="text-sm text-gray-600">
                         S/{(p.precio || 0).toFixed(2)} x {p.cantidad || 1}

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/authContext";
 import { FcGoogle } from "react-icons/fc"; // 🔹 Ícono de Google
-import Ajustes from "./ajustes";
+import Ajustes from "./Ajustes";
 
 // CUENTA DE PRUEBA 1
 // correo: pet123@gmail.com

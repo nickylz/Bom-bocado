@@ -9,7 +9,6 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import Filtros from "../componentes/Filtros";
-import FormProductos from "../componentes/FormProductos";
 import { useCarrito } from "../context/CarritoContext";
 import incono from "../componentes/img/Bom.png";
 import { useAuth } from "../context/authContext";
@@ -44,10 +43,6 @@ export default function Productos() {
     correosPermitidos.some(
       (correo) => correo.toLowerCase().trim() === correoUsuario
     );
-
-  console.log("👤 usuarioActual (Productos):", usuarioActual);
-  console.log("📧 correoUsuario (Productos):", correoUsuario);
-  console.log("🔐 esAdmin (Productos):", esAdmin);
 
   useEffect(() => {
     const q = query(
@@ -117,11 +112,7 @@ export default function Productos() {
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto mb-12 mt-12">
-        <FormProductos />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 mt-12">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 mb-8">
           <h2 className="text-3xl font-bold text-[#9c2007] border-b-2 border-[#f5bfb2] pb-2 text-center md:text-left">
             Explora Nuestros Postres
