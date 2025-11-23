@@ -4,11 +4,6 @@ import { useAuth } from "../context/authContext";
 import { FcGoogle } from "react-icons/fc"; // 🔹 Ícono de Google
 import Ajustes from "./Ajustes";
 
-// CUENTA DE PRUEBA 1
-// correo: pet123@gmail.com
-// contraseña : 123qwedsacxz
-
-
 export default function Login() {
   const {
     usuarioActual,
@@ -26,7 +21,7 @@ export default function Login() {
   const [modalAjustes, setModalAjustes] = useState(false);
 
   const [regCorreo, setRegCorreo] = useState("");
-  const [regUser, setRegUser] = useState("");
+  const [regNombre, setRegNombre] = useState(""); // CAMBIO: de regUser a regNombre
   const [regPass, setRegPass] = useState("");
   const [regFoto, setRegFoto] = useState(null);
 
@@ -46,13 +41,16 @@ export default function Login() {
   const handleRegistro = async (e) => {
     e.preventDefault();
     try {
-      await registrarUsuario(regCorreo, regUser, regPass, regFoto);
+      await registrarUsuario(regCorreo, regNombre, regPass, regFoto); // CAMBIO: de regUser a regNombre
       setModalRegistro(false);
       alert("Cuenta creada correctamente!");
     } catch (err) {
       alert("Error al registrar: " + err.message);
     }
   };
+
+  // CAMBIO: Lógica para mostrar nombre corto
+  const nombreMostrado = usuarioActual?.nombre || 'Usuario';
 
   return (
     <>
@@ -62,15 +60,15 @@ export default function Login() {
           <img
             src={usuarioActual.fotoURL || "/default-user.png"}
             alt="perfil"
-            className="w-10 h-10 rounded-full border border-[#d8718c]"
+            className="w-10 h-10 rounded-full border border-[#d8718c] cursor-pointer" // CAMBIO: añadido cursor-pointer
             onClick={() => setModalAjustes(true)}
           />
           <span className="text-[#7a1a0a] font-semibold">
-            {usuarioActual.user.length > 15
-              ? usuarioActual.user.split(" ")[0]
-              : usuarioActual.user}
+            {/* CAMBIO: usar nombreMostrado */}
+            {nombreMostrado.length > 15
+              ? nombreMostrado.split(" ")[0]
+              : nombreMostrado}
           </span>
-
         </div>
       ) : (
         <button
@@ -107,7 +105,6 @@ export default function Login() {
                 className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
               />
 
-              {/* 🔸 Botones lado a lado */}
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <button
                   type="submit"
@@ -164,9 +161,9 @@ export default function Login() {
               />
               <input
                 type="text"
-                placeholder="Usuario"
-                value={regUser}
-                onChange={(e) => setRegUser(e.target.value)}
+                placeholder="Nombre" // CAMBIO: de Usuario a Nombre
+                value={regNombre} // CAMBIO: de regUser a regNombre
+                onChange={(e) => setRegNombre(e.target.value)} // CAMBIO: de regUser a regNombre
                 className="w-full bg-white border border-[#f5bfb2] px-4 py-3 rounded-xl"
               />
               <input
@@ -183,7 +180,6 @@ export default function Login() {
                 className="w-full bg-white border border-[#f5bfb2] px-4 py-3 rounded-xl"
               />
 
-              {/* 🔸 Botones lado a lado */}
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <button
                   type="submit"
@@ -225,7 +221,7 @@ export default function Login() {
             user={{
               uid: usuarioActual.uid,
               email: usuarioActual.correo,
-              displayName: usuarioActual.user,
+              displayName: usuarioActual.nombre, // CAMBIO: de user a nombre
               photoURL: usuarioActual.fotoURL,
             }}
         />

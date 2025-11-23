@@ -62,9 +62,7 @@ export default function Testimonials() {
   }, [testimonios]);
 
   // PERMISOS
-  const correoUsuario = usuarioActual?.email?.toLowerCase().trim();
-
-  const esAdmin = usuarioActual && correosPermitidos.includes(correoUsuario);
+  const esAdmin = usuarioActual && correosPermitidos.includes(usuarioActual.correo.toLowerCase());
 
   const esAutor = (t) => usuarioActual && usuarioActual.uid === t.userUid;
 

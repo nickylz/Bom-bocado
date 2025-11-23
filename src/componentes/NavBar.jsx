@@ -13,14 +13,9 @@ const correosPermitidos = [
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { usuarioActual } = useAuth();
-  console.log("usuarioActual NAVBAR:", usuarioActual);
 
-  const correoUsuario = usuarioActual?.correo?.toLowerCase().trim();
-  const esAdmin = correoUsuario
-    ? correosPermitidos.some(
-        (correo) => correo.toLowerCase().trim() === correoUsuario
-      )
-    : false;
+  const esAdmin = usuarioActual && correosPermitidos.includes(usuarioActual.correo.toLowerCase());
+
   return (
     <header className="bg-[#ffc8ce] shadow-md sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">

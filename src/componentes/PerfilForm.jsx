@@ -19,7 +19,7 @@ export default function PerfilForm({ user }) {
 
       if (snap.exists()) {
         const data = snap.data();
-        setNombre(data.user || "");
+        setNombre(data.nombre || "");
         setCorreo(data.correo || user.email || "");
         setFotoURL(data.fotoURL || "");
       }
@@ -44,7 +44,7 @@ export default function PerfilForm({ user }) {
 
       // 2. Update Firestore
       await updateDoc(doc(db, "usuarios", user.uid), {
-        user: nombre,
+        nombre: nombre,
         correo,
         fotoURL: finalFotoURL,
       });

@@ -10,7 +10,8 @@ export default function Ajustes({ isOpen, onClose, user }) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      onClose();
+      onClose(); 
+      // La alerta se podría quitar para una mejor UX, pero la mantengo por ahora
       alert("Sesión cerrada correctamente");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
@@ -19,56 +20,60 @@ export default function Ajustes({ isOpen, onClose, user }) {
   };
 
   return (
+    // FONDO OSCURO
     <div
-      className="fixed inset-0 bg-transparent z-40"
+      className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="absolute top-16 right-4 z-50">
-        <div className="bg-[#fff3f0] rounded-2xl shadow-xl w-72 p-4 border border-[#f5bfb2] relative">
+      {/* CONTENEDOR DEL MODAL */}
+      <div className="bg-[#fff3f0] rounded-3xl shadow-xl w-[90%] max-w-sm p-6 border border-[#f5bfb2] relative text-center">
+        
+        {/* BOTÓN DE CERRAR */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+        >
+          &times;
+        </button>
+
+        {/* HEADER CON FOTO Y NOMBRE */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md">
+            <img
+              src={
+                user?.photoURL ||
+                "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+              }
+              alt="Foto de perfil"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex flex-col text-center mt-3">
+            <span className="text-xl font-bold text-[#8f2133]">
+              {user?.displayName || "Usuario"}
+            </span>
+            <span className="text-sm text-gray-500 font-medium">
+              {user?.email}
+            </span>
+          </div>
+        </div>
+
+        {/* ACCIONES */}
+        <div className="space-y-3">
+          <Link
+            to="/perfil"
+            onClick={onClose}
+            className="block w-full text-center px-4 py-3 rounded-xl border-2 border-[#f5bfb2] bg-white hover:bg-[#fdecea] transition-all duration-300 font-semibold text-[#8f2133] shadow-sm"
+          >
+            Gestionar Perfil
+          </Link>
 
           <button
-            onClick={onClose}
-            className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-lg"
+            onClick={handleLogout}
+            className="w-full bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition-all duration-300 font-semibold shadow-md"
           >
-            ✕
+            Cerrar Sesión
           </button>
-
-          {/* Info de usuario */}
-          <div className="flex items-center gap-3 mb-4 mt-2">
-            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#d8718c]">
-              <img
-                src={
-                  user?.fotoURL ||
-                  "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-                }
-                alt="Foto de perfil"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-[#7a1a0a]">
-                {user?.user || "Usuario"}
-              </span>
-              
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Link
-              to="/perfil" 
-              onClick={onClose}
-              className="block w-full text-center px-3 py-2 rounded-xl border border-[#f5bfb2] bg-white hover:bg-[#fbe1e7] transition text-sm font-semibold text-[#7a1a0a]"
-            >
-              Ver perfil
-            </Link>
-
-            <button
-              onClick={handleLogout}
-              className="w-full bg-[#d16170] text-white py-2 rounded-xl hover:bg-[#b84c68] transition text-sm font-semibold"
-            >
-              Cerrar sesión
-            </button>
-          </div>
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import NavBar from "./componentes/NavBar";
 import { CarritoProvider } from "./context/CarritoContext";
-import { CarritoFlotante } from "./componentes/CarritoFlotante";
 import { AuthProvider } from "./context/authContext";
-import Footer from "./componentes/Footer";
+
+// Layout
+import MainLayout from "./layouts/MainLayout";
 
 // Páginas
 import Inicio from "./paginas/Index";
@@ -18,21 +18,20 @@ import "./App.css";
 
 function App() {
   return (
-    <Router>  
+    <Router>
       <AuthProvider>
         <CarritoProvider>
-          <NavBar />
           <Routes>
-            <Route path="/" element={<Inicio />} />
-            <Route path="/nosotros" element={<Nosotros />} />
-            <Route path="/productos" element={<Productos />} />
-            <Route path="/novedades" element={<Novedades />} />
-            <Route path="/contacto" element={<Contacto />} />
-            <Route path="/perfil" element={<Perfil />} />
-            <Route path="/intranet" element={<Intranet />} />
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Inicio />} />
+              <Route path="/nosotros" element={<Nosotros />} />
+              <Route path="/productos" element={<Productos />} />
+              <Route path="/novedades" element={<Novedades />} />
+              <Route path="/contacto" element={<Contacto />} />
+              <Route path="/perfil" element={<Perfil />} />
+              <Route path="/intranet" element={<Intranet />} />
+            </Route>
           </Routes>
-          <CarritoFlotante />
-          <Footer />
         </CarritoProvider>
       </AuthProvider>
     </Router>

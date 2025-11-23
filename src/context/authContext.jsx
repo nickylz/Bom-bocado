@@ -35,7 +35,7 @@ export function AuthProvider({ children }) {
           setUsuarioActual({
             uid: user.uid,
             correo: data.correo || user.email,
-            user: data.user || user.displayName,
+            nombre: data.nombre || user.displayName,
             fotoURL: data.fotoURL || user.photoURL,
             rol: data.rol || "usuario",
             fechaCreacion: data.fechaCreacion || null,
@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
 
           await setDoc(refUser, {
             correo: user.email,
-            user: user.displayName || "Usuario",
+            nombre: user.displayName || "Usuario",
             fotoURL: user.photoURL || "",
             uid: user.uid,
             rol: "usuario",
@@ -56,7 +56,7 @@ export function AuthProvider({ children }) {
           setUsuarioActual({
             uid: user.uid,
             correo: user.email,
-            user: user.displayName || "Usuario",
+            nombre: user.displayName || "Usuario",
             fotoURL: user.photoURL || "",
             rol: "usuario",
             fechaCreacion,
@@ -71,8 +71,8 @@ export function AuthProvider({ children }) {
     return () => unsub();
   }, []);
 
-  //  Registro con correo, usuario, contraseña y foto personalizada
-  const registrarUsuario = async (correo, user, contrasena, foto) => {
+  //  Registro con correo, nombre, contraseña y foto personalizada
+  const registrarUsuario = async (correo, nombre, contrasena, foto) => {
     const cred = await createUserWithEmailAndPassword(auth, correo, contrasena);
 
     let fotoURL = "";
@@ -85,12 +85,12 @@ export function AuthProvider({ children }) {
     const fechaCreacion = Timestamp.now();
 
     // Se actualiza el perfil de Firebase Auth
-    await updateProfile(cred.user, { displayName: user, photoURL: fotoURL });
+    await updateProfile(cred.user, { displayName: nombre, photoURL: fotoURL });
 
     // Se guarda también en Firestore
     await setDoc(doc(db, "usuarios", cred.user.uid), {
       correo,
-      user,
+      nombre,
       fotoURL,
       uid: cred.user.uid,
       rol: "usuario", // por defecto rol usuario
@@ -114,7 +114,7 @@ export function AuthProvider({ children }) {
 
       await setDoc(refUser, {
         correo: user.email,
-        user: user.displayName,
+        nombre: user.displayName,
         fotoURL: user.photoURL,
         uid: user.uid,
         rol: "usuario",
@@ -123,7 +123,7 @@ export function AuthProvider({ children }) {
     } else {
       //  Si el doc ya existe, actualiza datos básicos (no tocamos rol ni fechaCreacion)
       await updateDoc(refUser, {
-        user: user.displayName,
+        nombre: user.displayName,
         fotoURL: user.photoURL,
       });
     }

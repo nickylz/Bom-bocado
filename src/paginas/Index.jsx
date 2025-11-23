@@ -29,7 +29,7 @@ export default function Inicio() {
           <div className="w-full md:w-1/2 flex justify-center py-10">
             <img
               src= {incono}
-              alt="Torta decorada"
+              alt="Logo de Bom Bocado"
               className="w-[45%] md:w-[53%] h-auto object-contain"
             />
           </div>
@@ -94,7 +94,7 @@ export default function Inicio() {
                   Heartful Bites – Galletas de Amor
                 </h3>
                 <Link
-                  to="/novedades"
+                  to="/productos"
                   className="text-[#d8718c] font-medium hover:underline"
                 >
                   Ver más →
