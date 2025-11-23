@@ -26,12 +26,12 @@ export default function Productos() {
 
   const { usuarioActual } = useAuth();
 
-  // 🔐 correos que sí pueden borrar
+  // 🔐 Correos autorizados para eliminar
   const correosPermitidos = [
-    "danportaleshinostroza@crackthecode.la", // ANEL
-    "zanadrianzenbohorquez@crackthecode.la", // NICOLL
-    "marandersonsantillan@crackthecode.la", // SABRINA
-    "shavalerianoblas@crackthecode.la", // SHARON
+    "danportaleshinostroza@crackthecode.la",
+    "zanadrianzenbohorquez@crackthecode.la",
+    "marandersonsantillan@crackthecode.la",
+    "shavalerianoblas@crackthecode.la",
   ];
 
   const correoUsuario = (usuarioActual?.correo || usuarioActual?.email || "")
@@ -71,8 +71,10 @@ export default function Productos() {
     return cumpleNombre && cumpleCategoria && cumpleMin && cumpleMax;
   });
 
+  const postresNombres = productos.map(p => p.nombre);
+
   const handleEliminar = async (id) => {
-    if (!esAdmin) return; // seguridad extra
+    if (!esAdmin) return;
 
     const confirmar = window.confirm(
       "¿Seguro que quieres eliminar este producto?"
@@ -81,7 +83,6 @@ export default function Productos() {
 
     try {
       await deleteDoc(doc(db, "productos", id));
-      // onSnapshot actualiza solo
     } catch (error) {
       console.error("Error al eliminar producto:", error);
       alert("Hubo un problema al eliminar el producto");
@@ -119,7 +120,11 @@ export default function Productos() {
           </h2>
 
           <div className="shrink-0 w-full md:w-auto">
-            <Filtros filtro={filtro} setFiltro={setFiltro} />
+            <Filtros 
+              filtro={filtro} 
+              setFiltro={setFiltro} 
+              postresNombres={postresNombres} // <-- Aquí pasamos los nombres
+            />
           </div>
         </div>
 

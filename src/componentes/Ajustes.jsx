@@ -10,49 +10,52 @@ export default function Ajustes({ isOpen, onClose, user }) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      onClose(); 
-      // La alerta se podría quitar para una mejor UX, pero la mantengo por ahora
-      alert("Sesión cerrada correctamente");
+      onClose();
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
-      alert("Error al cerrar sesión");
     }
   };
 
   return (
-    // FONDO OSCURO
     <div
-      className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-40 flex items-center justify-center p-4 md:p-0 md:block md:bg-transparent bg-black/40"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      {/* CONTENEDOR DEL MODAL */}
-      <div className="bg-[#fff3f0] rounded-3xl shadow-xl w-[90%] max-w-sm p-6 border border-[#f5bfb2] relative text-center">
-        
-        {/* BOTÓN DE CERRAR */}
+      <div
+        className="
+          bg-[#fff3f0] shadow-xl border border-[#f5bfb2] relative 
+          text-center md:text-left 
+          
+          /* Estilos de Móvil (Modal Centrado) */
+          w-[90%] max-w-sm p-6 rounded-3xl 
+
+          /* Estilos de Desktop (Dropdown) */
+          md:absolute md:top-16 md:right-4 
+          md:w-72 md:p-4 md:rounded-2xl
+        "
+      >
+        {/* BOTÓN DE CERRAR: Con colores del tema */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+          className="absolute text-[#d16170] hover:text-[#b84c68] top-3 right-4 md:top-2 md:right-3 text-2xl md:text-lg"
         >
           &times;
         </button>
 
-        {/* HEADER CON FOTO Y NOMBRE */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md">
+        {/* INFO DE USUARIO: Layout responsive y colores unificados */}
+        <div className="flex flex-col items-center md:flex-row md:items-center gap-3 mb-6 md:mb-4">
+          <div className="w-20 h-20 md:w-12 md:h-12 rounded-full overflow-hidden border-4 md:border-2 border-white md:border-[#d8718c] shadow-md flex-shrink-0">
             <img
-              src={
-                user?.photoURL ||
-                "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-              }
+              src={user?.photoURL || "/default-user.png"}
               alt="Foto de perfil"
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="flex flex-col text-center mt-3">
-            <span className="text-xl font-bold text-[#8f2133]">
+          <div className="flex flex-col mt-3 md:mt-0">
+            <span className="text-xl md:text-base font-bold md:font-semibold text-[#8f2133] leading-tight">
               {user?.displayName || "Usuario"}
             </span>
-            <span className="text-sm text-gray-500 font-medium">
+            <span className="text-sm md:text-xs text-gray-500 font-medium">
               {user?.email}
             </span>
           </div>
@@ -63,14 +66,14 @@ export default function Ajustes({ isOpen, onClose, user }) {
           <Link
             to="/perfil"
             onClick={onClose}
-            className="block w-full text-center px-4 py-3 rounded-xl border-2 border-[#f5bfb2] bg-white hover:bg-[#fdecea] transition-all duration-300 font-semibold text-[#8f2133] shadow-sm"
+            className="block w-full text-center px-4 py-3 md:py-2 rounded-xl border-2 border-[#f5bfb2] bg-white hover:bg-[#fdecea] transition-all duration-300 font-semibold text-[#8f2133] md:text-sm shadow-sm"
           >
             Gestionar Perfil
           </Link>
 
           <button
             onClick={handleLogout}
-            className="w-full bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition-all duration-300 font-semibold shadow-md"
+            className="w-full bg-[#d16170] text-white py-3 md:py-2 rounded-xl hover:bg-[#b84c68] transition-all duration-300 font-semibold md:text-sm shadow-md"
           >
             Cerrar Sesión
           </button>
