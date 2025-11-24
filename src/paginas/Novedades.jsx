@@ -51,6 +51,8 @@ export default function Novedades() {
           <ProductoCard key={`${item.id}-${index}`} producto={item} mostrarBoton={mostrarBoton} />
         ))}
       </div>
+      <div className="pointer-events-none absolute top-0 left-0 w-20 h-full bg-linear-to-r from-[#fff3f0] to-transparent z-10" />
+      <div className="pointer-events-none absolute top-0 right-0 w-20 h-full bg-linear-to-l from-[#fff3f0] to-transparent z-10" />
     </div>
   );
 
