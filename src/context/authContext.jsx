@@ -80,29 +80,40 @@ export const AuthProvider = ({ children }) => {
   };
 
   const iniciarConGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(auth, provider);
+  const user = result.user;
 
-    const docRef = doc(db, "usuarios", user.uid);
-    const docSnap = await getDoc(docRef);
+  const docRef = doc(db, "usuarios", user.uid);
+  const docSnap = await getDoc(docRef);
 
-    if (!docSnap.exists()) {
-      const userRole = adminEmails.includes(user.email.toLowerCase()) ? "admin" : "cliente";
-      const usernameFromEmail = user.email.split('@')[0].toLowerCase();
-      
-      const newUserDoc = {
-        correo: user.email,
-        nombre: user.displayName || 'Usuario Google',
-        username: usernameFromEmail, // Se puede hacer más robusto para evitar colisiones
-        rol: userRole,
-        fotoURL: user.photoURL || "/default-user.png",
-        fechaCreacion: serverTimestamp(),
-      };
-      await setDoc(docRef, newUserDoc);
-    }
-    return result;
-  };
+  if (!docSnap.exists()) {
+    // 🔒 Blindamos el email
+    const emailSeguro = (user.email || "").toLowerCase();
+
+    const userRole = emailSeguro && adminEmails.includes(emailSeguro)
+      ? "admin"
+      : "cliente";
+
+    // 🔒 Si no hay email, generamos un username de respaldo
+    const usernameFromEmail = emailSeguro
+      ? emailSeguro.split("@")[0]
+      : `user_${(user.uid || "").slice(0, 6) || "anon"}`;
+
+    const newUserDoc = {
+      correo: emailSeguro || null,
+      nombre: user.displayName || "Usuario Google",
+      username: usernameFromEmail, // aquí podrías luego validar colisiones si quieres
+      rol: userRole,
+      fotoURL: user.photoURL || "/default-user.png",
+      fechaCreacion: serverTimestamp(),
+    };
+
+    await setDoc(docRef, newUserDoc);
+  }
+
+  return result;
+};
 
   const cerrarSesion = () => signOut(auth);
 

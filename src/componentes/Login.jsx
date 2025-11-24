@@ -5,13 +5,9 @@ import { FcGoogle } from "react-icons/fc";
 import Ajustes from "./Ajustes";
 
 export default function Login() {
-  const {
-    usuarioActual,
-    iniciarSesion,
-    registrarUsuario,
-    iniciarConGoogle,
-  } = useAuth();
-  
+  const { usuarioActual, iniciarSesion, registrarUsuario, iniciarConGoogle } =
+    useAuth();
+
   // 2. Traemos la función para mostrar nuestro modal personalizado
   const { mostrarModal } = useModal();
 
@@ -32,9 +28,12 @@ export default function Login() {
   useEffect(() => {
     if (usuarioActual && modalLogin) {
       setModalLogin(false);
-      // ¡Aquí está la magia!
+
+      const primerNombre =
+        (usuarioActual.nombre || "").split(" ")[0] || "Bienvenido";
+
       mostrarModal(
-        `¡Bienvenido, ${usuarioActual.nombre.split(' ')[0]}!`,
+        `¡Bienvenido, ${primerNombre}!`,
         "Tu inicio de sesión fue exitoso. ¡Disfruta de nuestros postres!"
       );
     }
@@ -53,17 +52,26 @@ export default function Login() {
   const handleRegistro = async (e) => {
     e.preventDefault();
     try {
-      await registrarUsuario(regCorreo, regNombre, regUsername, regPass, regFoto);
+      await registrarUsuario(
+        regCorreo,
+        regNombre,
+        regUsername,
+        regPass,
+        regFoto
+      );
       setModalRegistro(false);
       // Y para el registro exitoso
-      mostrarModal("¡Cuenta Creada!", "Tu registro fue exitoso. Ahora puedes iniciar sesión.");
+      mostrarModal(
+        "¡Cuenta Creada!",
+        "Tu registro fue exitoso. Ahora puedes iniciar sesión."
+      );
     } catch (err) {
       // Y para los errores de registro
       mostrarModal("Error en el registro", err.message);
     }
   };
 
-  const nombreMostrado = usuarioActual?.nombre || 'Usuario';
+  const nombreMostrado = usuarioActual?.nombre || "Usuario";
 
   return (
     <>
@@ -76,7 +84,13 @@ export default function Login() {
             onClick={() => setModalAjustes(true)}
           />
           <span className="text-[#7a1a0a] font-semibold">
-            {nombreMostrado.length > 15 ? nombreMostrado.split(" ")[0] : nombreMostrado}
+            {(() => {
+              const nombreSeguro = nombreMostrado || "";
+              if (nombreSeguro.length > 15) {
+                return nombreSeguro.split(" ")[0];
+              }
+              return nombreSeguro || "Usuario";
+            })()}
           </span>
         </div>
       ) : (
@@ -94,7 +108,9 @@ export default function Login() {
           onClick={(e) => e.target === e.currentTarget && setModalLogin(false)}
         >
           <div className="bg-[#fff3f0] rounded-2xl shadow-lg w-[90%] max-w-md p-8 text-center border border-[#f5bfb2]">
-            <h2 className="text-3xl font-bold text-[#8f2133] mb-6">Bienvenido</h2>
+            <h2 className="text-3xl font-bold text-[#8f2133] mb-6">
+              Bienvenido
+            </h2>
             <form onSubmit={handleLogin} className="space-y-4">
               <input
                 type="text"
@@ -120,12 +136,12 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={async () => {
-                      try {
-                          await iniciarConGoogle();
-                          // El useEffect se encargará de mostrar el modal de bienvenida
-                      } catch (err) {
-                          mostrarModal("Error con Google", err.message);
-                      }
+                    try {
+                      await iniciarConGoogle();
+                      // El useEffect se encargará de mostrar el modal de bienvenida
+                    } catch (err) {
+                      mostrarModal("Error con Google", err.message);
+                    }
                   }}
                   className="flex items-center justify-center gap-2 border border-[#d8718c] text-[#d8718c] py-3 rounded-xl hover:bg-[#f5bfb2] transition font-semibold"
                 >
@@ -136,7 +152,10 @@ export default function Login() {
             <p className="text-[#7a1a0a] mt-5 text-sm">
               ¿No tienes cuenta?{" "}
               <button
-                onClick={() => { setModalLogin(false); setModalRegistro(true); }}
+                onClick={() => {
+                  setModalLogin(false);
+                  setModalRegistro(true);
+                }}
                 className="text-[#d8718c] font-semibold hover:underline"
               >
                 Regístrate aquí
@@ -147,24 +166,70 @@ export default function Login() {
       )}
 
       {modalRegistro && (
-         <div
+        <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          onClick={(e) => e.target === e.currentTarget && setModalRegistro(false)}
+          onClick={(e) =>
+            e.target === e.currentTarget && setModalRegistro(false)
+          }
         >
           <div className="bg-[#fff3f0] rounded-2xl shadow-lg w-[90%] max-w-md p-8 text-center border border-[#f5bfb2]">
-            <h2 className="text-3xl font-bold text-[#8f2133] mb-6">Crear cuenta</h2>
+            <h2 className="text-3xl font-bold text-[#8f2133] mb-6">
+              Crear cuenta
+            </h2>
             <form onSubmit={handleRegistro} className="space-y-4">
-              <input type="email" placeholder="Correo" value={regCorreo} onChange={(e) => setRegCorreo(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
-              <input type="text" placeholder="Nombre completo" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
-              <input type="text" placeholder="Nombre de usuario" value={regUsername} onChange={(e) => setRegUsername(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
-              <input type="password" placeholder="Contraseña" value={regPass} onChange={(e) => setRegPass(e.target.value)} className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
-              <label htmlFor="foto-perfil" className="block text-sm font-medium text-[#8f2133] text-left">Foto de Perfil (Opcional)</label>
-              <input type="file" id="foto-perfil" accept="image/*" onChange={(e) => setRegFoto(e.target.files[0])} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#fff3f0] file:text-[#d16170] hover:file:bg-[#f5bfb2] border border-[#f5bfb2] rounded-xl" />
+              <input
+                type="email"
+                placeholder="Correo"
+                value={regCorreo}
+                onChange={(e) => setRegCorreo(e.target.value)}
+                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+              />
+              <input
+                type="text"
+                placeholder="Nombre completo"
+                value={regNombre}
+                onChange={(e) => setRegNombre(e.target.value)}
+                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+              />
+              <input
+                type="text"
+                placeholder="Nombre de usuario"
+                value={regUsername}
+                onChange={(e) => setRegUsername(e.target.value)}
+                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+              />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                value={regPass}
+                onChange={(e) => setRegPass(e.target.value)}
+                className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+              />
+              <label
+                htmlFor="foto-perfil"
+                className="block text-sm font-medium text-[#8f2133] text-left"
+              >
+                Foto de Perfil (Opcional)
+              </label>
+              <input
+                type="file"
+                id="foto-perfil"
+                accept="image/*"
+                onChange={(e) => setRegFoto(e.target.files[0])}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#fff3f0] file:text-[#d16170] hover:file:bg-[#f5bfb2] border border-[#f5bfb2] rounded-xl"
+              />
               <div className="grid grid-cols-2 gap-3 pt-4">
-                <button type="submit" className="bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold">
+                <button
+                  type="submit"
+                  className="bg-[#d16170] text-white py-3 rounded-xl hover:bg-[#b84c68] transition font-semibold"
+                >
                   Crear cuenta
                 </button>
-                <button type="button" onClick={iniciarConGoogle} className="flex items-center justify-center gap-2 border border-[#d8718c] text-[#d8718c] py-3 rounded-xl hover:bg-[#f5bfb2] transition font-semibold">
+                <button
+                  type="button"
+                  onClick={iniciarConGoogle}
+                  className="flex items-center justify-center gap-2 border border-[#d8718c] text-[#d8718c] py-3 rounded-xl hover:bg-[#f5bfb2] transition font-semibold"
+                >
                   <FcGoogle className="text-xl" /> Google
                 </button>
               </div>
@@ -172,7 +237,10 @@ export default function Login() {
             <p className="text-[#7a1a0a] mt-5 text-sm">
               ¿Ya tienes cuenta?{" "}
               <button
-                onClick={() => { setModalRegistro(false); setModalLogin(true); }}
+                onClick={() => {
+                  setModalRegistro(false);
+                  setModalLogin(true);
+                }}
                 className="text-[#d8718c] font-semibold hover:underline"
               >
                 Inicia sesión
@@ -181,7 +249,7 @@ export default function Login() {
           </div>
         </div>
       )}
-        
+
       {usuarioActual && (
         <Ajustes
           isOpen={modalAjustes}
@@ -191,7 +259,7 @@ export default function Login() {
             email: usuarioActual.correo,
             displayName: usuarioActual.nombre,
             photoURL: usuarioActual.fotoURL,
-            username: usuarioActual.username
+            username: usuarioActual.username,
           }}
         />
       )}
