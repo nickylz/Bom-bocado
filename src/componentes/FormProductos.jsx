@@ -96,9 +96,16 @@ export default function FormProducto() {
           <label htmlFor="categoria" className="block text-sm font-medium text-[#8f2133]">Categoría</label>
           <select id="categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} required className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]">
             <option value="">Selecciona una categoría</option>
-            <option value="Tortas">Tortas</option>
-            <option value="Postres">Postres</option>
-            <option value="Bocaditos">Bocaditos</option>
+            <option value="Pasteles">Pasteles</option>
+            <option value="Tartas">Tartas</option>
+            <option value="Donas">Donas</option>
+            <option value="Cupcakes">Cupcakes</option>
+            <option value="Bombones">Bombones</option>
+            <option value="Macarons">Macarons</option>
+            <option value="Galletas">Galletas</option>
+            <option value="Postres fríos">Postres fríos</option>
+            <option value="Otros">Otros</option>
+            <option value="Temporada">Temporada</option>
           </select>
         </div>
         
