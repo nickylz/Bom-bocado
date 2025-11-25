@@ -39,7 +39,7 @@ export default function Ajustes({ isOpen, onClose, user }) {
 
         <div className="flex flex-col items-center md:flex-row md:items-center gap-3 mb-6 md:mb-4">
           <div className="w-20 h-20 md:w-12 md:h-12 rounded-full overflow-hidden border-4 md:border-2 border-white md:border-[#d8718c] shadow-md shrink-0">
-            <img
+           <img
               src={user?.photoURL || "/default-user.png"}
               alt="Foto de perfil"
               className="w-full h-full object-cover"

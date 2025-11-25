@@ -15,6 +15,7 @@ import { FaStar, FaEdit, FaTrash, FaSave, FaTimes, FaCamera } from "react-icons/
 import { useAuth } from "../context/authContext";
 import toast from 'react-hot-toast';
 import { useModal } from "../context/ModalContext";
+import FiltroComentarios from "./FiltroComentarios";
 
 const PINK_COLOR = "#d16170";
 const GRAY_COLOR = "#e4e5e9";
@@ -28,6 +29,7 @@ export default function Testimonials() {
   const [editImageFiles, setEditImageFiles] = useState([]);
   const [existingImageUrls, setExistingImageUrls] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [filtro, setFiltro] = useState('recientes');
 
   useEffect(() => {
     const q = query(collection(db, "testimonios"), orderBy("createdAt", "desc"));
@@ -147,6 +149,13 @@ export default function Testimonials() {
     setEditImageFiles([]);
     setExistingImageUrls([]);
   };
+  
+  const testimoniosFiltrados = testimonios.filter(testimonio => {
+    if (filtro === "mis-comentarios") {
+      return testimonio.userUid === usuarioActual?.uid;
+    }
+    return true; // "recientes" is the default
+  });
 
   const renderStars = (rating, isEditable = false, onClick = () => {}) => (
     <div className={`flex ${isEditable ? 'my-2 justify-center text-3xl' : 'text-xl'}`}>
@@ -191,11 +200,13 @@ export default function Testimonials() {
           </div>
         )}
 
+        <FiltroComentarios setFiltro={setFiltro} />
+
         <div className="space-y-6">
-          {testimonios.length === 0 ? (
+          {testimoniosFiltrados.length === 0 ? (
             <p className="text-center text-gray-500 py-10">Aún no hay testimonios. ¡Sé el primero en dejar tu opinión!</p>
           ) : (
-            testimonios.map((t) => {
+            testimoniosFiltrados.map((t) => {
               const enEdicion = editId === t.id;
               return (
                 <div key={t.id} className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg text-left flex gap-4 sm:gap-6 items-start border border-rose-100">
