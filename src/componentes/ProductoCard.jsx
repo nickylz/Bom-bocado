@@ -19,8 +19,8 @@ export default function ProductoCard({ producto, mostrarBoton = true }) {
   };
 
   return (
-    <article className="bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-2 overflow-hidden flex flex-col h-full shrink-0 w-72">
-      <div className="relative w-full h-60">
+    <article className=" bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-2 overflow-hidden flex flex-col h-full w-full max-w-xs sm:max-w-sm">
+      <div className="relative w-full h-56 sm:h-60">
         <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover" />
       </div>
       <div className="p-5 text-center grow flex flex-col">
