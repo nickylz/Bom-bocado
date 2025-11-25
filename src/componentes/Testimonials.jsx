@@ -65,7 +65,7 @@ export default function Testimonials() {
     try {
         await deleteDoc(doc(db, "testimonios", id));
         toast.success("Testimonio eliminado");
-    } catch (error) { toast.error("No se pudo eliminar el testimonio") }
+    } catch { toast.error("No se pudo eliminar el testimonio") }
   };
 
   const comenzarEdicion = (t) => {
@@ -199,7 +199,7 @@ export default function Testimonials() {
               const enEdicion = editId === t.id;
               return (
                 <div key={t.id} className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg text-left flex gap-4 sm:gap-6 items-start border border-rose-100">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     {t.userPhotoURL ? (
                         <img src={t.userPhotoURL} alt={t.nombre} className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shadow-md" />
                     ) : (

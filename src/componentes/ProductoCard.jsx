@@ -23,9 +23,9 @@ export default function ProductoCard({ producto, mostrarBoton = true }) {
       <div className="relative w-full h-60">
         <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover" />
       </div>
-      <div className="p-5 text-center flex-grow flex flex-col">
+      <div className="p-5 text-center grow flex flex-col">
         <h3 className="text-lg font-semibold text-[#9c2007]">{producto.nombre}</h3>
-        <p className="text-gray-600 text-sm mt-1 flex-grow">{producto.descripcion}</p>
+        <p className="text-gray-600 text-sm mt-1 grow">{producto.descripcion}</p>
         <p className="text-[#d8718c] font-bold text-xl my-3">
           S/{producto.precio?.toFixed(2)}
         </p>
