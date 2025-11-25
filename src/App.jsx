@@ -7,12 +7,13 @@ import MainLayout from "./layouts/MainLayout";
 import Inicio from "./paginas/Index";
 import Nosotros from "./paginas/Nosotros";
 import Productos from "./paginas/Productos";
+import ProductoDetalle from "./paginas/ProductoDetalle"; // <-- NUEVA RUTA
 import Novedades from "./paginas/Novedades";
 import Contacto from "./paginas/Contacto";
 import Perfil from "./paginas/Perfil";
 import Intranet from "./paginas/Intranet";
-import Checkout from "./paginas/Checkout"; // <-- NUEVA RUTA
-import Gracias from "./paginas/Gracias";   // <-- NUEVA RUTA
+import Checkout from "./paginas/Checkout";
+import Gracias from "./paginas/Gracias";
 
 import "./App.css";
 
@@ -23,12 +24,13 @@ function App() {
         <Route path="/" element={<Inicio />} />
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/productos" element={<Productos />} />
+        <Route path="/productos/:id" element={<ProductoDetalle />} /> {/* <-- RUTA AÑADIDA */}
         <Route path="/novedades" element={<Novedades />} />
         <Route path="/contacto" element={<Contacto />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/intranet" element={<Intranet />} />
-        <Route path="/checkout" element={<Checkout />} /> {/* <-- RUTA AÑADIDA */}
-        <Route path="/gracias" element={<Gracias />} />   {/* <-- RUTA AÑADIDA */}
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/gracias" element={<Gracias />} />
       </Route>
     </Routes>
   );
