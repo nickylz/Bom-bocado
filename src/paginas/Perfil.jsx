@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/authContext";
 import { db } from "../lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore"; // Se quita orderBy
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 // Componentes
 import PerfilForm from "../componentes/PerfilForm";
@@ -78,7 +78,7 @@ export default function PerfilPage() {
           Mi perfil
         </h1>
 
-        <div className="bg-white border border-[#f5bfb2] rounded-2xl p-6 flex flex-col md:flex-row items-center gap-4 mb-8 shadow-sm">
+        <div className="bg-white border border-[#f5bfb2] rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 mb-8 shadow-sm">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#d8718c]">
             <img
               src={
@@ -96,6 +96,14 @@ export default function PerfilPage() {
             </h2>
             <p className="text-md font-semibold text-[#d8718c]">
               @{usuarioActual.username || "username"}
+            </p>
+            {usuarioActual.metadata?.creationTime && (
+                <p className="text-sm text-gray-500 mt-2">
+                    Miembro desde: {new Date(usuarioActual.metadata.creationTime).toLocaleDateString("es-PE")}
+                </p>
+            )}
+            <p className="text-xs text-gray-400 mt-1 font-mono break-all">
+                UID: {usuarioActual.uid}
             </p>
           </div>
         </div>

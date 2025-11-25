@@ -9,6 +9,22 @@ import { useModal } from '../context/ModalContext';
 const functions = getFunctions();
 const deleteUser = httpsCallable(functions, 'deleteUser');
 
+// Define el orden de los roles
+const roleOrder = {
+  'admin': 1,
+  'editor': 2,
+  'cliente': 3,
+};
+
+// Función para ordenar usuarios
+const sortUsers = (users) => {
+  return [...users].sort((a, b) => {
+    const roleA = roleOrder[a.rol] || 99;
+    const roleB = roleOrder[b.rol] || 99;
+    return roleA - roleB;
+  });
+};
+
 export default function GestionUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -25,7 +41,8 @@ export default function GestionUsuarios() {
         ...doc.data(),
         fechaCreacion: doc.data().fechaCreacion?.toDate()
       }));
-      setUsuarios(listaUsuarios);
+      // Ordena la lista antes de establecerla en el estado
+      setUsuarios(sortUsers(listaUsuarios));
     } catch (err) {
       setError('Error al cargar los usuarios. ' + err.message);
     } finally {
@@ -49,7 +66,9 @@ export default function GestionUsuarios() {
     try {
       const userRef = doc(db, 'usuarios', id);
       await updateDoc(userRef, { rol: nuevoRol });
-      setUsuarios(usuarios.map(u => u.id === id ? { ...u, rol: nuevoRol } : u));
+      // Actualiza y reordena la lista localmente
+      const updatedUsers = usuarios.map(u => u.id === id ? { ...u, rol: nuevoRol } : u);
+      setUsuarios(sortUsers(updatedUsers));
       setEditandoId(null);
       setNuevoRol('');
       mostrarModal('Rol actualizado con éxito.');
@@ -135,7 +154,7 @@ export default function GestionUsuarios() {
                   ) : (
                     <div className="flex items-center justify-center gap-3">
                         <button onClick={() => handleEmpezarEdicion(usuario.id, usuario.rol)} className="text-[#d16170] hover:text-[#b84c68] text-lg" title="Editar Rol"><FaEdit /></button>
-                        <button onClick={() => handleDeleteUser(usuario.id, usuario.correo)} className="text-[#d16170] hover:text-[#b84c68] text-lg" title="Eliminar Usuario"><FaTrash /></button>
+                        <button onClick={() => handleDeleteUser(usuario.id, usuario.correo)} className="text-[#d16170] hover:text-[#b84c68] atext-lg" title="Eliminar Usuario"><FaTrash /></button>
                     </div>
                   )}
                 </td>
