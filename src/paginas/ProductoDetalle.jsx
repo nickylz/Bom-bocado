@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getDoc, doc, collection, query, where, onSnapshot, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/authContext';
-import { useCarrito } from '../context/CarritoContext'; // 1. Importar el hook del carrito
+import { useCarrito } from '../context/CarritoContext';
 
 import RatingSummary from '../componentes/RatingSummary';
 import DejarComentario from '../componentes/DejarComentario';
@@ -11,11 +11,10 @@ import DejarComentario from '../componentes/DejarComentario';
 export default function ProductoDetalle() {
   const { id } = useParams();
   const { usuarioActual: usuario } = useAuth();
-  const { agregarAlCarrito, carrito } = useCarrito(); // 2. Usar el contexto del carrito
+  const { agregarAlCarrito, carrito } = useCarrito();
 
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [agregadoConExito, setAgregadoConExito] = useState(false); // Estado para el mensaje de confirmación
   
   const [comentarios, setComentarios] = useState([]);
   const [loadingComentarios, setLoadingComentarios] = useState(true);
@@ -76,10 +75,6 @@ export default function ProductoDetalle() {
 
   const handleAgregarAlCarrito = () => {
     agregarAlCarrito(producto);
-    setAgregadoConExito(true);
-    setTimeout(() => {
-      setAgregadoConExito(false);
-    }, 2000); // El mensaje de éxito dura 2 segundos
   };
 
   const handleEliminarComentario = async (comentarioId) => {
@@ -124,8 +119,8 @@ export default function ProductoDetalle() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-        <div className="bg-white rounded-3xl shadow-lg p-6 flex justify-center items-center border border-[#f5bfb2]">
-          <img src={producto.imagen} alt={producto.nombre} className="w-full max-w-md h-auto object-contain rounded-2xl" />
+        <div className="bg-white rounded-3xl shadow-lg p-6 flex justify-center items-center border border-[#f5bfb2] aspect-square overflow-hidden max-w-md justify-self-center w-full">
+          <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover rounded-2xl" />
         </div>
 
         <div className="flex flex-col gap-4">
@@ -137,9 +132,9 @@ export default function ProductoDetalle() {
           <div className="flex items-center gap-4 mt-2">
             <button 
               onClick={handleAgregarAlCarrito}
-              className={`text-white px-8 py-3 rounded-full w-full md:w-auto text-lg transition shadow-md ${agregadoConExito ? 'bg-green-500 hover:bg-green-600' : 'bg-[#a34d5f] hover:bg-[#912646]'}`}
+              className="bg-[#a34d5f] hover:bg-[#912646] text-white px-8 py-3 rounded-full w-full md:w-auto text-lg transition shadow-md"
             >
-              {agregadoConExito ? '¡Agregado!' : 'Añadir al Carrito'}
+              Añadir al Carrito
             </button>
             {cantidadEnCarrito > 0 && (
               <p className="text-gray-600 font-medium bg-rose-100 px-3 py-1 rounded-full">En carrito: {cantidadEnCarrito}</p>
@@ -163,7 +158,7 @@ export default function ProductoDetalle() {
 
               return (
                 <div key={comentario.id} className="bg-rose-50 p-5 rounded-2xl shadow-sm border border-rose-100 flex gap-4 items-start">
-                  <div className="flex-shrink-0 pt-1">
+                  <div className="shrink-0 pt-1">
                     {comentario.autorFotoURL ? (
                       <img src={comentario.autorFotoURL} alt={comentario.autorNombre} className="w-11 h-11 rounded-full object-cover" />
                     ) : (
@@ -172,7 +167,7 @@ export default function ProductoDetalle() {
                       </div>
                     )}
                   </div>
-                  <div className="flex-grow">
+                  <div className="grow">
                     <div className="flex items-center justify-between mb-1">
                       <div>
                         <p className="font-bold text-gray-800">{comentario.autorNombre}</p>
