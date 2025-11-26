@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getDoc, doc, collection, query, where, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
+import { getDoc, doc, collection, query, where, onSnapshot, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { useAuth } from '../context/authContext'; // Importar el hook de autenticación
+import { useAuth } from '../context/authContext';
+import { useCarrito } from '../context/CarritoContext'; // 1. Importar el hook del carrito
 
 import RatingSummary from '../componentes/RatingSummary';
 import DejarComentario from '../componentes/DejarComentario';
 
 export default function ProductoDetalle() {
   const { id } = useParams();
-  const { usuarioActual: usuario } = useAuth(); // Obtener el usuario actual y su rol
+  const { usuarioActual: usuario } = useAuth();
+  const { agregarAlCarrito, carrito } = useCarrito(); // 2. Usar el contexto del carrito
 
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [agregadoConExito, setAgregadoConExito] = useState(false); // Estado para el mensaje de confirmación
   
   const [comentarios, setComentarios] = useState([]);
   const [loadingComentarios, setLoadingComentarios] = useState(true);
@@ -20,7 +23,6 @@ export default function ProductoDetalle() {
 
   const [editingComment, setEditingComment] = useState({ id: null, texto: '' });
 
-  // Efecto para obtener el producto
   useEffect(() => {
     const fetchProducto = async () => {
       setLoading(true);
@@ -41,7 +43,6 @@ export default function ProductoDetalle() {
     fetchProducto();
   }, [id]);
 
-  // Efecto para obtener los comentarios en tiempo real
   useEffect(() => {
     if (!id) return;
     setLoadingComentarios(true);
@@ -50,7 +51,6 @@ export default function ProductoDetalle() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const commentsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      // Ordenar los comentarios por fecha en el lado del cliente
       const sortedComments = commentsData.sort((a, b) => {
         const dateA = a.fecha ? a.fecha.toDate() : new Date(0);
         const dateB = b.fecha ? b.fecha.toDate() : new Date(0);
@@ -74,6 +74,14 @@ export default function ProductoDetalle() {
     return () => unsubscribe();
   }, [id]);
 
+  const handleAgregarAlCarrito = () => {
+    agregarAlCarrito(producto);
+    setAgregadoConExito(true);
+    setTimeout(() => {
+      setAgregadoConExito(false);
+    }, 2000); // El mensaje de éxito dura 2 segundos
+  };
+
   const handleEliminarComentario = async (comentarioId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este comentario?')) {
       try {
@@ -92,8 +100,11 @@ export default function ProductoDetalle() {
     }
     try {
       const comentarioRef = doc(db, 'comentarios', editingComment.id);
-      await updateDoc(comentarioRef, { texto: editingComment.texto });
-      setEditingComment({ id: null, texto: '' }); // Salir del modo edición
+      await updateDoc(comentarioRef, { 
+        texto: editingComment.texto,
+        editado: serverTimestamp()
+      });
+      setEditingComment({ id: null, texto: '' });
     } catch (error) {
       console.error('Error al actualizar el comentario:', error);
       alert('No se pudo actualizar el comentario.');
@@ -107,6 +118,8 @@ export default function ProductoDetalle() {
   if (!producto) {
     return <div className="text-center py-20">Producto no encontrado</div>;
   }
+  
+  const cantidadEnCarrito = carrito.find(item => item.id === producto.id)?.cantidad || 0;
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -120,9 +133,19 @@ export default function ProductoDetalle() {
           <RatingSummary rating={ratingPromedio} reviewCount={comentarios.length} />
           <p className="text-gray-600 text-lg">{producto.descripcion}</p>
           <p className="text-[#d8718c] font-bold text-4xl">S/{producto.precio?.toFixed(2)}</p>
-          <button className="bg-[#a34d5f] text-white px-8 py-3 rounded-full w-full md:w-auto text-lg hover:bg-[#912646] transition shadow-md">
-            Añadir al Carrito
-          </button>
+          
+          <div className="flex items-center gap-4 mt-2">
+            <button 
+              onClick={handleAgregarAlCarrito}
+              className={`text-white px-8 py-3 rounded-full w-full md:w-auto text-lg transition shadow-md ${agregadoConExito ? 'bg-green-500 hover:bg-green-600' : 'bg-[#a34d5f] hover:bg-[#912646]'}`}
+            >
+              {agregadoConExito ? '¡Agregado!' : 'Añadir al Carrito'}
+            </button>
+            {cantidadEnCarrito > 0 && (
+              <p className="text-gray-600 font-medium bg-rose-100 px-3 py-1 rounded-full">En carrito: {cantidadEnCarrito}</p>
+            )}
+          </div>
+
         </div>
       </div>
 
@@ -140,7 +163,7 @@ export default function ProductoDetalle() {
 
               return (
                 <div key={comentario.id} className="bg-rose-50 p-5 rounded-2xl shadow-sm border border-rose-100 flex gap-4 items-start">
-                  <div className="shrink-0 pt-1">
+                  <div className="flex-shrink-0 pt-1">
                     {comentario.autorFotoURL ? (
                       <img src={comentario.autorFotoURL} alt={comentario.autorNombre} className="w-11 h-11 rounded-full object-cover" />
                     ) : (
@@ -149,15 +172,18 @@ export default function ProductoDetalle() {
                       </div>
                     )}
                   </div>
-                  <div className="grow">
+                  <div className="flex-grow">
                     <div className="flex items-center justify-between mb-1">
                       <div>
                         <p className="font-bold text-gray-800">{comentario.autorNombre}</p>
-                        <p className="text-xs text-gray-400">{comentario.fecha?.toDate().toLocaleDateString('es-ES')}</p>
+                        <div className="flex items-center gap-2">
+                           <p className="text-xs text-gray-400">{comentario.fecha?.toDate().toLocaleDateString('es-ES')}</p>
+                           {comentario.editado && <p className="text-xs text-gray-400 italic">(editado)</p>}
+                        </div>
                       </div>
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
-                          <svg key={i} className={`w-5 h-5 ${i < comentario.rating ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                          <svg key={i} className={`w-5 h-5 ${i < comentario.rating ? 'text-[#d8718c]' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.366 2.446a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.366-2.446a1 1 0 00-1.175 0l-3.366 2.446c-.784.57-1.838-.197-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
                           </svg>
                         ))}

@@ -103,7 +103,7 @@ const DejarComentario = ({ productoId }) => {
                 return (
                   <svg
                     key={index}
-                    className={`w-7 h-7 cursor-pointer ${ratingValue <= (hoverRating || rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                    className={`w-7 h-7 cursor-pointer ${ratingValue <= (hoverRating || rating) ? 'text-[#d8718c]' : 'text-gray-300'}`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     onClick={() => setRating(ratingValue)}
