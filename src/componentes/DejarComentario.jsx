@@ -4,41 +4,48 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 
 const DejarComentario = ({ productoId }) => {
-  const { usuario } = useAuth();
+  const { usuarioActual: usuario } = useAuth();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comentario, setComentario] = useState('');
+  const [nombreAnonimo, setNombreAnonimo] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
 
   const handleGuardarComentario = async () => {
-    if (!usuario) {
-      alert('Debes iniciar sesión para dejar un comentario.');
-      return;
-    }
     if (rating === 0) {
       alert('Por favor, selecciona una calificación.');
       return;
     }
+
     if (comentario.trim() === '') {
       alert('Por favor, escribe un comentario.');
       return;
     }
 
+    if (!usuario && nombreAnonimo.trim() === '') {
+      alert('Por favor, escribe tu nombre.');
+      return;
+    }
+
     setEnviando(true);
     try {
-      await addDoc(collection(db, 'comentarios'), {
+      const datosComentario = {
         productoId,
-        autorId: usuario.uid,
-        autorNombre: usuario.displayName || 'Anónimo',
-        autorFotoURL: usuario.photoURL,
         rating,
         texto: comentario,
         fecha: serverTimestamp(),
-      });
+        autorId: usuario ? usuario.uid : null,
+        autorNombre: usuario ? (usuario.nombre || usuario.displayName) : nombreAnonimo,
+        autorFotoURL: usuario ? usuario.photoURL : null,
+      };
+
+      await addDoc(collection(db, 'comentarios'), datosComentario);
+
       setEnviado(true);
       setComentario('');
       setRating(0);
+      setNombreAnonimo('');
     } catch (error) {
       console.error('Error al guardar el comentario:', error);
       alert('Hubo un error al enviar tu comentario. Inténtalo de nuevo.');
@@ -52,6 +59,7 @@ const DejarComentario = ({ productoId }) => {
       <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-2xl text-center">
         <p className="text-green-800 font-semibold">¡Gracias por tu opinión!</p>
         <p className="text-green-600">Tu comentario ha sido enviado correctamente.</p>
+        <button onClick={() => setEnviado(false)} className="mt-2 text-sm text-blue-600 hover:underline">Dejar otra opinión</button>
       </div>
     );
   }
@@ -62,16 +70,31 @@ const DejarComentario = ({ productoId }) => {
         {usuario && (
           <div className="flex-shrink-0">
             {usuario.photoURL ? (
-              <img src={usuario.photoURL} alt={usuario.displayName} className="w-12 h-12 rounded-full object-cover" />
+              <img src={usuario.photoURL} alt={usuario.nombre || usuario.displayName} className="w-12 h-12 rounded-full object-cover" />
             ) : (
               <div className="w-12 h-12 rounded-full bg-[#a34d5f] flex items-center justify-center text-white font-bold text-xl">
-                {usuario.displayName ? usuario.displayName.charAt(0).toUpperCase() : 'A'}
+                {(usuario.nombre || usuario.displayName) ? (usuario.nombre || usuario.displayName).charAt(0).toUpperCase() : 'A'}
               </div>
             )}
           </div>
         )}
         <div className="flex-grow">
           <h3 className="text-xl font-bold text-gray-800 mb-2">Escribe tu opinión</h3>
+
+          {!usuario && (
+            <div className="mb-3">
+              <label htmlFor="nombreAnonimo" className="block text-sm font-medium text-gray-700 mb-1">Tu nombre</label>
+              <input
+                type="text"
+                id="nombreAnonimo"
+                value={nombreAnonimo}
+                onChange={(e) => setNombreAnonimo(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#f5bfb2] focus:border-transparent"
+                placeholder="Escribe tu nombre"
+              />
+            </div>
+          )}
+
           <div className="flex items-center mb-3">
             <span className="mr-3 text-gray-700">Tu calificación:</span>
             <div className="flex">
@@ -96,19 +119,18 @@ const DejarComentario = ({ productoId }) => {
           <textarea
             className="w-full p-3 border border-gray-200 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#f5bfb2] focus:border-transparent"
             rows="3"
-            placeholder={`¿Qué te pareció el producto, ${usuario ? usuario.displayName : ''}?`}
+            placeholder={`¿Qué te pareció el producto${usuario ? ', ' + (usuario.nombre || usuario.displayName) : ''}?`}
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
-            disabled={enviando || !usuario}
+            disabled={enviando}
           ></textarea>
           <button
             onClick={handleGuardarComentario}
-            className={`mt-3 bg-[#a34d5f] text-white px-6 py-2 rounded-full hover:bg-[#912646] transition shadow-md ${enviando || !usuario ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={enviando || !usuario}
+            className={`mt-3 bg-[#a34d5f] text-white px-6 py-2 rounded-full hover:bg-[#912646] transition shadow-md ${enviando ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={enviando}
           >
             {enviando ? 'Enviando...' : 'Enviar Opinión'}
           </button>
-          {!usuario && <p className="text-xs text-gray-500 mt-2">Debes iniciar sesión para poder comentar.</p>}
         </div>
       </div>
     </div>
