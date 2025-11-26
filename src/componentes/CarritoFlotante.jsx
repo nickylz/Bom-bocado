@@ -13,7 +13,7 @@ export function CarritoFlotante() {
     mostrarCarrito,
     setMostrarCarrito,
     totalProductos,
-    showFirstItemToast,
+    showAddedToast, // Usar el nuevo estado
     showReminder,
     reminderMessage,
     closeReminder,
@@ -29,24 +29,26 @@ export function CarritoFlotante() {
       alert("Debes iniciar sesión para continuar con la compra 🧁");
       return;
     }
-    setMostrarCarrito(false); // Opcional: cerrar el carrito al navegar
+    setMostrarCarrito(false);
     navigate("/checkout");
   };
 
   return (
     <>
-      {/* === BOTÓN FLOTANTE Y MENSAJES === */}
+      {/* === BOTÓN FLOTANTE Y NOTIFICACIÓN === */}
       <div className="fixed bottom-6 right-6 z-40 flex items-center">
+        {/* Notificación de "Producto agregado" */}
         <div
           className={`transition-all duration-500 ease-in-out ${
-            showFirstItemToast
+            showAddedToast
               ? "opacity-100 translate-x-0"
               : "opacity-0 translate-x-10 pointer-events-none"
-          } mr-4 bg-white border-2 border-[#d16170] text-[#9c2007] font-semibold px-4 py-2 rounded-full shadow-lg`}
+          } mr-4 bg-white text-lg text-[#9c2007] font-semibold py-2 px-6 rounded-full shadow-lg border-2 border-[#d8718c]"`}
         >
           ¡Producto agregado!
         </div>
 
+        {/* Botón del Carrito */}
         <button
           onClick={() => setMostrarCarrito(!mostrarCarrito)}
           className="relative bg-[#d16170] hover:bg-[#b84c68] text-white p-4 rounded-full shadow-xl transition-all duration-300"

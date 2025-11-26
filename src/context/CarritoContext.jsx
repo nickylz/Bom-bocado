@@ -16,7 +16,6 @@ import { useAuth } from "./authContext";
 
 const CarritoContext = createContext();
 
-// ... (mensajes de recordatorio sin cambios)
 const reminderMessages = [
     "¡No dejes que se enfríe! Tus productos te esperan.",
     "Tu carrito te extraña. ¿Listo para finalizar tu compra?",
@@ -32,6 +31,7 @@ export const CarritoProvider = ({ children }) => {
   const [cargandoPago, setCargandoPago] = useState(false);
   const [errorPago, setErrorPago] = useState(null);
   const [showFirstItemToast, setShowFirstItemToast] = useState(false);
+  const [showAddedToast, setShowAddedToast] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
   const [reminderMessage, setReminderMessage] = useState("");
 
@@ -45,7 +45,7 @@ export const CarritoProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!user && !sessionStorage.getItem("guestId")) return; // No hacer nada si no hay usuario ni invitado
+    if (!user && !sessionStorage.getItem("guestId")) return;
     const uid = user ? user.uid : getGuestId();
     const q = query(collection(db, "carrito"), where("userId", "==", uid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -95,8 +95,7 @@ export const CarritoProvider = ({ children }) => {
 
   const totalProductos = carrito.reduce((s, p) => s + (p.cantidad || 0), 0);
 
-  // ========= FUNCIÓN MODIFICADA =========
-  const agregarProducto = async (producto, cantidadAAgregar = 1) => {
+  const agregarAlCarrito = async (producto, cantidadAAgregar = 1) => {
     const isFirstProduct = totalProductos === 0;
     const id = producto.id || producto.productoId || producto.nombre;
     if (!id) return console.error("Producto sin ID");
@@ -111,7 +110,6 @@ export const CarritoProvider = ({ children }) => {
     const snap = await getDocs(qExistente);
 
     if (snap.empty) {
-      // Si no existe, lo creamos con la cantidad especificada
       const ref = doc(collection(db, "carrito"));
       await setDoc(ref, {
         ...producto,
@@ -120,7 +118,6 @@ export const CarritoProvider = ({ children }) => {
         id,
       });
     } else {
-      // Si ya existe, actualizamos la cantidad
       const docExistente = snap.docs[0];
       const data = docExistente.data();
       await updateDoc(doc(db, "carrito", docExistente.id), {
@@ -128,12 +125,14 @@ export const CarritoProvider = ({ children }) => {
       });
     }
 
+    setShowAddedToast(true);
+    setTimeout(() => setShowAddedToast(false), 2000);
+
     if (isFirstProduct) {
       setShowFirstItemToast(true);
       setTimeout(() => setShowFirstItemToast(false), 4000);
     }
   };
-  // =====================================
 
   const cambiarCantidad = async (id, delta) => {
     const uid = user ? user.uid : getGuestId();
@@ -145,7 +144,7 @@ export const CarritoProvider = ({ children }) => {
     const nuevaCantidad = (docCambiar.data().cantidad || 0) + delta;
 
     if (nuevaCantidad <= 0) {
-        await eliminarProducto(id); // Elimina si la cantidad es 0 o menos
+        await eliminarProducto(id);
     } else {
         await updateDoc(docCambiar.ref, { cantidad: nuevaCantidad });
     }
@@ -247,7 +246,7 @@ export const CarritoProvider = ({ children }) => {
     <CarritoContext.Provider
       value={{
         carrito,
-        agregarProducto,
+        agregarAlCarrito,
         eliminarProducto,
         cambiarCantidad,
         vaciarCarrito,
@@ -259,6 +258,7 @@ export const CarritoProvider = ({ children }) => {
         cargandoPago,
         errorPago,
         showFirstItemToast,
+        showAddedToast,
         showReminder,
         reminderMessage,
         closeReminder,
@@ -269,4 +269,5 @@ export const CarritoProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCarrito = () => useContext(CarritoContext);
