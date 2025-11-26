@@ -56,7 +56,7 @@ const DejarComentario = ({ productoId }) => {
 
   if (enviado) {
     return (
-      <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-2xl text-center">
+      <div className="mt-8 p-4 sm:p-6 bg-green-50 border border-green-200 rounded-2xl text-center">
         <p className="text-green-800 font-semibold">¡Gracias por tu opinión!</p>
         <p className="text-green-600">Tu comentario ha sido enviado correctamente.</p>
         <button onClick={() => setEnviado(false)} className="mt-2 text-sm text-blue-600 hover:underline">Dejar otra opinión</button>
@@ -65,21 +65,21 @@ const DejarComentario = ({ productoId }) => {
   }
 
   return (
-    <div className="mt-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+    <div className="mt-8 p-4 sm:p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
       <div className="flex items-start gap-4">
         {usuario && (
           <div className="shrink-0">
             {usuario.photoURL ? (
-              <img src={usuario.photoURL} alt={usuario.nombre || usuario.displayName} className="w-12 h-12 rounded-full object-cover" />
+              <img src={usuario.photoURL} alt={usuario.nombre || usuario.displayName} className="w-11 h-11 rounded-full object-cover" />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-[#a34d5f] flex items-center justify-center text-white font-bold text-xl">
+              <div className="w-11 h-11 rounded-full bg-[#a34d5f] flex items-center justify-center text-white font-bold text-xl">
                 {(usuario.nombre || usuario.displayName) ? (usuario.nombre || usuario.displayName).charAt(0).toUpperCase() : 'A'}
               </div>
             )}
           </div>
         )}
         <div className="grow">
-          <h3 className="text-xl font-bold text-gray-800 mb-2">Escribe tu opinión</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Escribe tu opinión</h3>
 
           {!usuario && (
             <div className="mb-3">
@@ -95,15 +95,15 @@ const DejarComentario = ({ productoId }) => {
             </div>
           )}
 
-          <div className="flex items-center mb-3">
-            <span className="mr-3 text-gray-700">Tu calificación:</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center mb-3">
+            <span className="mb-2 sm:mb-0 sm:mr-3 text-gray-700">Tu calificación:</span>
             <div className="flex">
               {[...Array(5)].map((_, index) => {
                 const ratingValue = index + 1;
                 return (
                   <svg
                     key={index}
-                    className={`w-7 h-7 cursor-pointer ${ratingValue <= (hoverRating || rating) ? 'text-[#d8718c]' : 'text-gray-300'}`}
+                    className={`w-6 h-6 sm:w-7 sm:h-7 cursor-pointer ${ratingValue <= (hoverRating || rating) ? 'text-[#d8718c]' : 'text-gray-300'}`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     onClick={() => setRating(ratingValue)}
@@ -126,7 +126,7 @@ const DejarComentario = ({ productoId }) => {
           ></textarea>
           <button
             onClick={handleGuardarComentario}
-            className={`mt-3 bg-[#a34d5f] text-white px-6 py-2 rounded-full hover:bg-[#912646] transition shadow-md ${enviando ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`mt-3 bg-[#a34d5f] text-white px-6 py-2 rounded-full hover:bg-[#912646] transition shadow-md w-full sm:w-auto ${enviando ? 'opacity-50 cursor-not-allowed' : ''}`}
             disabled={enviando}
           >
             {enviando ? 'Enviando...' : 'Enviar Opinión'}
