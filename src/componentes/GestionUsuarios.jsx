@@ -37,7 +37,7 @@ export default function GestionUsuarios() {
     try {
       const querySnapshot = await getDocs(collection(db, "usuarios"));
       const listaUsuarios = querySnapshot.docs.map((docu) => ({
-        id: docu.id, // <-- id del documento en Firestore
+        id: docu.id,
         ...docu.data(),
         fechaCreacion: docu.data().fechaCreacion?.toDate(),
       }));
@@ -54,7 +54,6 @@ export default function GestionUsuarios() {
   }, []);
 
   const handleGuardarRol = async (id, rolActual) => {
-    // Evitar dejar al sistema sin admins
     if (
       rolActual === "admin" &&
       usuarios.filter((u) => u.rol === "admin").length <= 1 &&
@@ -72,7 +71,7 @@ export default function GestionUsuarios() {
     try {
       const userRef = doc(db, "usuarios", id);
       await updateDoc(userRef, { rol: nuevoRol });
-      // Actualiza y reordena la lista localmente
+
       const updatedUsers = usuarios.map((u) =>
         u.id === id ? { ...u, rol: nuevoRol } : u
       );
@@ -104,7 +103,7 @@ export default function GestionUsuarios() {
       return;
 
     try {
-      const result = await deleteUser({ docId: usuario.id }); // SOLO docId
+      const result = await deleteUser({ docId: usuario.id });
       if (result.data?.success) {
         mostrarModal(`Usuario ${usuario.correo} eliminado con éxito.`);
         setUsuarios(usuarios.filter((u) => u.id !== usuario.id));
@@ -130,40 +129,140 @@ export default function GestionUsuarios() {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-[#8f2133] mb-6 text-center">
-        Gestión de Usuarios
-      </h2>
-      <div className="overflow-x-auto rounded-xl border border-[#f5bfb2]">
-        <table className="min-w-full divide-y divide-[#f5bfb2]">
-          <thead className="bg-[#fff3f0]">
+      <div className="lg:hidden w-full space-y-4">
+        {usuarios.map((usuario) => (
+          <div
+            key={usuario.id}
+            className="bg-white shadow-sm rounded-lg border border-[#f5bfb2] p-4"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-lg  text-[#d16170] font-bold">
+                  @{usuario.username}
+                </p>
+                <p className="text-sm text-gray-500">{usuario.correo}</p>
+                <p className="text-xs text-gray-400">
+                  {usuario.fechaCreacion
+                    ? format(usuario.fechaCreacion, "dd/MM/yyyy")
+                    : "-"}
+                </p>
+              </div>
+
+              <div className="flex flex-col items-end gap-2">
+                <span
+                  className={`inline px-3 py-1 text-xs rounded-full ${
+                    usuario.rol === "admin"
+                      ? "bg-red-200 text-red-800"
+                      : usuario.rol === "editor"
+                      ? "bg-pink-200 text-pink-800"
+                      : "bg-gray-200 text-gray-800"
+                  }`}
+                >
+                  {usuario.rol}
+                </span>
+
+                <div className="flex items-center justify-end gap-3">
+                  {editandoId === usuario.id ? (
+                    <>
+                      <button
+                        onClick={() =>
+                          handleGuardarRol(usuario.id, usuario.rol)
+                        }
+                        className="text-green-600 hover:text-green-800 text-lg"
+                        title="Guardar"
+                      >
+                        <FaSave />
+                      </button>
+                      <button
+                        onClick={handleCancelar}
+                        className="text-gray-600 hover:text-gray-800 text-lg"
+                        title="Cancelar"
+                      >
+                        <FaTimes />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() =>
+                          handleEmpezarEdicion(usuario.id, usuario.rol)
+                        }
+                        className="text-[#d16170] hover:text-[#b84c68] text-lg"
+                        title="Editar Rol"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUser(usuario)}
+                        className="text-[#d16170] hover:text-[#b84c68] text-lg"
+                        title="Eliminar Usuario"
+                      >
+                        <FaTrash />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {editandoId === usuario.id && (
+              <div className="mt-3">
+                <select
+                  value={nuevoRol}
+                  onChange={(e) => setNuevoRol(e.target.value)}
+                  className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-3 py-2 rounded-xl focus:ring-2 focus:ring-[#d8718c] text-sm"
+                >
+                  <option value="cliente">Cliente</option>
+                  <option value="editor">Editor</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden lg:block w-full overflow-x-auto rounded-xl border border-[#f5bfb2]">
+        <table className="min-w-max divide-y divide-[#f5bfb2]">
+          <thead className="bg-[#fff3f0] w-full">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
+              <th className="px-20 sm:px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
                 Username
               </th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
+
+              <th className="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
                 Correo
               </th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
+
+              <th className="px-12 sm:px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
                 Rol
               </th>
-              <th className="px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
+
+              <th className="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
                 Fecha de Creación
               </th>
-              <th className="px-6 py-3 text-center text-xs font-bold text-[#8f2133] uppercase tracking-wider">
+
+              <th className="px-12 sm:px-6 py-3 text-center text-xs font-bold text-[#8f2133] uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-[#f5bfb2]">
+
+          <tbody className="bg-white divide-y divide-[#f5bfb2] w-full">
             {usuarios.map((usuario) => (
               <tr key={usuario.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                {/* Username: siempre */}
+                <td className="px-6 sm:px-6 py-4 whitespace-nowrap text-sm sm:text-base text-gray-700 font-medium">
                   @{usuario.username}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+
+                {/* Correo: solo desktop */}
+                <td className="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {usuario.correo}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+
+                {/* Rol: siempre */}
+                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold">
                   {editandoId === usuario.id ? (
                     <select
                       value={nuevoRol}
@@ -188,12 +287,16 @@ export default function GestionUsuarios() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+
+                {/* Fecha: solo desktop */}
+                <td className="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {usuario.fechaCreacion
                     ? format(usuario.fechaCreacion, "dd/MM/yyyy HH:mm")
                     : "No disponible"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+
+                {/* Acciones: siempre */}
+                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                   {editandoId === usuario.id ? (
                     <div className="flex items-center justify-center gap-3">
                       <button
@@ -226,7 +329,7 @@ export default function GestionUsuarios() {
                       </button>
                       <button
                         onClick={() => handleDeleteUser(usuario)}
-                        className="text-[#d16170] hover:text-[#b84c68] atext-lg"
+                        className="text-[#d16170] hover:text-[#b84c68] text-lg"
                         title="Eliminar Usuario"
                       >
                         <FaTrash />
