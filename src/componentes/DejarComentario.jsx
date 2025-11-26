@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/authContext';
 
 const DejarComentario = ({ productoId }) => {
   const { usuarioActual: usuario } = useAuth();
@@ -68,7 +68,7 @@ const DejarComentario = ({ productoId }) => {
     <div className="mt-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
       <div className="flex items-start gap-4">
         {usuario && (
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             {usuario.photoURL ? (
               <img src={usuario.photoURL} alt={usuario.nombre || usuario.displayName} className="w-12 h-12 rounded-full object-cover" />
             ) : (
@@ -78,7 +78,7 @@ const DejarComentario = ({ productoId }) => {
             )}
           </div>
         )}
-        <div className="flex-grow">
+        <div className="grow">
           <h3 className="text-xl font-bold text-gray-800 mb-2">Escribe tu opinión</h3>
 
           {!usuario && (

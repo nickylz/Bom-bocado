@@ -140,7 +140,7 @@ export default function ProductoDetalle() {
 
               return (
                 <div key={comentario.id} className="bg-rose-50 p-5 rounded-2xl shadow-sm border border-rose-100 flex gap-4 items-start">
-                  <div className="flex-shrink-0 pt-1">
+                  <div className="shrink-0 pt-1">
                     {comentario.autorFotoURL ? (
                       <img src={comentario.autorFotoURL} alt={comentario.autorNombre} className="w-11 h-11 rounded-full object-cover" />
                     ) : (
@@ -149,7 +149,7 @@ export default function ProductoDetalle() {
                       </div>
                     )}
                   </div>
-                  <div className="flex-grow">
+                  <div className="grow">
                     <div className="flex items-center justify-between mb-1">
                       <div>
                         <p className="font-bold text-gray-800">{comentario.autorNombre}</p>
