@@ -30,7 +30,6 @@ export default function Intranet() {
     );
   }
 
-  // ---- CONTENIDO PRINCIPAL SEGÚN SECCIÓN ----
   const renderContenido = () => {
     if (seccionActiva === "productos") {
       return (
