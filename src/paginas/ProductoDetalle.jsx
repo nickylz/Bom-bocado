@@ -75,7 +75,7 @@ export default function ProductoDetalle() {
         
         <FiltroComentarios setFiltro={setFiltro} filtroActual={filtro} />
 
-        <DejarComentario />
+        <DejarComentario productoId={id} />
         
         <div className="space-y-6 mt-8">
         </div>

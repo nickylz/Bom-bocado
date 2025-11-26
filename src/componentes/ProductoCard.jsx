@@ -25,7 +25,7 @@ export default function ProductoCard({ producto, mostrarBoton = true }) {
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <Link
             to={`/productos/${producto.id}`}
-            className="bg-white text-[#9c2007] px-6 py-3 rounded-full font-bold text-lg hover:bg-gray-200 transition"
+            className="bg-white text-[#9c2007] px-4 py-2 text-base sm:px-6 sm:py-3 rounded-full font-bold sm:text-lg hover:bg-gray-200 transition"
           >
             Ver más
           </Link>
