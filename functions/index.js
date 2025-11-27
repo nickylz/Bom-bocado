@@ -1,45 +1,63 @@
-
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
 
-// Helper para verificar si el usuario es admin
-const checkIfAdmin = async (context) => {
+exports.deleteUser = functions.https.onCall(async (data, context) => {
+  // 1. Verificar que el que llama esté autenticado
   if (!context.auth) {
     throw new functions.https.HttpsError(
       "unauthenticated",
-      "La función solo puede ser llamada por un usuario autenticado."
+      "El usuario no está autenticado."
     );
   }
-  const user = await admin.firestore().collection("usuarios").doc(context.auth.uid).get();
-  if (user.data()?.rol !== "admin") {
-    throw new functions.https.HttpsError(
-      "permission-denied",
-      "La función solo puede ser llamada por un administrador."
-    );
-  }
-};
 
+  // 2. Verificar que el que llama sea admin
+  const uidSolicitante = context.auth.uid;
 
-exports.deleteUser = functions.https.onCall(async (data, context) => {
-  await checkIfAdmin(context);
-
-  const uid = data.uid;
   try {
-    // Eliminar de Authentication
-    await admin.auth().deleteUser(uid);
-    
-    // Eliminar de la colección 'usuarios' en Firestore
-    await admin.firestore().collection("usuarios").doc(uid).delete();
-    
-    return { success: true, message: `Usuario con UID ${uid} eliminado correctamente.` };
+    const docSolicitante = await admin
+      .firestore()
+      .collection("usuarios")
+      .doc(uidSolicitante)
+      .get();
+
+    const rolSolicitante = docSolicitante.data()?.rol;
+
+    if (rolSolicitante !== "admin") {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "No tienes permisos para eliminar usuarios."
+      );
+    }
+  } catch (error) {
+    console.error("Error verificando rol del solicitante:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Error verificando permisos del usuario que intenta eliminar."
+    );
+  }
+
+  // 3. SOLO usamos docId (id del documento en Firestore)
+  const docId = data.docId;
+
+  if (!docId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "docId no proporcionado."
+    );
+  }
+
+  try {
+    // 4. Eliminar el documento de la colección usuarios
+    await admin.firestore().collection("usuarios").doc(docId).delete();
+
+    return { success: true };
   } catch (error) {
     console.error("Error al eliminar usuario:", error);
     throw new functions.https.HttpsError(
       "internal",
-      "No se pudo eliminar el usuario.",
-      error.message
+      "Error al eliminar usuario: " + error.message
     );
   }
 });

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/authContext";
 import { db } from "../lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
 
 // Componentes
 import PerfilForm from "../componentes/PerfilForm";
@@ -13,45 +13,45 @@ export default function PerfilPage() {
   const [cargandoCompras, setCargandoCompras] = useState(true);
 
   useEffect(() => {
-    const cargarCompras = async () => {
-      if (!usuarioActual) {
-        setCompras([]);
-        setCargandoCompras(false);
-        return;
-      }
+    if (!usuarioActual) {
+      setCompras([]);
+      setCargandoCompras(false);
+      return;
+    }
 
-      setCargandoCompras(true);
-      try {
-        const q = query(
-          collection(db, "pedidos"),
-          where("userId", "==", usuarioActual.uid)
-        );
-        
-        const querySnapshot = await getDocs(q);
-        let lista = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
+    setCargandoCompras(true);
+    const q = query(
+      collection(db, "pedidos"),
+      where("userId", "==", usuarioActual.uid)
+    );
 
-        lista.sort((a, b) => {
-            const fechaA = a.fechaCreacion?.toDate ? a.fechaCreacion.toDate() : 0;
-            const fechaB = b.fechaCreacion?.toDate ? b.fechaCreacion.toDate() : 0;
-            return fechaB - fechaA; // Orden descendente
-        });
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      let lista = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+      }));
 
-        setCompras(lista);
+      lista.sort((a, b) => {
+          const fechaA = a.fechaCreacion?.toDate ? a.fechaCreacion.toDate() : 0;
+          const fechaB = b.fechaCreacion?.toDate ? b.fechaCreacion.toDate() : 0;
+          return fechaB - fechaA; // Orden descendente
+      });
 
-      } catch (error) {
-        console.error("Error definitivo obteniendo compras:", error);
-        setCompras([]);
-      } finally {
-        setCargandoCompras(false);
-      }
-    };
+      setCompras(lista);
+      setCargandoCompras(false);
+    }, (error) => {
+      console.error("Error obteniendo compras en tiempo real:", error);
+      setCompras([]);
+      setCargandoCompras(false);
+    });
 
-    cargarCompras();
+    return () => unsubscribe(); // Limpiar el listener al desmontar
 
   }, [usuarioActual]);
+
+  const handlePedidoEliminado = (pedidoId) => {
+    setCompras(prevCompras => prevCompras.filter(compra => compra.id !== pedidoId));
+  };
 
   if (cargandoAuth) {
     return (
@@ -113,6 +113,7 @@ export default function PerfilPage() {
           <ComprasList
             compras={compras}
             cargando={cargandoCompras}
+            onPedidoEliminado={handlePedidoEliminado}
           />
         </div>
       </div>

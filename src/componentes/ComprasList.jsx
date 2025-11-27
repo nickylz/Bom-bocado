@@ -1,10 +1,9 @@
 import React from 'react';
+import { db } from '../lib/firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
 
-export default function ComprasList({ compras, cargando }) {
+export default function ComprasList({ compras, cargando, onPedidoEliminado }) {
 
-  // ==========================
-  //   FORMATEAR FECHA
-  // ==========================
   const formatearFecha = (fecha) => {
     if (!fecha) return "";
     try {
@@ -14,6 +13,23 @@ export default function ComprasList({ compras, cargando }) {
       return "";
     }
   };
+
+  const handleCancelarPedido = async (pedidoId) => {
+    if (window.confirm("¿Estás seguro de que quieres cancelar este pedido? Esta acción no se puede deshacer.")) {
+      try {
+        const pedidoRef = doc(db, 'pedidos', pedidoId);
+        await deleteDoc(pedidoRef);
+        onPedidoEliminado(pedidoId); // Notificar al componente padre que un pedido fue eliminado
+      } catch (error) {
+        console.error("Error al cancelar el pedido:", error);
+        alert("Hubo un error al cancelar el pedido.");
+      }
+    }
+  };
+
+  const puedeCancelar = (estado) => {
+    return estado === 'pendiente' || estado === 'en proceso';
+  }
 
   return (
     <div className="bg-white border border-[#f5bfb2] rounded-2xl p-6 shadow-sm">
@@ -34,7 +50,6 @@ export default function ComprasList({ compras, cargando }) {
               className="bg-[#fff7f6] border border-[#f5bfb2] rounded-xl p-4 shadow-sm"
             >
               <div className="flex justify-between items-start mb-2">
-                {/* IZQUIERDA */}
                 <div>
                   <p className="text-[#7a1a0a] font-semibold">
                     Pedido #{compra.id.slice(0, 6)}
@@ -44,7 +59,6 @@ export default function ComprasList({ compras, cargando }) {
                     {formatearFecha(compra.fechaCreacion)}
                   </p>
 
-                  {/* ESTADO DEL PEDIDO */}
                   <p className="text-xs mt-1">
                     Estado:{" "}
                     <span className="font-semibold text-[#d16170]">
@@ -60,7 +74,6 @@ export default function ComprasList({ compras, cargando }) {
                   </p>
                 </div>
 
-                {/* DERECHA */}
                 <div className="text-right">
                   <p className="text-xs text-gray-500">
                     Productos: {compra.items?.length || 0}
@@ -74,7 +87,6 @@ export default function ComprasList({ compras, cargando }) {
                 </div>
               </div>
 
-              {/* LISTADO DE PRODUCTOS */}
               {compra.items && compra.items.length > 0 && (
                 <ul className="mt-2 text-sm text-gray-700 space-y-1">
                   {compra.items.map((item, index) => (
@@ -97,6 +109,17 @@ export default function ComprasList({ compras, cargando }) {
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {puedeCancelar(compra.estado) && (
+                <div className="mt-4 text-right">
+                  <button
+                    onClick={() => handleCancelarPedido(compra.id)}
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Cancelar Pedido
+                  </button>
+                </div>
               )}
             </div>
           ))}

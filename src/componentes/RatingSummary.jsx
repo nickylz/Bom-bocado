@@ -1,45 +1,32 @@
 import React from 'react';
-import './RatingSummary.css';
 
-const RatingSummary = () => {
-  const ratings = [
-    { stars: 5, percentage: 67 },
-    { stars: 4, percentage: 22 },
-    { stars: 3, percentage: 11 },
-    { stars: 2, percentage: 0 },
-    { stars: 1, percentage: 0 },
-  ];
+const RatingSummary = ({ rating, reviewCount }) => {
+  const fullStars = Math.floor(rating);
+  const halfStar = rating % 1 !== 0;
+  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
 
   return (
-    <div className="rating-summary-container">
-      <h2 className="rating-summary-title">Opiniones de nuestros clientes</h2>
-      <div className="rating-summary-card">
-        <div className="rating-summary-average">
-          <div className="average-score">4.6</div>
-          <div className="star-rating">
-            <span>&#9733;</span>
-            <span>&#9733;</span>
-            <span>&#9733;</span>
-            <span>&#9733;</span>
-            <span>&#9734;</span>
-          </div>
-          <div className="total-ratings">9 calificaciones</div>
-        </div>
-        <div className="rating-summary-breakdown">
-          {ratings.map((rating) => (
-            <div key={rating.stars} className="rating-bar-container">
-              <div className="star-label">{rating.stars} {rating.stars > 1 ? 'estrellas' : 'estrella'}</div>
-              <div className="progress-bar">
-                <div
-                  className="progress-bar-fill"
-                  style={{ width: `${rating.percentage}%` }}
-                ></div>
-              </div>
-              <div className="percentage-label">{rating.percentage}%</div>
-            </div>
-          ))}
-        </div>
+    <div className="flex items-center gap-2">
+      <div className="flex items-center">
+        {[...Array(fullStars)].map((_, i) => (
+          <svg key={`full-${i}`} className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.366 2.446a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.366-2.446a1 1 0 00-1.175 0l-3.366 2.446c-.784.57-1.838-.197-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
+          </svg>
+        ))}
+        {halfStar && (
+           <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.366 2.446a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118L10 15.347V2.21l.95.69 1.286 3.957z" />
+           </svg>
+        )}
+        {[...Array(emptyStars)].map((_, i) => (
+          <svg key={`empty-${i}`} className="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.366 2.446a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.366-2.446a1 1 0 00-1.175 0l-3.366 2.446c-.784.57-1.838-.197-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
+          </svg>
+        ))}
       </div>
+      <span className="text-gray-600 font-medium">
+        {rating.toFixed(1)} de 5 ({reviewCount} opiniones)
+      </span>
     </div>
   );
 };

@@ -8,15 +8,19 @@ export default function FormProducto() {
   const { usuarioActual } = useAuth();
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  const [frase, setFrase] = useState("");
   const [precio, setPrecio] = useState("");
   const [categoria, setCategoria] = useState("");
   const [imagen, setImagen] = useState(null);
-  const [nombreImagen, setNombreImagen] = useState("Ningún archivo seleccionado");
+  const [nombreImagen, setNombreImagen] = useState(
+    "Ningún archivo seleccionado"
+  );
   const [subiendo, setSubiendo] = useState(false);
-  
+
   const inputFileRef = useRef(null);
 
-  const tienePermiso = usuarioActual?.rol === 'admin' || usuarioActual?.rol === 'editor';
+  const tienePermiso =
+    usuarioActual?.rol === "admin" || usuarioActual?.rol === "editor";
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -48,6 +52,7 @@ export default function FormProducto() {
       await addDoc(collection(db, "productos"), {
         nombre,
         descripcion,
+        frase, 
         precio: Number(precio),
         categoria,
         imagen: imageUrl,
@@ -57,11 +62,12 @@ export default function FormProducto() {
 
       setNombre("");
       setDescripcion("");
+      setFrase(""); 
       setPrecio("");
       setCategoria("");
       setImagen(null);
       setNombreImagen("Ningún archivo seleccionado");
-      if(inputFileRef.current) {
+      if (inputFileRef.current) {
         inputFileRef.current.value = "";
       }
       alert("¡Producto agregado con éxito!");
@@ -81,20 +87,90 @@ export default function FormProducto() {
     <div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="nombre" className="block text-sm font-medium text-[#8f2133]">Nombre del Producto</label>
-          <input type="text" id="nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} required className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
+          <label
+            htmlFor="nombre"
+            className="block text-sm font-medium text-[#8f2133]"
+          >
+            Nombre del Producto
+          </label>
+          <input
+            type="text"
+            id="nombre"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            required
+            className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+          />
         </div>
+
         <div>
-          <label htmlFor="descripcion" className="block text-sm font-medium text-[#8f2133]">Descripción</label>
-          <textarea id="descripcion" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required rows="3" className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"></textarea>
+          <label
+            htmlFor="frase"
+            className="block text-sm font-medium text-[#8f2133]"
+          >
+            Frase 
+          </label>
+          <textarea
+            id="frase"
+            value={frase}
+            onChange={(e) => setFrase(e.target.value)}
+            rows="2"
+            required
+            placeholder="Ej: Ideal para compartir en familia..."
+            className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+          ></textarea>
         </div>
+
         <div>
-          <label htmlFor="precio" className="block text-sm font-medium text-[#8f2133]">Precio (S/)</label>
-          <input type="number" id="precio" value={precio} onChange={(e) => setPrecio(e.target.value)} required min="0" step="0.01" className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]" />
+          <label
+            htmlFor="descripcion"
+            className="block text-sm font-medium text-[#8f2133]"
+          >
+            Descripción
+          </label>
+          <textarea
+            id="descripcion"
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            required
+            rows="3"
+            className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+          ></textarea>
         </div>
+
         <div>
-          <label htmlFor="categoria" className="block text-sm font-medium text-[#8f2133]">Categoría</label>
-          <select id="categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} required className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]">
+          <label
+            htmlFor="precio"
+            className="block text-sm font-medium text-[#8f2133]"
+          >
+            Precio (S/)
+          </label>
+          <input
+            type="number"
+            id="precio"
+            value={precio}
+            onChange={(e) => setPrecio(e.target.value)}
+            required
+            min="0"
+            step="0.01"
+            className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="categoria"
+            className="block text-sm font-medium text-[#8f2133]"
+          >
+            Categoría
+          </label>
+          <select
+            id="categoria"
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value)}
+            required
+            className="mt-1 w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-4 py-3 rounded-xl focus:ring-2 focus:ring-[#d8718c]"
+          >
             <option value="">Selecciona una categoría</option>
             <option value="Pasteles">Pasteles</option>
             <option value="Tartas">Tartas</option>
@@ -108,31 +184,36 @@ export default function FormProducto() {
             <option value="Temporada">Temporada</option>
           </select>
         </div>
-        
-        {/* --- NUEVO INPUT DE ARCHIVO PERSONALIZADO --- */}
+
         <div>
-            <label className="block text-sm font-medium text-[#8f2133]">Imagen del Producto</label>
-            <div className="mt-1 flex items-center">
-                <input 
-                    type="file" 
-                    id="imagen" 
-                    ref={inputFileRef}
-                    onChange={handleFileChange} 
-                    accept="image/*" 
-                    required 
-                    className="hidden" 
-                />
-                <label 
-                    htmlFor="imagen"
-                    className="cursor-pointer bg-[#fff3f0] text-[#d16170] font-semibold py-2 px-4 rounded-xl hover:bg-[#f5bfb2] transition-colors"
-                >
-                    Elegir archivo
-                </label>
-                <span className="ml-4 text-gray-500">{nombreImagen}</span>
-            </div>
+          <label className="block text-sm font-medium text-[#8f2133]">
+            Imagen del Producto
+          </label>
+          <div className="mt-1 flex items-center">
+            <input
+              type="file"
+              id="imagen"
+              ref={inputFileRef}
+              onChange={handleFileChange}
+              accept="image/*"
+              required
+              className="hidden"
+            />
+            <label
+              htmlFor="imagen"
+              className="cursor-pointer bg-[#fff3f0] text-[#d16170] font-semibold py-2 px-4 rounded-xl hover:bg-[#f5bfb2] transition-colors"
+            >
+              Elegir archivo
+            </label>
+            <span className="ml-4 text-gray-500">{nombreImagen}</span>
+          </div>
         </div>
 
-        <button type="submit" disabled={subiendo} className="w-full flex justify-center py-3 px-4 rounded-xl shadow-sm text-sm font-semibold text-white bg-[#d16170] hover:bg-[#b84c68] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d8718c] disabled:opacity-50 transition-colors">
+        <button
+          type="submit"
+          disabled={subiendo}
+          className="w-full flex justify-center py-3 px-4 rounded-xl shadow-sm text-sm font-semibold text-white bg-[#d16170] hover:bg-[#b84c68] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d8718c] disabled:opacity-50 transition-colors"
+        >
           {subiendo ? "Agregando..." : "Agregar Producto"}
         </button>
       </form>
