@@ -163,17 +163,18 @@ export default function ProductoDetalle() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex items-stretch gap-4">
               <button 
                 onClick={handleAgregarAlCarrito}
-                className="bg-[#a34d5f] hover:bg-[#912646] text-white px-8 py-3 rounded-full w-full sm:w-auto text-lg transition shadow-md"
-              >
+                className={`bg-[#a34d5f] hover:bg-[#912646] text-white px-8 py-4 rounded-full text-xl transition-all duration-300 shadow-md ${cantidadEnCarrito === 0 ? 'w-full' : 'w-auto'} font-semibold`}>
                 Añadir al Carrito
               </button>
               {cantidadEnCarrito > 0 && (
-                <p className="text-gray-600 font-medium bg-rose-100 px-3 py-1 rounded-full whitespace-nowrap">
-                  En carrito: {cantidadEnCarrito}
-                </p>
+                <div className="flex-grow flex items-center justify-center bg-rose-100 rounded-full">
+                    <p className="text-gray-700 font-semibold text-lg">
+                        En carrito: {cantidadEnCarrito}
+                    </p>
+                </div>
               )}
             </div>
           </div>

@@ -28,7 +28,7 @@ export default function ProductoCard({ producto, mostrarBoton = true }) {
       </div>
       <div className="p-5 text-center grow flex flex-col">
         <h3 className="text-lg font-semibold text-[#9c2007] truncate">{producto.nombre}</h3>
-        <p className="text-gray-600 text-sm mt-1 grow">{producto.descripcion}</p>
+        <p className="text-gray-600 text-sm mt-1 grow">{producto.frase}</p>
         <p className="text-[#d8718c] font-bold text-xl my-3">
           S/{producto.precio?.toFixed(2)}
         </p>
@@ -37,7 +37,7 @@ export default function ProductoCard({ producto, mostrarBoton = true }) {
           <div className="mt-auto pt-2">
             <button
               onClick={handleAgregar}
-              className="bg-[#a34d5f] hover:bg-[#912646] text-white px-6 py-2 rounded-full w-full transition shadow-md"
+              className="bg-[#a34d5f] hover:bg-[#912646] text-white px-6 py-3 text-lg rounded-full w-full transition shadow-md font-semibold"
             >
               Añadir al Carrito
             </button>
