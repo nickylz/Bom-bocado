@@ -78,37 +78,105 @@ export function CarritoFlotante() {
       {/* === PANEL DEL CARRITO === */}
       {mostrarCarrito && (
         <>
+          {/* Fondo oscuro */}
           <div
             className="fixed inset-0 bg-black/30 z-40"
             onClick={cerrarCarrito}
           ></div>
-          <div className="fixed bottom-20 right-6 bg-[#fff3f0] w-80 rounded-2xl shadow-2xl p-6 border border-[#f5bfb2] z-50 animate-slide-left">
+
+          {/* Panel */}
+          <div
+            className={`
+        fixed
+        bottom-20
+        right-4
+        bg-[#fff3f0]
+        w-80
+        max-w-[92vw]
+        rounded-2xl
+        shadow-2xl
+        p-6
+        border border-[#f5bfb2]
+        z-50
+        animate-slide-left
+        
+        max-h-[82vh]
+        flex flex-col
+        
+        sm:right-6
+        
+        carrito-fullscreen
+      `}
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            {/* Botón cerrar */}
             <button
-              className="text-3xl text-[#d8718c] hover:text-[#b84c68] transition absolute top-2 right-4"
+              className="text-3xl text-[#d8718c] hover:text-[#b84c68] absolute top-2 right-4 transition"
               onClick={cerrarCarrito}
             >
               &times;
             </button>
+
+            {/* Título */}
             <h3 className="text-2xl font-bold text-[#9c2007] mb-5 text-center">
               Tu carrito
             </h3>
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-60">
+
+            {/* Scroll de productos */}
+            <div
+              className="
+          flex-1
+          overflow-y-auto
+          pr-2
+          space-y-4
+          scrollbar-thin
+          scrollbar-thumb-[#d8718c]/60
+          scrollbar-track-transparent
+        "
+            >
               {carrito.length === 0 ? (
-                <p className="text-center text-[#9c2007]/70 italic">
+                <p className="text-center text-[#9c2007]/70 italic py-4">
                   Tu carrito está vacío
                 </p>
               ) : (
                 carrito.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between bg-white/70 border border-[#f5bfb2] rounded-2xl p-3 shadow-sm">
-                    <img src={p.imagen} alt={p.nombre || "Producto"} className="w-16 h-16 object-cover rounded-xl border border-[#f5bfb2]" />
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between bg-white/70 border border-[#f5bfb2] rounded-2xl p-3 shadow-sm"
+                  >
+                    <img
+                      src={p.imagen}
+                      alt={p.nombre || "Producto"}
+                      className="w-16 h-16 object-cover rounded-xl border border-[#f5bfb2]"
+                    />
+
                     <div className="flex-1 px-3">
-                      <strong className="block text-[#7a1a0a]">{p.nombre || "Producto sin nombre"}</strong>
-                      <span className="text-sm text-gray-600">S/{(p.precio || 0).toFixed(2)} x {p.cantidad || 1}</span>
+                      <strong className="block text-[#7a1a0a]">
+                        {p.nombre || "Producto sin nombre"}
+                      </strong>
+                      <span className="text-sm text-gray-600">
+                        S/{(p.precio || 0).toFixed(2)} x {p.cantidad || 1}
+                      </span>
                     </div>
+
                     <div className="flex flex-col items-center gap-1">
-                      <button onClick={() => cambiarCantidad(p.id, 1)} className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition">+</button>
-                      <button onClick={() => cambiarCantidad(p.id, -1)} className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition">-</button>
-                      <button onClick={() => eliminarProducto(p.id)} className="p-1.5 rounded-lg hover:bg-[#fff3f0] transition text-[#d16170]" title="Eliminar producto">
+                      <button
+                        onClick={() => cambiarCantidad(p.id, 1)}
+                        className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition"
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={() => cambiarCantidad(p.id, -1)}
+                        className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition"
+                      >
+                        -
+                      </button>
+                      <button
+                        onClick={() => eliminarProducto(p.id)}
+                        className="p-1.5 rounded-lg hover:bg-[#fff3f0] transition text-[#d16170]"
+                        title="Eliminar producto"
+                      >
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -116,15 +184,29 @@ export function CarritoFlotante() {
                 ))
               )}
             </div>
+
+            {/* Footer */}
             {carrito.length > 0 && (
               <div className="mt-5 space-y-2">
-                <p className="font-semibold text-[#7a1a0a] text-center">Total: S/{total.toFixed(2)}</p>
-                <button onClick={irAPagar} className={`w-full py-3 rounded-xl font-semibold transition ${
-                    usuarioActual ? "bg-[#d16170] text-white hover:bg-[#b84c68]" : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  }`} disabled={!usuarioActual}>
+                <p className="font-semibold text-[#7a1a0a] text-center text-lg">
+                  Total: S/{total.toFixed(2)}
+                </p>
+
+                <button
+                  onClick={irAPagar}
+                  className={`w-full py-3 rounded-xl font-semibold transition ${usuarioActual
+                      ? "bg-[#d16170] text-white hover:bg-[#b84c68]"
+                      : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
+                  disabled={!usuarioActual}
+                >
                   Ver todo el carrito
                 </button>
-                <button onClick={vaciarCarrito} className="w-full py-2 rounded-xl text-sm border border-[#d8718c] text-[#d8718c] hover:bg-[#f5bfb2]/50 transition">
+
+                <button
+                  onClick={vaciarCarrito}
+                  className="w-full py-2 rounded-xl text-sm border border-[#d8718c] text-[#d8718c] hover:bg-[#f5bfb2]/50 transition"
+                >
                   Vaciar carrito
                 </button>
               </div>
@@ -132,6 +214,7 @@ export function CarritoFlotante() {
           </div>
         </>
       )}
+
     </>
   );
 }
