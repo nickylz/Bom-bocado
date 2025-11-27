@@ -9,7 +9,6 @@ import Nosotros from "./paginas/Nosotros";
 import Productos from "./paginas/Productos";
 import ProductoDetalle from "./paginas/ProductoDetalle"; // <-- NUEVA RUTA
 import Novedades from "./paginas/Novedades";
-import Contacto from "./paginas/Contacto";
 import Perfil from "./paginas/Perfil";
 import Intranet from "./paginas/Intranet";
 import Checkout from "./paginas/Checkout";
@@ -26,7 +25,6 @@ function App() {
         <Route path="/productos" element={<Productos />} />
         <Route path="/productos/:id" element={<ProductoDetalle />} /> {/* <-- RUTA AÑADIDA */}
         <Route path="/novedades" element={<Novedades />} />
-        <Route path="/contacto" element={<Contacto />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/intranet" element={<Intranet />} />
         <Route path="/checkout" element={<Checkout />} />

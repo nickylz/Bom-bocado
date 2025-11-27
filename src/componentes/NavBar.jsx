@@ -35,7 +35,6 @@ export default function NavBar() {
           <Link to="/" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">Inicio</Link>
           <Link to="/productos" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">Productos</Link>
           <Link to="/nosotros" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">Nosotros</Link>
-          <Link to="/contacto" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">Contacto</Link>
           <Link to="/novedades" className="text-[#7a1a0a] font-semibold py-2 hover:text-[#e46945]">Novedades</Link>
 
           {/* --- ✨ ENLACE INTELIGENTE ✨ --- */}
