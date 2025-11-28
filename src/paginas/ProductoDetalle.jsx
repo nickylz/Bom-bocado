@@ -140,7 +140,7 @@ export default function ProductoDetalle() {
 
         <div className="flex flex-col gap-4">
           <h1 className="text-3xl sm:text-4xl font-bold text-[#9c2007]">{producto.nombre}</h1>
-          <RatingSummary rating={ratingPromedio} reviewCount={comentarios.length} />
+          <RatingSummary rating={ratingPromedio} reviewCount={comentarios.length} variant="compact" />
           <p className="text-gray-600 text-base sm:text-lg">{producto.descripcion}</p>
           
           <div className="mt-6">
@@ -170,7 +170,7 @@ export default function ProductoDetalle() {
                 Añadir al Carrito
               </button>
               {cantidadEnCarrito > 0 && (
-                <div className="flex-grow flex items-center justify-center bg-rose-100 rounded-full">
+                <div className="grow flex items-center justify-center bg-rose-100 rounded-full">
                     <p className="text-gray-700 font-semibold text-lg">
                         En carrito: {cantidadEnCarrito}
                     </p>
@@ -196,7 +196,7 @@ export default function ProductoDetalle() {
 
               return (
                 <div key={comentario.id} className="bg-rose-50 p-4 sm:p-5 rounded-2xl shadow-sm border border-rose-100 flex gap-4 items-start">
-                  <div className="flex-shrink-0 pt-1">
+                  <div className="shrink-0 pt-1">
                     {comentario.autorFotoURL ? (
                       <img src={comentario.autorFotoURL} alt={comentario.autorNombre} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover" />
                     ) : (
@@ -205,7 +205,7 @@ export default function ProductoDetalle() {
                       </div>
                     )}
                   </div>
-                  <div className="flex-grow">
+                  <div className="grow">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
                       <div>
                         <p className="font-bold text-gray-800">{comentario.autorNombre}</p>

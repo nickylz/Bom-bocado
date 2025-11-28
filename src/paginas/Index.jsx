@@ -139,7 +139,7 @@ export default function Inicio() {
                     <div className="bg-[#fcefee] rounded-3xl overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 border border-[#f5bfb2]">
                         <img src="https://i.pinimg.com/736x/e0/99/63/e099634012685ea760aa16416f208467.jpg" alt="Cherry Kiss Pie" className="w-full h-48 sm:h-64 object-cover"/>
                         <div className="p-5 text-center">
-                            <h3 className="font-semibold text-xl text-[#7a1a0a] mb-2">Cherry Kiss Pie</h3>
+                            <h3 className="font-semibold text-xl text-[#7a1a0a] mb-2">Raspberry Kiss Pie</h3>
                             <Link to="/productos" className="text-[#d8718c] font-bold hover:underline text-lg">Ver más</Link>
                         </div>
                     </div>
