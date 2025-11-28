@@ -17,29 +17,29 @@ const RatingSummary = ({ averageRating, totalReviews, starCounts, variant = "ful
     return (count / safeTotalReviews) * 100;
   };
 
-if (variant === "compact") {
-  return (
-    <div className="bg-white p-4 rounded-2xl w-full flex items-center justify-between gap-4">
-      {/* Izquierda: texto de calificaciones */}
-      <span className="text-gray-700 text-sm md:text-base font-medium">
-        {safeTotalReviews} calificaciones
-      </span>
+  // 🔹 VARIANTE COMPACT: solo estrellas + texto
+  if (variant === "compact") {
+    return (
+      <div className="bg-white p-4 rounded-2xl w-full flex items-center justify-between gap-4">
+        {/* Izquierda: texto de calificaciones */}
+        <span className="text-gray-700 text-sm md:text-base font-medium">
+          {safeTotalReviews} calificaciones
+        </span>
 
-      {/* Derecha: solo estrellas */}
-      <div className="flex text-xl md:text-2xl gap-1">
-        {[...Array(5)].map((_, i) => (
-          <FaStar
-            key={i}
-            color={i < Math.round(safeAverage) ? PINK_COLOR : GRAY_COLOR}
-          />
-        ))}
+        {/* Derecha: solo estrellas */}
+        <div className="flex text-xl md:text-2xl gap-1">
+          {[...Array(5)].map((_, i) => (
+            <FaStar
+              key={i}
+              color={i < Math.round(safeAverage) ? PINK_COLOR : GRAY_COLOR}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-
-  // 🔹 VARIANTE FULL: tu diseño original (inicio)
+  // 🔹 VARIANTE FULL: resumen completo (para inicio/listados)
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg mb-12 border border-rose-100 w-full">
       <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">

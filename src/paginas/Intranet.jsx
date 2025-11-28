@@ -3,6 +3,7 @@ import { useAuth } from "../context/authContext";
 import FormProductos from "../componentes/FormProductos";
 import GestionUsuarios from "../componentes/GestionUsuarios";
 import EstadoCompra from "../componentes/EstadoCompra";
+import AdminProductos from "../componentes/AdminProductos";
 
 export default function Intranet() {
   const { usuarioActual } = useAuth();
@@ -10,10 +11,8 @@ export default function Intranet() {
   const esAdmin = usuarioActual?.rol === "admin";
   const esEditor = usuarioActual?.rol === "editor";
 
-  // Estado para saber qué sección está seleccionada
+  // ahora el default será "productos" (form) pero agregamos "listaProductos"
   const [seccionActiva, setSeccionActiva] = useState("productos");
-
-  // Estado para abrir/cerrar menú en mobile
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   if (!esAdmin && !esEditor) {
@@ -35,9 +34,21 @@ export default function Intranet() {
       return (
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 w-full max-w-full">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#8f2133] mb-4 sm:mb-6 text-center">
-            Gestión de Productos
+            Crear / Editar Producto
           </h2>
           <FormProductos />
+        </div>
+      );
+    }
+
+    if (seccionActiva === "listaProductos") {
+      return (
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 w-full max-w-full">
+          {/* El título ya lo tiene AdminProductos, pero si quieres puedes dejar este o quitarlo */}
+          {/* <h2 className="text-2xl sm:text-3xl font-bold text-[#8f2133] mb-4 sm:mb-6 text-center">
+            Lista y Gestión de Productos
+          </h2> */}
+          <AdminProductos />
         </div>
       );
     }
@@ -46,7 +57,7 @@ export default function Intranet() {
       return (
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 w-full max-w-full">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#8f2133] mb-4 sm:mb-6 text-center">
-            Gestion de Compras
+            Gestión de Compras
           </h2>
           <EstadoCompra />
         </div>
@@ -83,12 +94,13 @@ export default function Intranet() {
 
   const handleClickOpcion = (seccion) => {
     setSeccionActiva(seccion);
-    setMenuAbierto(false); 
+    setMenuAbierto(false);
   };
 
   return (
     <div className="min-h-screen bg-[#fff3f0] py-6 sm:py-10">
       <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        {/* HEADER */}
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 text-center mb-4 sm:mb-8">
           <h1 className="text-2xl sm:text-4xl font-bold text-[#8f2133]">
             Bienvenido a la Intranet,{" "}
@@ -106,6 +118,7 @@ export default function Intranet() {
           </p>
         </div>
 
+        {/* HEADER MOBILE MENU */}
         <div className="flex justify-between items-center mb-4 md:hidden">
           <h2 className="text-xl font-bold text-[#8f2133]">Gestiones</h2>
           <button
@@ -117,8 +130,11 @@ export default function Intranet() {
         </div>
 
         <div className="flex gap-6 items-stretch min-h-[70vh]">
+          {/* SIDEBAR DESKTOP */}
           <aside className="hidden md:block w-64 bg-white rounded-2xl shadow-sm p-6 h-screen">
-            <h2 className="text-2xl font-bold text-[#8f2133] mb-4">Gestiones</h2>
+            <h2 className="text-2xl font-bold text-[#8f2133] mb-4">
+              Gestiones
+            </h2>
             <nav className="space-y-3">
               {(esAdmin || esEditor) && (
                 <button
@@ -130,7 +146,21 @@ export default function Intranet() {
                         : "bg-[#fff3f0] text-[#8f2133] hover:bg-[#fcd1c8]"
                     }`}
                 >
-                  Gestión de Products
+                  Crear / Editar Producto
+                </button>
+              )}
+
+              {(esAdmin || esEditor) && (
+                <button
+                  onClick={() => handleClickOpcion("listaProductos")}
+                  className={`w-full text-left px-4 py-2 rounded-xl font-medium transition
+                    ${
+                      seccionActiva === "listaProductos"
+                        ? "bg-[#8f2133] text-white"
+                        : "bg-[#fff3f0] text-[#8f2133] hover:bg-[#fcd1c8]"
+                    }`}
+                >
+                  Lista y Gestión de Productos
                 </button>
               )}
 
@@ -164,6 +194,7 @@ export default function Intranet() {
             </nav>
           </aside>
 
+          {/* SIDEBAR MOBILE SLIDE */}
           {menuAbierto && (
             <div className="fixed inset-0 z-40 flex md:hidden">
               <div
@@ -171,7 +202,9 @@ export default function Intranet() {
                 onClick={() => setMenuAbierto(false)}
               />
               <aside className="w-64 bg-white rounded-l-2xl shadow-lg p-6 h-full overflow-y-auto">
-                <h2 className="text-2xl font-bold text-[#8f2133] mb-4">Gestiones</h2>
+                <h2 className="text-2xl font-bold text-[#8f2133] mb-4">
+                  Gestiones
+                </h2>
                 <nav className="space-y-3">
                   {(esAdmin || esEditor) && (
                     <button
@@ -183,7 +216,21 @@ export default function Intranet() {
                             : "bg-[#fff3f0] text-[#8f2133] hover:bg-[#fcd1c8]"
                         }`}
                     >
-                      Gestión de Productos
+                      Crear / Editar Producto
+                    </button>
+                  )}
+
+                  {(esAdmin || esEditor) && (
+                    <button
+                      onClick={() => handleClickOpcion("listaProductos")}
+                      className={`w-full text-left px-4 py-2 rounded-xl font-medium transition 
+                        ${
+                          seccionActiva === "listaProductos"
+                            ? "bg-[#8f2133] text-white"
+                            : "bg-[#fff3f0] text-[#8f2133] hover:bg-[#fcd1c8]"
+                        }`}
+                    >
+                      Lista y Gestión de Productos
                     </button>
                   )}
 
