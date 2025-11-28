@@ -1,3 +1,21 @@
+/* En tu index.css */
+@keyframes blink {
+  0%, 100% { transform: scaleY(1); }
+  5% { transform: scaleY(0.1); }
+}
+
+.animate-blink {
+  animation: blink 4s infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce 3s infinite;
+}
+
+.animate-bounce-fast {
+  animation: bounce 0.5s infinite;
+}
+
 body {
   padding: 0;
   margin: 0;
