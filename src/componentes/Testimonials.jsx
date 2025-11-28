@@ -9,19 +9,21 @@ import {
   doc,
   updateDoc,
   serverTimestamp,
-}from "firebase/firestore";
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { FaStar, FaEdit, FaTrash, FaTimes, FaCamera, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useAuth } from "../context/authContext";
 import toast from 'react-hot-toast';
 import { useModal } from "../context/ModalContext";
+
+// Importamos tus componentes
 import FiltroComentarios from "./FiltroComentarios";
-import RatingSummary from "./RatingSummary";
-import FormularioResena from "./FormularioResena"; // OJO: Asegúrate de que la ruta coincida con el nombre de tu archivo
+import RatingSummary from "./RatingSummary"; // El componente nuevo
+import FormularioResena from "./FormularioResena";
 
 const PINK_COLOR = "#d16170";
 const GRAY_COLOR = "#e4e5e9";
-const ITEMS_PER_PAGE = 5; // Cantidad de comentarios por "página"
+const ITEMS_PER_PAGE = 5;
 
 export default function Testimonials() {
   const { usuarioActual } = useAuth();
@@ -39,6 +41,7 @@ export default function Testimonials() {
   const [filtro, setFiltro] = useState('recientes');
   const [currentPage, setCurrentPage] = useState(1);
 
+  // --- Cargar datos de Firebase ---
   useEffect(() => {
     const q = query(collection(db, "testimonios"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -48,7 +51,23 @@ export default function Testimonials() {
     return () => unsub();
   }, []);
 
-  // Lógica de Paginación
+  // --- Cálculos para el RatingSummary ---
+  const totalTestimonios = testimonios.length;
+  const averageRating = totalTestimonios > 0 
+    ? testimonios.reduce((acc, t) => acc + t.estrellas, 0) / totalTestimonios 
+    : 0;
+
+  // Contar cuántos hay de cada estrella (5, 4, 3, 2, 1)
+  const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  if (totalTestimonios > 0) {
+    testimonios.forEach(t => {
+      if (t.estrellas >= 1 && t.estrellas <= 5) {
+        ratingCounts[t.estrellas]++;
+      }
+    });
+  }
+
+  // --- Lógica de Paginación y Filtros ---
   const testimoniosFiltrados = testimonios.filter(testimonio => {
     if (filtro === "mis-comentarios") {
       return testimonio.userUid === usuarioActual?.uid;
@@ -61,27 +80,9 @@ export default function Testimonials() {
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentTestimonials = testimoniosFiltrados.slice(indexOfFirstItem, indexOfLastItem);
 
-  const changePage = (pageNumber) => {
-    setCurrentPage(pageNumber);
-    // Opcional: Scrollear hacia arriba de la lista de comentarios al cambiar pagina
-    // document.getElementById('lista-comentarios').scrollIntoView({ behavior: 'smooth' });
-  };
+  const changePage = (pageNumber) => setCurrentPage(pageNumber);
 
-  // --- Lógica existente de estadísticas y edición (Sin cambios mayores) ---
-  const totalTestimonios = testimonios.length;
-  const averageRating = totalTestimonios > 0 ? testimonios.reduce((acc, t) => acc + t.estrellas, 0) / totalTestimonios : 0;
-  const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-  if (totalTestimonios > 0) {
-    testimonios.forEach(t => { if (t.estrellas >= 1 && t.estrellas <= 5) ratingCounts[t.estrellas]++; });
-  }
-  const ratingPercentages = {
-    5: totalTestimonios > 0 ? (ratingCounts[5] / totalTestimonios) * 100 : 0,
-    4: totalTestimonios > 0 ? (ratingCounts[4] / totalTestimonios) * 100 : 0,
-    3: totalTestimonios > 0 ? (ratingCounts[3] / totalTestimonios) * 100 : 0,
-    2: totalTestimonios > 0 ? (ratingCounts[2] / totalTestimonios) * 100 : 0,
-    1: totalTestimonios > 0 ? (ratingCounts[1] / totalTestimonios) * 100 : 0,
-  };
-
+  // --- Lógica de Moderación (Admin/Autor) ---
   const esModerador = usuarioActual && (usuarioActual.rol === 'admin' || usuarioActual.rol === 'editor');
   const esAutor = (t) => usuarioActual && usuarioActual.uid === t.userUid;
   const puedeEditarEliminar = (t) => esModerador || esAutor(t);
@@ -150,51 +151,43 @@ export default function Testimonials() {
     setExistingImageUrls([]);
   };
 
+  // Renderizado de estrellas (helper local para la lista y edición)
   const renderStars = (rating, isEditable = false, onClick = () => {}) => (
     <div className={`flex ${isEditable ? 'my-2 justify-center text-3xl' : 'text-xl'}`}>
       {[...Array(5)].map((_, i) => (
-        <FaStar key={i} className={`${isEditable ? 'cursor-pointer hover:scale-110' : ''} mr-1`} color={i < rating ? PINK_COLOR : GRAY_COLOR} onClick={() => isEditable && onClick(i + 1)} />
+        <FaStar 
+            key={i} 
+            className={`${isEditable ? 'cursor-pointer hover:scale-110' : ''} mr-1`} 
+            color={i < rating ? PINK_COLOR : GRAY_COLOR} 
+            onClick={() => isEditable && onClick(i + 1)} 
+        />
       ))}
     </div>
   );
 
   return (
     <section className="px-6 md:px-12 py-12 bg-[#fff3f0] min-h-screen">
-      {/* Hemos aumentado el max-w para que ocupe más pantalla como pediste */}
       <div className="max-w-6xl mx-auto"> 
         <h2 className="text-4xl md:text-5xl font-bold text-[#8f2133] mb-8 text-center">
           Opiniones de nuestros clientes
         </h2>
 
-        {/* 1. Componente de Formulario insertado aquí */}
+        {/* 1. Formulario de Publicar */}
         <FormularioResena />
 
+        {/* 2. Resumen de Calificaciones (Nuevo Diseño) */}
         {totalTestimonios > 0 && (
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg mb-12 border border-rose-100">
-             {/* Resumen de estrellas (código original simplificado visualmente) */}
-            <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
-              <div className="text-center md:border-r-2 border-[#f5bfb2] md:pr-8">
-                <p className="text-6xl font-bold text-[#8f2133]">{averageRating.toFixed(1)}</p>
-                {renderStars(averageRating)}
-                <p className="text-gray-600 mt-2">{totalTestimonios} calificaciones</p>
-              </div>
-              <div className="flex-1 w-full max-w-lg">
-                {[5, 4, 3, 2, 1].map(star => (
-                  <div key={star} className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-700 w-4">{star}</span>
-                    <FaStar className="text-[#d16170] text-xs"/>
-                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                      <div className="bg-[#d16170] h-3 rounded-full" style={{ width: `${ratingPercentages[star]}%` }}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <RatingSummary 
+            averageRating={averageRating}
+            totalReviews={totalTestimonios}
+            starCounts={ratingCounts}
+          />
         )}
 
+        {/* 3. Filtros */}
         <FiltroComentarios setFiltro={setFiltro} />
 
+        {/* 4. Lista de Comentarios */}
         <div id="lista-comentarios" className="space-y-6 mt-6">
           {currentTestimonials.length === 0 ? (
             <p className="text-center text-gray-500 py-10 text-xl">
@@ -220,30 +213,39 @@ export default function Testimonials() {
                         {enEdicion ? (
                           /* --- MODO EDICIÓN --- */
                           <div className="bg-rose-50 p-4 rounded-xl">
-                            <h4 className="font-bold text-[#8f2133] mb-2">Editando comentario...</h4>
-                            <textarea value={editForm.mensaje} onChange={(e) => setEditForm({ ...editForm, mensaje: e.target.value })} className="w-full border border-rose-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] bg-white resize-none" rows="3"/>
+                            <h4 className="font-bold text-[#d16170] mb-2">Editando comentario...</h4>
+                            <textarea 
+                                value={editForm.mensaje} 
+                                onChange={(e) => setEditForm({ ...editForm, mensaje: e.target.value })} 
+                                className="w-full border border-rose-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] bg-white resize-none" rows="3"
+                            />
                             <div className="mt-2">{renderStars(editForm.estrellas, true, (r) => setEditForm({ ...editForm, estrellas: r }))}</div>
                             
-                            {/* Edición de Imágenes Simplificada */}
+                            {/* Imágenes en Edición */}
                             <div className="my-4 flex flex-wrap gap-2">
                                 {existingImageUrls.map((url, i) => (
                                     <div key={i} className="relative group w-16 h-16">
                                         <img src={url} alt="p" className="w-full h-full object-cover rounded-md"/>
-                                        <button onClick={() => removeExistingImage(url)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"><FaTimes size={10}/></button>
+                                        <button onClick={() => removeExistingImage(url)} className="absolute -top-1 -right-1 bg-[#8f2133] text-white rounded-full p-1"><FaTimes size={10}/></button>
                                     </div>
                                 ))}
                                 {editImageFiles.map((file, i) => (
                                      <div key={i} className="relative group w-16 h-16">
                                         <img src={URL.createObjectURL(file)} alt="p" className="w-full h-full object-cover rounded-md"/>
-                                        <button onClick={() => removeNewImage(i)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"><FaTimes size={10}/></button>
+                                        <button onClick={() => removeNewImage(i)} className="absolute -top-1 -right-1 bg-[#8f2133]-500 text-white rounded-full p-1"><FaTimes size={10}/></button>
                                     </div>
                                 ))}
-                                <label className="w-16 h-16 flex items-center justify-center bg-white border border-dashed border-rose-300 text-rose-400 rounded-md cursor-pointer hover:bg-rose-100"><FaCamera/><input type="file" multiple accept="image/*" onChange={handleNewImageFiles} className="hidden"/></label>
+                                <label className="w-16 h-16 flex items-center justify-center bg-white border border-dashed border-rose-300 text-rose-400 rounded-md cursor-pointer hover:bg-rose-100">
+                                    <FaCamera/>
+                                    <input type="file" multiple accept="image/*" onChange={handleNewImageFiles} className="hidden"/>
+                                </label>
                             </div>
 
                             <div className="flex justify-end gap-3 mt-4">
                                 <button onClick={cancelarEdicion} className="text-gray-600 px-3 py-1 hover:bg-gray-200 rounded">Cancelar</button>
-                                <button onClick={guardarEdicion} disabled={uploading} className="bg-[#a34d5f] text-white px-4 py-1 rounded hover:bg-[#d16170]">{uploading ? '...' : 'Guardar'}</button>
+                                <button onClick={guardarEdicion} disabled={uploading} className="bg-[#a34d5f] text-white px-4 py-1 rounded hover:bg-[#d16170]">
+                                    {uploading ? '...' : 'Guardar'}
+                                </button>
                             </div>
                           </div>
                         ) : (
@@ -251,7 +253,7 @@ export default function Testimonials() {
                           <>
                             <div className="flex justify-between items-start">
                               <div>
-                                <h4 className="font-bold text-lg text-[#7a1a0a]">{t.nombre}</h4>
+                                <h4 className="font-bold text-lg text-[#8f2133]">{t.nombre}</h4>
                                 <div className="flex items-center gap-2 mb-2">
                                     {renderStars(t.estrellas)}
                                     <span className="text-xs text-gray-400 ml-2">
@@ -261,8 +263,8 @@ export default function Testimonials() {
                               </div>
                               {puedeEditarEliminar(t) && (
                                 <div className="flex gap-2 text-gray-400">
-                                    <button onClick={() => comenzarEdicion(t)} className="hover:text-[#d16170] -600 p-1"><FaEdit /></button>
-                                    <button onClick={() => eliminar(t.id)} className="hover:text-[#d16170] -500 p-1"><FaTrash /></button>
+                                    <button onClick={() => comenzarEdicion(t)} className="hover:text-[#8f2133] transition p-1"><FaEdit /></button>
+                                    <button onClick={() => eliminar(t.id)} className="hover:text-[#8f2133] transition p-1"><FaTrash /></button>
                                 </div> 
                               )}
                             </div>
@@ -272,7 +274,12 @@ export default function Testimonials() {
                             {t.imageUrls && t.imageUrls.length > 0 && (
                                 <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
                                     {t.imageUrls.map((url, i) => (
-                                        <img key={i} onClick={() => mostrarModal('', <img src={url} className="max-w-full max-h-[80vh] rounded" />)} src={url} alt="img" className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition" />
+                                        <img 
+                                            key={i} 
+                                            onClick={() => mostrarModal('', <img src={url} className="max-w-full max-h-[80vh] rounded" />)} 
+                                            src={url} alt="img" 
+                                            className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition" 
+                                        />
                                     ))}
                                 </div>
                             )}
@@ -286,7 +293,7 @@ export default function Testimonials() {
           )}
         </div>
 
-        {/* --- PAGINACIÓN TIPO "LIBRO" --- */}
+        {/* 5. Paginación */}
         {totalPages > 1 && (
             <div className="flex justify-center items-center mt-12 gap-2">
                 <button 
