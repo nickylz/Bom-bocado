@@ -1,24 +1,25 @@
 import React, { useState, useRef } from 'react';
 import { useMascot } from '../context/MascotContext';
+import MascotChat from './MascotChat';
 
 const CakeMascot = () => {
-  const { mood, message, isVisible } = useMascot();
+  const { mood, message, isVisible, triggerAction } = useMascot();
   
+  // Estado para abrir/cerrar el chat
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   // --- LÓGICA DE ARRASTRE MEJORADA ---
-  const [position, setPosition] = useState(null); // null = posición por defecto
+  const [position, setPosition] = useState(null); 
   const [isDragging, setIsDragging] = useState(false);
-  
-  // Usamos useRef para rastrear si fue un click o un arrastre sin provocar re-renders
   const isClick = useRef(true); 
 
   if (!isVisible) return null;
 
-  // --- Lógica de Animaciones ---
+  // --- Animaciones ---
   let containerAnim = "mascot-float"; 
   let eyeClass = "";
   let mouthClass = "mouth-smile";
 
-  // Desactivamos la animación de "flotar/saltar" MIENTRAS se arrastra para que no tiemble
   if (isDragging) {
       containerAnim = ""; 
   } else {
@@ -33,84 +34,69 @@ const CakeMascot = () => {
 
   // --- MANEJADORES DE MOUSE (PC) ---
   const handleMouseDown = (e) => {
-    e.preventDefault(); // Evita selección de texto
+    e.preventDefault(); 
     isClick.current = true;
     
     const element = e.currentTarget;
     const rect = element.getBoundingClientRect();
-    
-    // Calcular dónde agarramos el objeto relativo a su esquina
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
 
-    // Fijar posición inicial absoluta
     setPosition({ left: rect.left, top: rect.top });
     setIsDragging(true);
 
-    // Función interna para mover
-    const handleMouseMove = (moveEvent) => {
-      const newLeft = moveEvent.clientX - offsetX;
-      const newTop = moveEvent.clientY - offsetY;
-      
+    const handleMouseMove = (ev) => {
+      const newLeft = ev.clientX - offsetX;
+      const newTop = ev.clientY - offsetY;
       setPosition({ left: newLeft, top: newTop });
-      
-      // Si nos movemos, ya no es un click válido
       isClick.current = false;
     };
-
-    // Función interna para soltar
+    
     const handleMouseUp = () => {
       setIsDragging(false);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-
-    // Agregar listeners globales temporales
+    
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
   };
 
   // --- MANEJADORES TÁCTILES (Móvil) ---
   const handleTouchStart = (e) => {
-    // No prevenimos default aquí para permitir click, pero sí en move
     isClick.current = true;
-    
     const element = e.currentTarget;
     const rect = element.getBoundingClientRect();
     const touch = e.touches[0];
-    
     const offsetX = touch.clientX - rect.left;
     const offsetY = touch.clientY - rect.top;
 
     setPosition({ left: rect.left, top: rect.top });
     setIsDragging(true);
 
-    const handleTouchMove = (moveEvent) => {
-      // Prevenir scroll de pantalla mientras arrastramos la mascota
-      if (moveEvent.cancelable) moveEvent.preventDefault();
-      
-      const t = moveEvent.touches[0];
-      const newLeft = t.clientX - offsetX;
-      const newTop = t.clientY - offsetY;
-      
-      setPosition({ left: newLeft, top: newTop });
+    const handleTouchMove = (ev) => {
+      if (ev.cancelable) ev.preventDefault();
+      const t = ev.touches[0];
+      setPosition({ left: t.clientX - offsetX, top: t.clientY - offsetY });
       isClick.current = false;
     };
-
+    
     const handleTouchEnd = () => {
       setIsDragging(false);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-
+    
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchend', handleTouchEnd);
   };
 
-  // Acción al hacer click (Scroll arriba)
+  // --- CLIC EN LA MASCOTA ---
   const handleClick = () => {
     if (isClick.current && !isDragging) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (!isChatOpen) {
+            setIsChatOpen(true);
+        }
     }
   };
 
@@ -127,40 +113,27 @@ const CakeMascot = () => {
         @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
         @keyframes popIn { from { opacity: 0; transform: scale(0.8) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-        /* CONTENEDOR PRINCIPAL */
+        /* CONTENEDOR */
         .mascot-container { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            z-index: 9999; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            user-select: none; /* Crucial para arrastre */
-            touch-action: none; /* Crucial para móvil */
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); 
-            /* Importante: para que agarre eventos aunque esté vacía el área alrededor */
-            cursor: grab;
+            position: fixed; bottom: 20px; right: 20px; z-index: 9999; 
+            display: flex; flex-direction: column; align-items: center; 
+            user-select: none; touch-action: none; 
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); cursor: grab;
         }
-
         .mascot-container:active { cursor: grabbing; }
 
-        /* ANIMACIONES DE ESTADO */
         .mascot-anim-wrapper { transition: transform 0.3s ease; }
         .mascot-float .mascot-anim-wrapper { animation: float 3s ease-in-out infinite; }
         .mascot-jump .mascot-anim-wrapper { animation: jump 0.6s ease-in-out infinite; }
         .mascot-bounce .mascot-anim-wrapper { animation: float 1s ease-in-out infinite; }
         .mascot-lean .mascot-anim-wrapper { transform: rotate(5deg) translateX(5px); }
 
-        /* GLOBO */
         .mascot-bubble {
             background: white; border: 2px solid #e17a8d; color: #8f2133;
             padding: 8px 12px; border-radius: 15px; font-size: 13px; font-weight: bold;
             text-align: center; margin-bottom: 8px; max-width: 160px;
             position: relative; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            /* Quitamos pointer-events: none para poder arrastrar desde el globo */
-            pointer-events: auto; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); pointer-events: auto; 
         }
         .mascot-bubble::after {
             content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
@@ -170,30 +143,17 @@ const CakeMascot = () => {
         /* DIBUJO TORTA */
         .cake-body { width: 90px; height: 75px; position: relative; }
         .cake-body:hover { transform: scale(1.05); }
-        
-        .frosting {
-            background: #ffe4e8; height: 35px; width: 100%; border-radius: 10px 10px 0 0;
-            position: absolute; top: 0; z-index: 2; border-bottom: 4px solid #fff;
-        }
-        .sponge {
-            background: #e89ba6; height: 40px; width: 100%; border-radius: 0 0 12px 12px;
-            position: absolute; bottom: 0; z-index: 1; border-top: 3px solid #d47f8c;
-        }
-        
+        .frosting { background: #ffe4e8; height: 35px; width: 100%; border-radius: 10px 10px 0 0; position: absolute; top: 0; z-index: 2; border-bottom: 4px solid #fff; }
+        .sponge { background: #e89ba6; height: 40px; width: 100%; border-radius: 0 0 12px 12px; position: absolute; bottom: 0; z-index: 1; border-top: 3px solid #d47f8c; }
         .eyes-container { position: absolute; top: 16px; width: 100%; display: flex; justify-content: center; gap: 14px; z-index: 3; transition: all 0.3s; }
         .eye { width: 8px; height: 8px; background: #5c3a3a; border-radius: 50%; animation: blink 4s infinite; }
         .eyes-look-up { transform: translateY(-3px); }
         .eyes-look-right { transform: translateX(4px); }
-
         .mouth-container { position: absolute; bottom: 18px; width: 100%; display: flex; justify-content: center; z-index: 3; }
         .mouth-smile { width: 14px; height: 8px; border-bottom: 2px solid #5c3a3a; border-radius: 50%; }
         .mouth-open { width: 12px; height: 12px; background: #5c3a3a; border-radius: 50%; }
         .mouth-small { width: 6px; height: 6px; border: 2px solid #5c3a3a; border-radius: 50%; }
-
-        .strawberry { 
-            width: 14px; height: 16px; background: #ff4d4d; border-radius: 50% 50% 10% 10%; 
-            position: absolute; top: -8px; z-index: 4; border: 1px solid #cc0000;
-        }
+        .strawberry { width: 14px; height: 16px; background: #ff4d4d; border-radius: 50% 50% 10% 10%; position: absolute; top: -8px; z-index: 4; border: 1px solid #cc0000; }
         .s-left { left: 20px; transform: rotate(-15deg); }
         .s-center { left: 38px; top: -12px; z-index: 5; }
         .s-right { right: 20px; transform: rotate(15deg); }
@@ -201,14 +161,27 @@ const CakeMascot = () => {
       `}</style>
 
       <div 
-        className={`mascot-container ${containerAnim}`}
+        className={`mascot-container ${containerAnim} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         style={dynamicStyle}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
         onClick={handleClick}
       >
         <div className="mascot-anim-wrapper">
-            <div className="mascot-bubble">{message}</div>
+            
+            {/* RENDERIZADO CONDICIONAL: CHAT O GLOBO */}
+            {isChatOpen ? (
+                <MascotChat 
+                    onClose={() => setIsChatOpen(false)} 
+                    triggerAction={triggerAction} 
+                />
+            ) : (
+                <div className="mascot-bubble">
+                    {message}
+                </div>
+            )}
+
+            {/* CUERPO DE LA TORTA */}
             <div className="cake-body">
                 <div className="strawberry s-left"></div>
                 <div className="strawberry s-center"></div>
