@@ -121,7 +121,7 @@ export default function Testimonials() {
         setExistingImageUrls(updatedUrls);
         await updateDoc(doc(db, "testimonios", editId), { imageUrls: updatedUrls });
         toast.success("Imagen eliminada");
-    } catch (error) { toast.error("Error al eliminar imagen"); }
+    } catch  { toast.error("Error al eliminar imagen"); }
   }
 
   const guardarEdicion = async () => {
@@ -140,7 +140,7 @@ export default function Testimonials() {
         await updateDoc(doc(db, "testimonios", editId), { ...editForm, imageUrls: finalImageUrls, updatedAt: serverTimestamp() });
         toast.success('Actualizado', { id: loadingToast });
         cancelarEdicion();
-    } catch (error) { toast.error('Error', { id: loadingToast }); } 
+    } catch  { toast.error('Error', { id: loadingToast }); } 
     finally { setUploading(false); }
   };
 
