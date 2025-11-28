@@ -1,32 +1,72 @@
 import React from 'react';
+import { FaStar } from "react-icons/fa";
 
-const RatingSummary = ({ rating, reviewCount }) => {
-  const fullStars = Math.floor(rating);
-  const halfStar = rating % 1 !== 0;
-  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+const RatingSummary = ({ averageRating, totalReviews, starCounts }) => {
+  // Colores de tu marca
+  const PINK_COLOR = "#d16170";
+  const GRAY_COLOR = "#e4e5e9";
+
+  // Función auxiliar para calcular el porcentaje de la barra
+  const getPercentage = (count) => {
+    if (!totalReviews || totalReviews === 0) return 0;
+    return (count / totalReviews) * 100;
+  };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center">
-        {[...Array(fullStars)].map((_, i) => (
-          <svg key={`full-${i}`} className="w-6 h-6 text-[#d16170] -400" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.366 2.446a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.366-2.446a1 1 0 00-1.175 0l-3.366 2.446c-.784.57-1.838-.197-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
-          </svg>
-        ))}
-        {halfStar && (
-           <svg className="w-6 h-6 text-[#d16170] -400" fill="currentColor" viewBox="0 0 20 20">
-             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.366 2.446a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118L10 15.347V2.21l.95.69 1.286 3.957z" />
-           </svg>
-        )}
-        {[...Array(emptyStars)].map((_, i) => (
-          <svg key={`empty-${i}`} className="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.366 2.446a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.366-2.446a1 1 0 00-1.175 0l-3.366 2.446c-.784.57-1.838-.197-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
-          </svg>
-        ))}
+    <div className="bg-white p-8 rounded-2xl shadow-lg mb-12 border border-rose-100 w-full">
+      <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+        
+        {/* LADO IZQUIERDO: Promedio Gigante */}
+        <div className="flex flex-col items-center justify-center md:border-r-2 border-rose-100 md:pr-12 min-w-[200px]">
+          <span className="text-7xl font-bold text-[#8f2133]">
+            {averageRating.toFixed(1)}
+          </span>
+          
+          <div className="flex text-2xl my-3 gap-1">
+            {[...Array(5)].map((_, i) => (
+              <FaStar
+                key={i}
+                color={i < Math.round(averageRating) ? PINK_COLOR : GRAY_COLOR}
+              />
+            ))}
+          </div>
+          
+          <span className="text-gray-500 text-lg font-medium">
+            {totalReviews} calificaciones
+          </span>
+        </div>
+
+        {/* LADO DERECHO: Barras de Progreso */}
+        <div className="flex-1 w-full space-y-3">
+          {[5, 4, 3, 2, 1].map((star) => {
+            const count = starCounts[star] || 0;
+            const percent = getPercentage(count);
+
+            return (
+              <div key={star} className="flex items-center gap-4">
+                {/* Texto "5 estrellas" */}
+                <span className="text-sm font-bold text-gray-700 w-20 whitespace-nowrap">
+                  {star} {star === 1 ? 'estrella' : 'estrellas'}
+                </span>
+
+                {/* Barra Gris de Fondo */}
+                <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+                  {/* Barra Rosa de Relleno */}
+                  <div
+                    className="h-full bg-[#d16170] rounded-full transition-all duration-700 ease-out"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+
+                {/* Porcentaje numérico */}
+                <span className="text-sm font-bold text-gray-500 w-10 text-right">
+                  {Math.round(percent)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <span className="text-gray-600 font-medium">
-        {rating.toFixed(1)} de 5 ({reviewCount} opiniones)
-      </span>
     </div>
   );
 };
