@@ -15,32 +15,32 @@ export default function Nosotros() {
   return (
     <div className="bg-[#fff3f0] overflow-hidden">
       {/* HERO SECTION */}
-      <section className="relative w-full min-h-[60vh] md:min-h-[75vh] flex items-center justify-center text-center px-4 py-20 bg-[#fcefee] overflow-hidden">
-        <Shape className="bg-[#f5bfb2] rounded-full w-32 h-32 top-10 left-5 opacity-60 animate-pulse" />
-        <Shape className="bg-[#d16170] w-48 h-48 bottom-5 right-5 opacity-40 rounded-xl transform rotate-45 animate-spin-slow" />
+      <section className="relative w-full min-h-[60vh] md:min-h-[75vh] flex items-center justify-center text-center px-4 py-20 bg-[#d16170] text-white overflow-hidden">
+        <Shape className="bg-[#f5bfb2]/30 w-24 h-24 top-20 left-10 animate-pulse-slow" />
+        <Shape className="bg-white/20 w-48 h-48 bottom-10 right-10 animate-spin-slow" />
         
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20">
-          <div className="bg-white p-4 border border-[#f5bfb2] rounded-3xl shadow-lg transform rotate-[-3deg] hover:rotate-0 transition-transform duration-500">
+          <div className="hidden lg:block bg-transparent p-3">
             <img
               src={Bom}
               alt="Logo Bom Bocado"
               className="w-48 h-48 md:w-64 md:h-64 object-contain"
             />
           </div>
-          <div className="max-w-lg text-left transform lg:rotate-2">
-            <h1 className="text-5xl md:text-7xl font-extrabold text-[#9c2007] tracking-tighter leading-tight" style={{ fontFamily: 'serif' }}>
+          <div className="max-w-lg text-center lg:text-left">
+            <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tighter leading-tight" style={{ fontFamily: 'serif' }}>
               Haciendo lo <br />
-              <span className="text-[#d8718c]">cotidiano</span> mágico.
+              <span className="text-[#f5bfb2]">cotidiano</span> mágico.
             </h1>
-            <p className="mt-6 text-lg text-gray-700 leading-relaxed">
-              En <span className="font-semibold text-[#a34d5f]">Bom Bocado</span>, cada postre se prepara con amor, dedicación y los ingredientes más frescos para crear momentos inolvidables.
+            <p className="mt-6 text-lg text-[#fff3f0] leading-relaxed">
+              En <span className="font-semibold text-white">Bom Bocado</span>, cada postre se prepara con amor, dedicación y los ingredientes más frescos para crear momentos inolvidables.
             </p>
           </div>
         </div>
       </section>
 
       {/* CINTA DECORATIVA */}
-      <div className="bg-[#d8718c] text-white py-4 px-4 text-center text-md md:text-lg font-semibold tracking-widest -skew-y-1 shadow-inner-strong">
+      <div className="bg-[#ee708d] text-white py-4 px-4 text-center text-md md:text-lg font-semibold tracking-widest shadow-inner-strong">
         <p>PASIÓN • CREATIVIDAD • TRADICIÓN • AMOR</p>
       </div>
 
@@ -48,8 +48,7 @@ export default function Nosotros() {
       <section className="py-20 md:py-28 px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-20">
           <div className="relative order-2 lg:order-1">
-            <div className="absolute inset-0 bg-no-repeat bg-center opacity-20" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'200\' height=\'200\' viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M100 50 C150 50, 150 150, 100 150 S50 150, 50 50 C25 75, 75 25, 100 50 Z\' stroke=\'%23d8718c\' fill=\'none\' stroke-width=\'2\'/%3E%3C/svg%3E")' }}></div>
-            <h2 className="text-4xl font-bold text-[#9c2007] mb-4" style={{ fontFamily: 'serif' }}>xo, Bom Bocado</h2>
+            <h2 className="text-4xl font-bold text-[#df345c] mb-4" style={{ fontFamily: 'serif' }}>Bom Bocado</h2>
             <p className="text-gray-700 text-lg leading-loose">
               Desde nuestros inicios, en <span className="font-semibold text-[#d8718c]">Bom Bocado</span> nos enfocamos en crear postres artesanales que transformen momentos cotidianos en experiencias inolvidables. Cada receta está hecha con pasión, tradición y una pizca de creatividad.
             </p>
@@ -69,11 +68,11 @@ export default function Nosotros() {
       </section>
 
       {/* MISIÓN, VISIÓN Y VALORES */}
-      <section className="bg-[#fcefee] py-20 md:py-28 px-4">
+      <section className="bg-[#d16170] py-20 md:py-28 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-extrabold text-[#9c2007]" style={{ fontFamily: 'serif' }}>Nuestros Pilares</h2>
-            <p className="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">Los principios que guían cada una de nuestras creaciones.</p>
+            <h2 className="text-5xl md:text-6xl font-extrabold text-[#f5bfb2]" style={{ fontFamily: 'serif' }}>Nuestros Pilares</h2>
+            <p className="text-lg text-white mt-4 max-w-2xl mx-auto">Los principios que guían cada una de nuestras creaciones.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
@@ -103,14 +102,14 @@ export default function Nosotros() {
 
        {/* GALLERY PREVIEW */}
        <section className="py-20 md:py-28 px-4">
-         <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-4xl font-bold text-[#9c2007] mb-4" style={{ fontFamily: 'serif' }}>Un Vistazo a Nuestra Pasión</h2>
+         <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-4xl font-bold text-[#df345c] mb-4" style={{ fontFamily: 'serif' }}>Un Vistazo a Nuestra Pasión</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">Algunos de los momentos y creaciones que nos llenan de orgullo.</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 h-96">
-                <div className="col-span-1 row-span-2 bg-cover bg-center rounded-2xl shadow-md border-4 border-white transform -rotate-2 hover:rotate-0 transition-transform" style={{backgroundImage: `url(${Centro})`}}></div>
-                <div className="col-span-1 bg-cover bg-center rounded-2xl shadow-md border-4 border-white transform rotate-1 hover:rotate-0 transition-transform" style={{backgroundImage: `url(${Mision})`}}></div>
-                <div className="col-span-1 bg-cover bg-center rounded-2xl shadow-md border-4 border-white transform rotate-2 hover:rotate-0 transition-transform" style={{backgroundImage: `url(${Buscamos})`}}></div>
-                <div className="col-span-2 md:col-span-1 bg-cover bg-center rounded-2xl shadow-md border-4 border-white transform -rotate-1 hover:rotate-0 transition-transform" style={{backgroundImage: `url(${Centro2})`}}></div>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="aspect-square bg-cover bg-center rounded-2xl shadow-md border-4 border-white" style={{backgroundImage: `url(${Centro})`}}></div>
+                <div className="aspect-square bg-cover bg-center rounded-2xl shadow-md border-4 border-white" style={{backgroundImage: `url(${Mision})`}}></div>
+                <div className="aspect-square bg-cover bg-center rounded-2xl shadow-md border-4 border-white" style={{backgroundImage: `url(${Buscamos})`}}></div>
+                <div className="aspect-square bg-cover bg-center rounded-2xl shadow-md border-4 border-white" style={{backgroundImage: `url(${Centro2})`}}></div>
             </div>
          </div>
        </section>
