@@ -160,7 +160,7 @@ const MascotChat = ({ onClose, triggerAction }) => {
         .chat-container {
           position: absolute;
           bottom: 110px;
-          right: 0;
+          left: 0;
           width: 300px;
           height: 420px;
           background: #ffffff;
