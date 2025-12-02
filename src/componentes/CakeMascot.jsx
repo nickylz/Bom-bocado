@@ -115,7 +115,7 @@ const CakeMascot = () => {
 
         /* CONTENEDOR */
         .mascot-container { 
-            position: fixed; bottom: 20px; right: 20px; z-index: 9999; 
+            position: fixed; bottom: 20px; left: 40px; z-index: 9999; 
             display: flex; flex-direction: column; align-items: center; 
             user-select: none; touch-action: none; 
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); cursor: grab;
