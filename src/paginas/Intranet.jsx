@@ -146,10 +146,9 @@ export default function Intranet() {
                         : "bg-[#fff3f0] text-[#8f2133] hover:bg-[#fcd1c8]"
                     }`}
                 >
-                  Crear / Editar Producto
+                  Gestión de Productos
                 </button>
               )}
-
               {(esAdmin || esEditor) && (
                 <button
                   onClick={() => handleClickOpcion("listaProductos")}
@@ -160,10 +159,9 @@ export default function Intranet() {
                         : "bg-[#fff3f0] text-[#8f2133] hover:bg-[#fcd1c8]"
                     }`}
                 >
-                  Lista y Gestión de Productos
+                  Almacen de Productos
                 </button>
               )}
-
               {(esAdmin || esEditor) && (
                 <button
                   onClick={() => handleClickOpcion("compras")}

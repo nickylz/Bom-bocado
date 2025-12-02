@@ -9,11 +9,16 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
 
 const AdminProductos = () => {
   const [productos, setProductos] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
+  const [categoriaFiltro, setCategoriaFiltro] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const productosPorPagina = 10;
+
   const [formData, setFormData] = useState({
     nombre: "",
     precio: "",
@@ -25,13 +30,11 @@ const AdminProductos = () => {
     favorito: false,
     nuevo: false,
   });
-  const [cargando, setCargando] = useState(true);
+
+  const [__, setCargando] = useState(true);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "productos"),
-      orderBy("nombre", "asc")
-    );
+    const q = query(collection(db, "productos"), orderBy("nombre", "asc"));
 
     const unsubscribe = onSnapshot(
       q,
@@ -40,6 +43,7 @@ const AdminProductos = () => {
           id: doc.id,
           ...doc.data(),
         }));
+
         setProductos(lista);
         setCargando(false);
       },
@@ -105,14 +109,11 @@ const AdminProductos = () => {
         nuevo: !!formData.nuevo,
       };
 
-      // descuento opcional
-      if (formData.descuento === "" || formData.descuento === null) {
-        dataToUpdate.descuento = 0;
-      } else {
-        dataToUpdate.descuento = Number(formData.descuento) || 0;
-      }
+      dataToUpdate.descuento =
+        formData.descuento === "" ? 0 : Number(formData.descuento);
 
       await updateDoc(docRef, dataToUpdate);
+
       alert("Producto actualizado correctamente.");
       handleCancelEdit();
     } catch (error) {
@@ -123,6 +124,7 @@ const AdminProductos = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
+
     try {
       await deleteDoc(doc(db, "productos", id));
       alert("Producto eliminado.");
@@ -132,194 +134,361 @@ const AdminProductos = () => {
     }
   };
 
-  const productosFiltrados = productos.filter((p) => {
-    const texto = (busqueda || "").toLowerCase();
-    return (
-      p.nombre?.toLowerCase().includes(texto) ||
-      p.categoria?.toLowerCase().includes(texto)
-    );
-  });
+  // FILTRO POR CATEGORÍA
+  const productosFiltrados = productos.filter((p) =>
+    categoriaFiltro ? p.categoria === categoriaFiltro : true
+  );
+
+  // PAGINACIÓN
+  const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+
+  const indexInicio = (currentPage - 1) * productosPorPagina;
+  const indexFin = indexInicio + productosPorPagina;
+
+  const productosPaginados = productosFiltrados.slice(indexInicio, indexFin);
+
+  const irPaginaAnterior = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const irPaginaSiguiente = () => {
+    if (currentPage < totalPaginas) setCurrentPage(currentPage + 1);
+  };
 
   return (
-    <div className="bg-white rounded-3xl shadow-lg p-6 md:p-8 border border-[#f5bfb2]">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-[#9c2007]">
-          Gestión de Productos
-        </h2>
-        <input
-          type="text"
-          placeholder="Buscar por nombre o categoría..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="w-full md:w-72 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#f5bfb2]"
-        />
+    <div className="bg-[#fff3f0] rounded-3xl shadow-lg p-4 sm:p-6 md:p-8 border border-[#f5bfb2] min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#9c2007]">
+            Gestión de Productos
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Total: <span className="font-semibold">{productosFiltrados.length}</span> productos
+          </p>
+        </div>
+
+        {/* Filtro */}
+        <select
+          value={categoriaFiltro}
+          onChange={(e) => setCategoriaFiltro(e.target.value)}
+          className="border-2 border-[#f5bfb2] rounded-xl px-4 py-2 sm:py-3 text-sm font-medium bg-white text-[#9c2007] focus:outline-none focus:ring-2 focus:ring-[#d16170] transition"
+        >
+          <option value="">Todas las categorías</option>
+
+          {[...new Set(productos.map((p) => p.categoria))].map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {cargando ? (
-        <p className="text-center text-gray-500 py-6">Cargando productos...</p>
-      ) : productosFiltrados.length === 0 ? (
-        <p className="text-center text-gray-500 py-6">
-          No hay productos para mostrar.
-        </p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="bg-[#fff3f0] text-left">
-                <th className="px-3 py-2">Imagen</th>
-                <th className="px-3 py-2">Nombre</th>
-                <th className="px-3 py-2">Precio</th>
-                <th className="px-3 py-2">Descuento (%)</th>
-                <th className="px-3 py-2 hidden md:table-cell">Categoría</th>
-                <th className="px-3 py-2 hidden lg:table-cell">Frase</th>
-                <th className="px-3 py-2 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productosFiltrados.map((producto) => {
-                const isEditing = editingId === producto.id;
-                return (
-                  <tr
-                    key={producto.id}
-                    className="border-b border-gray-100 hover:bg-rose-50"
-                  >
-                    <td className="px-3 py-2">
-                      <img
-                        src={producto.imagen}
-                        alt={producto.nombre}
-                        className="w-12 h-12 object-cover rounded-lg border border-[#f5bfb2]"
+      {/* Vista Móvil: Tarjetas */}
+      <div className="lg:hidden space-y-4">
+        {productosPaginados.length > 0 ? (
+          productosPaginados.map((producto) => (
+            <div
+              key={producto.id}
+              className={`bg-white shadow-md rounded-2xl border-2 border-[#f5bfb2] hover:shadow-lg transition ${
+                editingId === producto.id ? "p-3" : "p-4"
+              }`}
+            >
+              <div className="flex gap-3">
+                {/* Imagen más pequeña en edición */}
+                <img
+                  src={producto.imagen}
+                  alt={producto.nombre}
+                  className={`rounded-lg object-cover border-2 border-[#f5bfb2] shrink-0 ${
+                    editingId === producto.id ? "w-16 h-16 sm:w-16 sm:h-16" : "w-20 h-20 sm:w-24 sm:h-24"
+                  }`}
+                />
+
+                {/* Info y Acciones */}
+                <div className="flex-1 flex flex-col justify-between">
+                  {editingId === producto.id ? (
+                    <div className="space-y-1 text-xs">
+                      <input
+                        name="nombre"
+                        value={formData.nombre}
+                        onChange={handleChange}
+                        placeholder="Nombre"
+                        className="w-full border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
                       />
-                    </td>
-
-                    {/* Nombre */}
-                    <td className="px-3 py-2">
-                      {isEditing ? (
+                      <div className="grid grid-cols-2 gap-1">
                         <input
-                          type="text"
-                          name="nombre"
-                          value={formData.nombre}
-                          onChange={handleChange}
-                          className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs"
-                        />
-                      ) : (
-                        <span className="font-semibold text-gray-800">
-                          {producto.nombre}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Precio */}
-                    <td className="px-3 py-2">
-                      {isEditing ? (
-                        <input
-                          type="number"
                           name="precio"
-                          step="0.01"
+                          type="number"
                           value={formData.precio}
                           onChange={handleChange}
-                          className="w-24 border border-gray-300 rounded-md px-2 py-1 text-xs"
+                          placeholder="Precio"
+                          className="border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
                         />
-                      ) : (
-                        <span className="text-[#d8718c] font-bold">
-                          S/{Number(producto.precio || 0).toFixed(2)}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Descuento */}
-                    <td className="px-3 py-2">
-                      {isEditing ? (
                         <input
-                          type="number"
                           name="descuento"
-                          step="1"
+                          type="number"
                           value={formData.descuento}
                           onChange={handleChange}
-                          className="w-20 border border-gray-300 rounded-md px-2 py-1 text-xs"
+                          placeholder="Desc%"
+                          className="border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
                         />
-                      ) : (
-                        <span className="text-gray-700">
-                          {producto.descuento
-                            ? `${producto.descuento}%`
-                            : "—"}
-                        </span>
+                      </div>
+                      <input
+                        name="categoria"
+                        value={formData.categoria}
+                        onChange={handleChange}
+                        placeholder="Categoría"
+                        className="w-full border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
+                      />
+                      <input
+                        name="frase"
+                        value={formData.frase}
+                        onChange={handleChange}
+                        placeholder="Frase"
+                        className="w-full border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="font-bold text-[#9c2007] text-2xl sm:text-base truncate">
+                        {producto.nombre}
+                      </p>
+                      <p className="text-[#d16170] font-semibold text-lg sm:text-xl">
+                        S/{producto.precio?.toFixed(2)}
+                      </p>
+                      <p className="text-gray-500 text-xs sm:text-sm">
+                        {producto.categoria}
+                      </p>
+                      {producto.descuento > 0 && (
+                        <p className="text-green-600 text-xs font-semibold">
+                          Desc: {producto.descuento}%
+                        </p>
                       )}
-                    </td>
+                    </div>
+                  )}
 
-                    {/* Categoría */}
-                    <td className="px-3 py-2 hidden md:table-cell">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          name="categoria"
-                          value={formData.categoria}
-                          onChange={handleChange}
-                          className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs"
+                  {/* Botones de acciones */}
+                  <div className="flex gap-2 mt-2 justify-end">
+                    {editingId === producto.id ? (
+                      <>
+                        <button
+                          onClick={() => handleSave(producto.id)}
+                          className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition text-lg"
+                          title="Guardar"
+                        >
+                          <FaSave />
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="bg-gray-400 hover:bg-gray-500 text-white p-2 rounded-lg transition text-lg"
+                          title="Cancelar"
+                        >
+                          <FaTimes />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleEditClick(producto)}
+                          className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition text-lg"
+                          title="Editar"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(producto.id)}
+                          className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition text-lg"
+                          title="Eliminar"
+                        >
+                          <FaTrash />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500 py-8">
+            No hay productos para mostrar
+          </p>
+        )}
+      </div>
+
+      {/* Vista Desktop: Tabla */}
+      <div className="hidden lg:block border-2 border-[#f5bfb2] rounded-2xl overflow-hidden shadow-lg">
+        <div className="overflow-x-auto">
+          <table className="min-w-max w-full divide-y divide-[#f5bfb2]">
+            <thead className="bg-[#d16170] text-white sticky top-0">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Imagen</th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Nombre</th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Precio</th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Descuento</th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Categoría</th>
+                <th className="px-6 py-4 text-center text-sm font-bold uppercase">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody className="bg-white divide-y divide-[#f5bfb2]">
+              {productosPaginados.length > 0 ? (
+                productosPaginados.map((producto) => {
+                  const isEditing = editingId === producto.id;
+
+                  return (
+                    <tr key={producto.id} className="hover:bg-[#fff3f0] transition">
+                      <td className="px-6 py-4">
+                        <img
+                          src={producto.imagen}
+                          alt={producto.nombre}
+                          className="w-14 h-14 rounded-lg object-cover border-2 border-[#f5bfb2]"
                         />
-                      ) : (
-                        <span className="text-gray-700">
-                          {producto.categoria || "—"}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Frase */}
-                    <td className="px-3 py-2 hidden lg:table-cell max-w-xs">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          name="frase"
-                          value={formData.frase}
-                          onChange={handleChange}
-                          className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs"
-                        />
-                      ) : (
-                        <span className="text-gray-500 line-clamp-2">
-                          {producto.frase || producto.descripcion || "—"}
-                        </span>
-                      )}
-                    </td>
+                      </td>
 
 
-                    {/* Acciones */}
-                    <td className="px-3 py-2 text-right space-x-2 whitespace-nowrap">
-                      {isEditing ? (
-                        <>
-                          <button
-                            onClick={() => handleSave(producto.id)}
-                            className="bg-[#a34d5f] text-white px-3 py-1 rounded-full text-xs hover:bg-[#912646]"
-                          >
-                            Guardar
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs hover:bg-gray-300"
-                          >
-                            Cancelar
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleEditClick(producto)}
-                            className="text-blue-600 text-xs hover:underline"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleDelete(producto.id)}
-                            className="inline-flex text-xs leading-5 font-bold rounded-full"
-                          >
-                            Eliminar
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                      <td className="px-6 py-4 text-sm align-middle">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            name="nombre"
+                            value={formData.nombre}
+                            onChange={handleChange}
+                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#f5bfb2] bg-white"
+                          />
+                        ) : (
+                          <span className="font-semibold text-[#9c2007]">
+                            {producto.nombre}
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-6 py-4 text-sm align-middle">
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            name="precio"
+                            step="0.01"
+                            value={formData.precio}
+                            onChange={handleChange}
+                            className="w-20 border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#f5bfb2] bg-white"
+                          />
+                        ) : (
+                          <span className="font-bold text-[#d16170] text-lg">
+                            S/{Number(producto.precio || 0).toFixed(2)}
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-6 py-4 text-sm align-middle">
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            name="descuento"
+                            step="1"
+                            value={formData.descuento}
+                            onChange={handleChange}
+                            className="w-16 border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#f5bfb2] bg-white"
+                          />
+                        ) : producto.descuento ? (
+                          <span className="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
+                            {producto.descuento}%
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+
+                      <td className="px-6 py-4 text-sm align-middle">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            name="categoria"
+                            value={formData.categoria}
+                            onChange={handleChange}
+                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#f5bfb2] bg-white"
+                          />
+                        ) : (
+                          <span className="inline-block bg-[#fff3f0] text-[#9c2007] px-3 py-1 rounded-full text-xs font-semibold">
+                            {producto.categoria}
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        {isEditing ? (
+                          <div className="flex gap-3 justify-center">
+                            <button
+                              onClick={() => handleSave(producto.id)}
+                              className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition text-lg"
+                              title="Guardar"
+                            >
+                              <FaSave />
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="bg-gray-400 hover:bg-gray-500 text-white p-2 rounded-lg transition text-lg"
+                              title="Cancelar"
+                            >
+                              <FaTimes />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-3 justify-center">
+                            <button
+                              onClick={() => handleEditClick(producto)}
+                              className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition text-lg"
+                              title="Editar"
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(producto.id)}
+                              className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition text-lg"
+                              title="Eliminar"
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                    No hay productos para mostrar
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* PAGINACIÓN */}
+      {totalPaginas > 1 && (
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6 mt-8 p-4 bg-[#fff3f0] rounded-xl border-2 border-[#f5bfb2]">
+          <button
+            onClick={irPaginaAnterior}
+            disabled={currentPage === 1}
+            className="px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-[#d16170] hover:bg-[#b84c68] text-white font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
+          >
+            Atras
+          </button>
+
+          <span className="font-bold text-[#9c2007] text-sm sm:text-base">
+            Página <span className="text-lg">{currentPage}</span> de <span className="text-lg">{totalPaginas}</span>
+          </span>
+
+          <button
+            onClick={irPaginaSiguiente}
+            disabled={currentPage === totalPaginas}
+            className="px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-[#d16170] hover:bg-[#b84c68] text-white font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
+          >
+            Siguiente
+          </button>
         </div>
       )}
     </div>
