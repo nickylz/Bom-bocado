@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../lib/firebase";
 import { collection, query, onSnapshot } from "firebase/firestore";
-import ProductoCard from "../componentes/ProductoCard"; // ¡Importamos el nuevo componente!
+import ProductoCard from "../componentes/ProductoCard";
 import incono from "../componentes/img/Bom.png";
 
 // --- Datos de Respaldo (Fallback) ---
@@ -20,6 +20,8 @@ const fallbackNuevos = [
   { id: "new-4", nombre: "Tarta de Ensueño", descripcion: "Tortas sin horno", precio: 15, imagen: "https://i.pinimg.com/736x/de/82/3e/de823e28d3007eda4e34344e53aaf915.jpg" },
   { id: "new-5", nombre: "Explosión Helada", descripcion: "Explosiones de sabor", precio: 9, imagen: "https://i.pinimg.com/736x/73/4b/2b/734b2bddac1c16fa597681ed83d17b53.jpg" },
 ];
+
+const Shape = ({ className }) => <div className={`absolute ${className}`}></div>;
 
 export default function Novedades() {
   const [productos, setProductos] = useState([]);
@@ -58,15 +60,26 @@ export default function Novedades() {
 
   return (
     <div className="bg-[#fff3f0] min-h-screen pb-20">
-      <section className="w-full flex flex-col md:flex-row items-center justify-center bg-[#d16170] text-white">
-        <div className="w-full md:w-1/2 flex flex-col justify-center items-center text-center py-16 px-6 space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold">Novedades</h1>
-          <p className="text-[#fff3f0] text-lg leading-relaxed max-w-lg">
-            Descubre las creaciones más dulces y frescas de <span className="font-semibold text-[#f5bfb2]">Bom Bocado</span>.
-          </p>
-        </div>
-        <div className="w-full md:w-1/2 flex justify-center py-10">
-          <img src={incono} alt="Logo Bom Bocado" className="w-[45%] md:w-[53%] h-auto object-contain" />
+      <section className="relative w-full min-h-[60vh] md:min-h-[75vh] flex items-center justify-center text-center px-4 py-20 bg-[#d16170] text-white overflow-hidden">
+        <Shape className="bg-[#f5bfb2]/30 w-24 h-24 top-20 left-10 animate-pulse-slow" />
+        <Shape className="bg-white/20 w-48 h-48 bottom-10 right-10 animate-spin-slow" />
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20">
+          <div className="hidden lg:block bg-transparent p-3">
+            <img
+              src={incono}
+              alt="Logo Bom Bocado"
+              className="w-48 h-48 md:w-64 md:h-64 object-contain"
+            />
+          </div>
+          <div className="max-w-lg text-center lg:text-left">
+            <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tighter leading-tight" style={{ fontFamily: 'serif' }}>
+              Descubre lo <br />
+              <span className="text-[#f5bfb2]">Nuevo</span> y delicioso.
+            </h1>
+            <p className="mt-6 text-lg text-[#fff3f0] leading-relaxed">
+             En <span className="font-semibold text-white">Bom Bocado</span>, nos encanta sorprenderte. Explora nuestras últimas creaciones y los postres de temporada que hemos preparado con mucho cariño para ti.
+            </p>
+          </div>
         </div>
       </section>
 

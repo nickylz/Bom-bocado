@@ -15,7 +15,7 @@ export default function Nosotros() {
   return (
     <div className="bg-[#fff3f0] overflow-hidden">
       {/* HERO SECTION */}
-      <section className="relative w-full min-h-[60vh] md:min-h-[75vh] flex items-center justify-center text-center px-4 py-20 bg-[#d16170] text-white overflow-hidden">
+      <section className="relative w-full min-h-[50vh] flex items-center justify-center text-center px-4 py-10 bg-[#d16170] text-white overflow-hidden">
         <Shape className="bg-[#f5bfb2]/30 w-24 h-24 top-20 left-10 animate-pulse-slow" />
         <Shape className="bg-white/20 w-48 h-48 bottom-10 right-10 animate-spin-slow" />
         
@@ -24,7 +24,7 @@ export default function Nosotros() {
             <img
               src={Bom}
               alt="Logo Bom Bocado"
-              className="w-48 h-48 md:w-64 md:h-64 object-contain"
+              className="w-64 h-64 md:w-80 md:h-80 object-contain"
             />
           </div>
           <div className="max-w-lg text-center lg:text-left">
@@ -80,21 +80,21 @@ export default function Nosotros() {
             <div className="bg-white rounded-3xl shadow-lg p-6 text-center transform hover:-translate-y-2 transition-transform duration-300 border border-[#f5bfb2] flex flex-col">
               <img src={Mision} alt="Misión" className="w-full h-56 object-cover rounded-2xl mb-5"/>
               <h3 className="text-2xl font-bold text-[#d8718c] mb-3">Nuestra Misión</h3>
-              <p className="text-gray-600 leading-relaxed flex-grow">Alegrar a nuestros clientes con postres artesanales, frescos y deliciosos, preparados con pasión, amor y cuidado.</p>
+              <p className="text-gray-600 leading-relaxed grow">Alegrar a nuestros clientes con postres artesanales, frescos y deliciosos, preparados con pasión, amor y cuidado.</p>
             </div>
 
             {/* VISIÓN CARD */}
             <div className="bg-white rounded-3xl shadow-lg p-6 text-center transform md:scale-105 hover:scale-110 transition-transform duration-300 border-2 border-[#d8718c] flex flex-col">
               <img src={Vision} alt="Visión" className="w-full h-56 object-cover rounded-2xl mb-5"/>
               <h3 className="text-2xl font-bold text-[#d8718c] mb-3">Nuestra Visión</h3>
-              <p className="text-gray-600 leading-relaxed flex-grow">Ser la pastelería peruana que más transmite amor y dedicación en cada creación, llevando el dulce a todos los rincones del país.</p>
+              <p className="text-gray-600 leading-relaxed grow">Ser la pastelería peruana que más transmite amor y dedicación en cada creación, llevando el dulce a todos los rincones del país.</p>
             </div>
 
             {/* VALORES CARD */}
             <div className="bg-white rounded-3xl shadow-lg p-6 text-center transform hover:-translate-y-2 transition-transform duration-300 border border-[#f5bfb2] flex flex-col">
               <img src={Buscamos} alt="Valores" className="w-full h-56 object-cover rounded-2xl mb-5"/>
               <h3 className="text-2xl font-bold text-[#d8718c] mb-3">Nuestros Valores</h3>
-              <p className="text-gray-600 leading-relaxed flex-grow">Compromiso, creatividad y pasión en cada detalle. Mantener la esencia artesanal y crear momentos dulces memorables.</p>
+              <p className="text-gray-600 leading-relaxed grow">Compromiso, creatividad y pasión en cada detalle. Mantener la esencia artesanal y crear momentos dulces memorables.</p>
             </div>
           </div>
         </div>

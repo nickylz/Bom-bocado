@@ -1,57 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../context/authContext";
-import { db } from "../lib/firebase";
-import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import PerfilForm from '../componentes/PerfilForm';
+import ComprasList from '../componentes/ComprasList';
+import FavoritosList from '../componentes/FavoritosList';
 
-// Componentes
-import PerfilForm from "../componentes/PerfilForm";
-import ComprasList from "../componentes/ComprasList";
-
-export default function PerfilPage() {
-  const { usuarioActual, cargando: cargandoAuth } = useAuth();
-  const [compras, setCompras] = useState([]);
-  const [cargandoCompras, setCargandoCompras] = useState(true);
-
-  useEffect(() => {
-    if (!usuarioActual) {
-      setCompras([]);
-      setCargandoCompras(false);
-      return;
-    }
-
-    setCargandoCompras(true);
-    const q = query(
-      collection(db, "pedidos"),
-      where("userId", "==", usuarioActual.uid)
-    );
-
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      let lista = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-      }));
-
-      lista.sort((a, b) => {
-          const fechaA = a.fechaCreacion?.toDate ? a.fechaCreacion.toDate() : 0;
-          const fechaB = b.fechaCreacion?.toDate ? b.fechaCreacion.toDate() : 0;
-          return fechaB - fechaA; // Orden descendente
-      });
-
-      setCompras(lista);
-      setCargandoCompras(false);
-    }, (error) => {
-      console.error("Error obteniendo compras en tiempo real:", error);
-      setCompras([]);
-      setCargandoCompras(false);
-    });
-
-    return () => unsubscribe(); // Limpiar el listener al desmontar
-
-  }, [usuarioActual]);
-
-  const handlePedidoEliminado = (pedidoId) => {
-    setCompras(prevCompras => prevCompras.filter(compra => compra.id !== pedidoId));
-  };
+export default function Perfil() {
+  const { usuarioActual, cargandoAuth } = useAuth();
+  const [activeTab, setActiveTab] = useState('perfil');
 
   if (cargandoAuth) {
     return (
@@ -71,50 +26,47 @@ export default function PerfilPage() {
     );
   }
 
+  const tabs = [
+    { id: 'perfil', label: 'Mi Perfil' },
+    { id: 'favoritos', label: 'Mis Favoritos' },
+    { id: 'compras', label: 'Mis Compras' },
+  ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'perfil':
+        return <PerfilForm user={usuarioActual} />;
+      case 'favoritos':
+        return <FavoritosList />;
+      case 'compras':
+        return <ComprasList />;
+      default:
+        return <PerfilForm user={usuarioActual} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#fff3f0] py-10">
-      <div className="max-w-5xl mx-auto px-4">
-        <h1 className="text-3xl font-extrabold text-[#8f2133] mb-6 text-center">
-          Mi perfil
-        </h1>
+    <div className="min-h-screen bg-[#fff3f0] py-10 md:py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          <aside className="md:w-1/4 lg:w-1/5">
+            <nav className="flex flex-col space-y-2">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`text-left px-4 py-3 rounded-lg font-semibold transition-all duration-200 ${activeTab === tab.id ? 'bg-[#d16170] text-white shadow-md' : 'bg-white text-gray-700 hover:bg-[#f5bfb2] hover:text-[#9c2007]'}`}>
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </aside>
 
-        <div className="bg-white border border-[#f5bfb2] rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 mb-8 shadow-sm">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#d8718c]">
-            <img
-              src={
-                usuarioActual.photoURL ||
-                "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-              }
-              alt="Foto de perfil"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <div className="text-center md:text-left">
-            <h2 className="text-2xl font-bold text-[#7a1a0a]">
-              {usuarioActual.displayName || "Usuario"}
-            </h2>
-            <p className="text-md font-semibold text-[#d8718c]">
-              @{usuarioActual.username || "username"}
-            </p>
-            {usuarioActual.metadata?.creationTime && (
-                <p className="text-sm text-gray-500 mt-2">
-                    Miembro desde: {new Date(usuarioActual.metadata.creationTime).toLocaleDateString("es-PE")}
-                </p>
-            )}
-            <p className="text-xs text-gray-400 mt-1 font-mono break-all">
-                UID: {usuarioActual.uid}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <PerfilForm user={usuarioActual} />
-          <ComprasList
-            compras={compras}
-            cargando={cargandoCompras}
-            onPedidoEliminado={handlePedidoEliminado}
-          />
+          <main className="md:w-3/4 lg:w-4/5">
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+              {renderContent()}
+            </div>
+          </main>
         </div>
       </div>
     </div>
