@@ -314,4 +314,4 @@ const MascotChat = ({ onClose, triggerAction, anchorClass }) => {
   );
 };
 
-export default MascotChat;
+export default MascotChat; 
