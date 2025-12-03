@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const AdminProductos = () => {
   const [productos, setProductos] = useState([]);
@@ -134,26 +135,18 @@ const AdminProductos = () => {
     }
   };
 
-  // FILTRO POR CATEGORÍA
   const productosFiltrados = productos.filter((p) =>
     categoriaFiltro ? p.categoria === categoriaFiltro : true
   );
 
-  // PAGINACIÓN
-  const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+  const totalPaginas = Math.ceil(
+    productosFiltrados.length / productosPorPagina
+  );
 
   const indexInicio = (currentPage - 1) * productosPorPagina;
   const indexFin = indexInicio + productosPorPagina;
 
   const productosPaginados = productosFiltrados.slice(indexInicio, indexFin);
-
-  const irPaginaAnterior = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
-
-  const irPaginaSiguiente = () => {
-    if (currentPage < totalPaginas) setCurrentPage(currentPage + 1);
-  };
 
   return (
     <div className="bg-[#fff3f0] rounded-3xl shadow-lg p-4 sm:p-6 md:p-8 border border-[#f5bfb2] min-h-screen">
@@ -164,11 +157,12 @@ const AdminProductos = () => {
             Gestión de Productos
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            Total: <span className="font-semibold">{productosFiltrados.length}</span> productos
+            Total:{" "}
+            <span className="font-semibold">{productosFiltrados.length}</span>{" "}
+            productos
           </p>
         </div>
 
-        {/* Filtro */}
         <select
           value={categoriaFiltro}
           onChange={(e) => setCategoriaFiltro(e.target.value)}
@@ -184,7 +178,7 @@ const AdminProductos = () => {
         </select>
       </div>
 
-      {/* Vista Móvil: Tarjetas */}
+      {/* Vista Móvil */}
       <div className="lg:hidden space-y-4">
         {productosPaginados.length > 0 ? (
           productosPaginados.map((producto) => (
@@ -195,16 +189,16 @@ const AdminProductos = () => {
               }`}
             >
               <div className="flex gap-3">
-                {/* Imagen más pequeña en edición */}
                 <img
                   src={producto.imagen}
                   alt={producto.nombre}
                   className={`rounded-lg object-cover border-2 border-[#f5bfb2] shrink-0 ${
-                    editingId === producto.id ? "w-16 h-16 sm:w-16 sm:h-16" : "w-20 h-20 sm:w-24 sm:h-24"
+                    editingId === producto.id
+                      ? "w-16 h-16 sm:w-16 sm:h-16"
+                      : "w-20 h-20 sm:w-24 sm:h-24"
                   }`}
                 />
 
-                {/* Info y Acciones */}
                 <div className="flex-1 flex flex-col justify-between">
                   {editingId === producto.id ? (
                     <div className="space-y-1 text-xs">
@@ -233,13 +227,25 @@ const AdminProductos = () => {
                           className="border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
                         />
                       </div>
-                      <input
+                      <select
                         name="categoria"
                         value={formData.categoria}
                         onChange={handleChange}
-                        placeholder="Categoría"
-                        className="w-full border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
-                      />
+                        required
+                        className="border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
+                      >
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Pasteles">Pasteles</option>
+                        <option value="Tartas">Tartas</option>
+                        <option value="Donas">Donas</option>
+                        <option value="Cupcakes">Cupcakes</option>
+                        <option value="Bombones">Bombones</option>
+                        <option value="Macarons">Macarons</option>
+                        <option value="Galletas">Galletas</option>
+                        <option value="Postres fríos">Postres fríos</option>
+                        <option value="Otros">Otros</option>
+                        <option value="Temporada">Temporada</option>
+                      </select>
                       <input
                         name="frase"
                         value={formData.frase}
@@ -267,7 +273,6 @@ const AdminProductos = () => {
                     </div>
                   )}
 
-                  {/* Botones de acciones */}
                   <div className="flex gap-2 mt-2 justify-end">
                     {editingId === producto.id ? (
                       <>
@@ -316,18 +321,30 @@ const AdminProductos = () => {
         )}
       </div>
 
-      {/* Vista Desktop: Tabla */}
+      {/* Vista Desktop */}
       <div className="hidden lg:block border-2 border-[#f5bfb2] rounded-2xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="min-w-max w-full divide-y divide-[#f5bfb2]">
             <thead className="bg-[#d16170] text-white sticky top-0">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Imagen</th>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Nombre</th>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Precio</th>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Descuento</th>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Categoría</th>
-                <th className="px-6 py-4 text-center text-sm font-bold uppercase">Acciones</th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Imagen
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Nombre
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Precio
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Descuento
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Categoría
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-bold uppercase">
+                  Acciones
+                </th>
               </tr>
             </thead>
 
@@ -337,7 +354,10 @@ const AdminProductos = () => {
                   const isEditing = editingId === producto.id;
 
                   return (
-                    <tr key={producto.id} className="hover:bg-[#fff3f0] transition">
+                    <tr
+                      key={producto.id}
+                      className="hover:bg-[#fff3f0] transition"
+                    >
                       <td className="px-6 py-4">
                         <img
                           src={producto.imagen}
@@ -345,7 +365,6 @@ const AdminProductos = () => {
                           className="w-14 h-14 rounded-lg object-cover border-2 border-[#f5bfb2]"
                         />
                       </td>
-
 
                       <td className="px-6 py-4 text-sm align-middle">
                         {isEditing ? (
@@ -401,13 +420,24 @@ const AdminProductos = () => {
 
                       <td className="px-6 py-4 text-sm align-middle">
                         {isEditing ? (
-                          <input
-                            type="text"
+                          <select
                             name="categoria"
                             value={formData.categoria}
                             onChange={handleChange}
-                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#f5bfb2] bg-white"
-                          />
+                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#f5bfb2]"
+                          >
+                            <option value="">Selecciona una categoría</option>
+                            <option value="Pasteles">Pasteles</option>
+                            <option value="Tartas">Tartas</option>
+                            <option value="Donas">Donas</option>
+                            <option value="Cupcakes">Cupcakes</option>
+                            <option value="Bombones">Bombones</option>
+                            <option value="Macarons">Macarons</option>
+                            <option value="Galletas">Galletas</option>
+                            <option value="Postres fríos">Postres fríos</option>
+                            <option value="Otros">Otros</option>
+                            <option value="Temporada">Temporada</option>
+                          </select>
                         ) : (
                           <span className="inline-block bg-[#fff3f0] text-[#9c2007] px-3 py-1 rounded-full text-xs font-semibold">
                             {producto.categoria}
@@ -457,7 +487,10 @@ const AdminProductos = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
                     No hay productos para mostrar
                   </td>
                 </tr>
@@ -466,28 +499,43 @@ const AdminProductos = () => {
           </table>
         </div>
       </div>
-
-      {/* PAGINACIÓN */}
       {totalPaginas > 1 && (
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6 mt-8 p-4 bg-[#fff3f0] rounded-xl border-2 border-[#f5bfb2]">
+        <div className="flex justify-center items-center mt-12 gap-2">
+          {/* Botón Izquierda */}
           <button
-            onClick={irPaginaAnterior}
+            onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-[#d16170] hover:bg-[#b84c68] text-white font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
+            className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 
+                 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            Atras
+            <FaChevronLeft />
           </button>
 
-          <span className="font-bold text-[#9c2007] text-sm sm:text-base">
-            Página <span className="text-lg">{currentPage}</span> de <span className="text-lg">{totalPaginas}</span>
-          </span>
+          {/* Números */}
+          <div className="flex bg-white rounded-full shadow px-4 py-2 gap-2">
+            {[...Array(totalPaginas)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`w-10 h-10 rounded-full font-bold transition duration-300 ${
+                  currentPage === i + 1
+                    ? "bg-[#d16170] text-white shadow-lg scale-110"
+                    : "text-gray-500 hover:bg-rose-50 hover:text-[#d16170]"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
 
+          {/* Botón Derecha */}
           <button
-            onClick={irPaginaSiguiente}
+            onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPaginas}
-            className="px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-[#d16170] hover:bg-[#b84c68] text-white font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
+            className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 
+                 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            Siguiente
+            <FaChevronRight />
           </button>
         </div>
       )}
