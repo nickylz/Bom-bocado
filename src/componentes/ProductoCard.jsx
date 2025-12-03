@@ -1,49 +1,69 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCarrito } from '../context/CarritoContext';
+import { useAuth } from '../context/authContext';
+import { useFavoritos } from '../context/FavoritosContext';
+import { Heart } from 'lucide-react';
 
 export default function ProductoCard({ producto, mostrarBoton = true }) {
   const { agregarAlCarrito } = useCarrito();
+  const { usuarioActual } = useAuth();
+  const { esFavorito, agregarAFavoritos, removerDeFavoritos } = useFavoritos();
+
+  const isFavorito = esFavorito(producto.id);
 
   const handleAgregar = () => {
     agregarAlCarrito(producto);
   };
 
-  return (
-    <article className="group relative bg-white border border-[#f5bfb2] rounded-3xl shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-2 overflow-hidden flex flex-col h-full w-64">
-      <div className="relative w-full aspect-square overflow-hidden">
-        <img 
-          src={producto.imagen} 
-          alt={producto.nombre} 
-          className="w-full h-full object-cover transition-all duration-300 group-hover:blur-[2px]" 
-        />
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Link
-            to={`/productos/${producto.id}`}
-            className="bg-[#a34d5f] text-white px-4 py-2 text-base sm:px-6 sm:py-3 rounded-full font-bold sm:text-lg hover:bg-[#912646] transition"
-          >
-            Ver más
-          </Link>
-        </div>
-      </div>
-      <div className="p-5 text-center grow flex flex-col">
-        <h3 className="text-lg font-semibold text-[#9c2007] truncate">{producto.nombre}</h3>
-        <p className="text-gray-600 text-sm mt-1 grow">{producto.frase}</p>
-        <p className="text-[#d8718c] font-bold text-xl my-3">
-          S/{producto.precio?.toFixed(2)}
-        </p>
+  const handleFavoritoClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (isFavorito) {
+      removerDeFavoritos(producto.id);
+    } else {
+      agregarAFavoritos(producto);
+    }
+  };
 
-        {mostrarBoton && (
-          <div className="mt-auto pt-2">
-            <button
-              onClick={handleAgregar}
-              className="bg-[#a34d5f] hover:bg-[#912646] text-white px-6 py-3 text-lg rounded-full w-full transition shadow-md font-semibold"
-            >
-              Añadir al Carrito
-            </button>
-          </div>
-        )}
-      </div>
-    </article>
+  return (
+    <div className="relative group bg-white border border-[#f5bfb2] rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300">
+      <Link to={`/productos/${producto.id}`} className="block">
+        <div className="w-full aspect-square overflow-hidden rounded-t-2xl">
+          <img
+            src={producto.imagen}
+            alt={producto.nombre}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+
+        <div className="p-4 text-center">
+          <h3 className="font-bold text-lg text-[#7a1a0a] truncate">{producto.nombre}</h3>
+          <p className="text-[#d16170] font-semibold">S/{producto.precio.toFixed(2)}</p>
+        </div>
+      </Link>
+
+      {/* Botón de favoritos (corazón) */}
+      {usuarioActual && (
+        <button
+          onClick={handleFavoritoClick}
+          className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-400 hover:text-red-500 transition-all duration-300 z-10"
+          title={isFavorito ? "Quitar de favoritos" : "Añadir a favoritos"}
+        >
+          <Heart size={22} fill={isFavorito ? '#ef4444' : 'none'} stroke={isFavorito ? '#ef4444' : 'currentColor'}/>
+        </button>
+      )}
+
+      {mostrarBoton && (
+        <div className="px-4 pb-4">
+          <button
+            onClick={handleAgregar}
+            className="w-full bg-[#d16170] text-white py-2 rounded-xl hover:bg-[#b84c68] transition-colors"
+          >
+            Agregar al carrito
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
