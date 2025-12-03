@@ -5,13 +5,10 @@ import {
   onSnapshot,
   query,
   orderBy,
-  doc,
-  deleteDoc,
 } from "firebase/firestore";
 import Filtros from "../componentes/Filtros";
 import ProductoCard from "../componentes/ProductoCard"; // ¡Importamos la tarjeta reutilizable!
 import incono from "../componentes/img/Bom.png";
-import { useAuth } from "../context/authContext";
 import { Trash2 } from "lucide-react";
 
 export default function Productos() {
@@ -22,18 +19,6 @@ export default function Productos() {
     min: "",
     max: "",
   });
-
-  const { usuarioActual } = useAuth();
-
-  // --- Lógica de Admin ---
-  const correosPermitidos = [
-    "danportaleshinostroza@crackthecode.la",
-    "zanadrianzenbohorquez@crackthecode.la",
-    "marandersonsantillan@crackthecode.la",
-    "shavalerianoblas@crackthecode.la",
-  ];
-  const correoUsuario = (usuarioActual?.correo || usuarioActual?.email || "").toLowerCase().trim();
-  const esAdmin = correoUsuario && correosPermitidos.some(c => c.toLowerCase().trim() === correoUsuario);
 
   // --- Carga de Productos ---
   useEffect(() => {
@@ -56,18 +41,6 @@ export default function Productos() {
   });
 
   const postresNombres = productos.map(p => p.nombre);
-
-  // --- Eliminar Producto (Admin) ---
-  const handleEliminar = async (id) => {
-    if (!esAdmin) return;
-    if (!window.confirm("¿Seguro que quieres eliminar este producto?")) return;
-    try {
-      await deleteDoc(doc(db, "productos", id));
-    } catch (error) {
-      console.error("Error al eliminar producto:", error);
-      alert("Hubo un problema al eliminar el producto");
-    }
-  };
 
   return (
     <div className="bg-[#fff3f0] min-h-screen pb-20">
@@ -103,17 +76,6 @@ export default function Productos() {
                 <div key={p.id} className="relative group">
                   {/* Usamos el componente ProductoCard */}
                   <ProductoCard producto={p} />
-                  
-                  {/* Botón de eliminar para el admin (se superpone) */}
-                  {esAdmin && (
-                    <button
-                      onClick={() => handleEliminar(p.id)}
-                      className="absolute top-2 right-2 w-10 h-10 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition opacity-0 group-hover:opacity-100"
-                      title="Eliminar producto"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
                 </div>
               ))}
             </div>
