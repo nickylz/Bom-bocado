@@ -3,7 +3,7 @@ import { useAuth } from '../context/authContext';
 import { useNavigate } from 'react-router-dom';
 import { X, Send, MessageCircle, ArrowDown } from 'lucide-react';
 
-const MascotChat = ({ onClose, triggerAction }) => {
+const MascotChat = ({ onClose, triggerAction, anchorClass }) => { 
   const { usuarioActual } = useAuth();
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
@@ -47,7 +47,7 @@ const MascotChat = ({ onClose, triggerAction }) => {
 
     startConversation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Ejecutar solo al montar el componente
+  }, []); 
 
   // Scroll automático
   useEffect(() => {
@@ -158,9 +158,7 @@ const MascotChat = ({ onClose, triggerAction }) => {
     <>
       <style>{`
         .chat-container {
-          position: absolute;
-          bottom: 110px;
-          left: 0;
+          position: absolute; /* Se mantiene ABSOLUTE respecto a CakeMascot */
           width: 300px;
           height: 420px;
           background: #ffffff;
@@ -175,6 +173,35 @@ const MascotChat = ({ onClose, triggerAction }) => {
           cursor: default;
           z-index: 10000;
         }
+        
+        /* 1. Anclaje vertical: ARRIBA */
+        .chat-container.anchor-top {
+          bottom: 90px; 
+          top: auto;
+        }
+
+        /* 2. Anclaje vertical: ABAJO */
+        .chat-container.anchor-bottom {
+          bottom: auto;
+          top: 90px; 
+        }
+
+        /* 3. Anclaje horizontal: Izquierda */
+        .chat-container.anchor-left {
+          left: 0;
+          right: auto;
+          /* Centrar sobre el centro (45px) de la mascota (90px) */
+          transform: translateX(calc(-50% + 45px)); 
+        }
+
+        /* 4. Anclaje horizontal: Derecha */
+        .chat-container.anchor-right {
+          right: 0;
+          left: auto;
+          /* Mueve el chat hacia la derecha */
+          transform: translateX(calc(50% - 45px));
+        }
+
         .chat-header {
           background: linear-gradient(90deg, #d16170 0%, #e17a8d 100%);
           padding: 12px 15px;
@@ -228,7 +255,11 @@ const MascotChat = ({ onClose, triggerAction }) => {
         .chat-body::-webkit-scrollbar-thumb { background: #f5bfb2; border-radius: 3px; }
       `}</style>
 
-      <div className="chat-container" onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+      <div 
+        className={`chat-container ${anchorClass}`} 
+        onMouseDown={(e) => e.stopPropagation()} 
+        onTouchStart={(e) => e.stopPropagation()}
+      >
         <div className="chat-header">
           <div className="flex items-center gap-2">
             <div className="relative">

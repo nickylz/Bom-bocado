@@ -15,6 +15,51 @@ const CakeMascot = () => {
 
   if (!isVisible) return null;
 
+  // --- LÓGICA DE POSICIONAMIENTO DEL CHAT Y ARRASTRE RESTRINGIDO (4 VIAS) ---
+  const CHAT_WIDTH = 300; 
+  const CHAT_HEIGHT = 420; 
+  const MASCOT_WIDTH = 90; 
+  const MASCOT_HEIGHT = 100; // Altura aproximada de la mascota
+  const MARGIN = 20;      // Margen de seguridad desde los bordes
+
+  // Obtenemos la posición actual o la inicial por defecto
+  const currentLeft = position?.left ?? 40; 
+  const currentTop = position?.top ?? (window.innerHeight - 20 - MASCOT_HEIGHT); 
+
+  // --- Lógica Horizontal ---
+  let horizontalAnchor = 'anchor-left'; // Default: centrado/ligeramente a la izquierda
+  
+  // 1. Si está cerca del borde IZQUIERDO, anclar a la DERECHA
+  if (currentLeft < (CHAT_WIDTH - MARGIN)) {
+    horizontalAnchor = 'anchor-right';
+  } 
+  
+  // 2. Si está cerca del borde DERECHO, anclar a la IZQUIERDA
+  // Si la distancia desde el borde derecho es menor que el ancho del chat + margen
+  if ((window.innerWidth - (currentLeft + MASCOT_WIDTH)) < (CHAT_WIDTH + MARGIN)) {
+    horizontalAnchor = 'anchor-left';
+  }
+
+
+  // --- Lógica Vertical ---
+  let verticalAnchor = 'anchor-top'; // Default: arriba
+
+  // 1. Si está cerca del borde SUPERIOR, anclar ABAJO
+  if (currentTop < (CHAT_HEIGHT + MARGIN)) {
+    verticalAnchor = 'anchor-bottom';
+  } 
+  
+  // 2. Si está cerca del borde INFERIOR, anclar ARRIBA
+  // Si la distancia desde el top es mayor que la altura de la ventana menos la altura del chat + margen
+  if (currentTop > (window.innerHeight - CHAT_HEIGHT - MARGIN - MASCOT_HEIGHT)) {
+    verticalAnchor = 'anchor-top';
+  }
+
+
+  // Clase de anclaje final: Combina anclaje horizontal y vertical
+  const chatAnchorClass = `${horizontalAnchor} ${verticalAnchor}`;
+  // ------------------------------------------
+
   // --- Animaciones ---
   let containerAnim = "mascot-float"; 
   let eyeClass = "";
@@ -42,12 +87,23 @@ const CakeMascot = () => {
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
 
+    const currentMascotWidth = element.offsetWidth;
+    const currentMascotHeight = element.offsetHeight;
+
     setPosition({ left: rect.left, top: rect.top });
     setIsDragging(true);
 
     const handleMouseMove = (ev) => {
-      const newLeft = ev.clientX - offsetX;
-      const newTop = ev.clientY - offsetY;
+      let newLeft = ev.clientX - offsetX;
+      let newTop = ev.clientY - offsetY;
+      
+      // CLAMPING: Restringir a los límites de la pantalla
+      const maxX = window.innerWidth - currentMascotWidth;
+      const maxY = window.innerHeight - currentMascotHeight;
+
+      newLeft = Math.max(0, Math.min(newLeft, maxX));
+      newTop = Math.max(0, Math.min(newTop, maxY));
+      
       setPosition({ left: newLeft, top: newTop });
       isClick.current = false;
     };
@@ -71,13 +127,27 @@ const CakeMascot = () => {
     const offsetX = touch.clientX - rect.left;
     const offsetY = touch.clientY - rect.top;
 
+    const currentMascotWidth = element.offsetWidth;
+    const currentMascotHeight = element.offsetHeight;
+
     setPosition({ left: rect.left, top: rect.top });
     setIsDragging(true);
 
     const handleTouchMove = (ev) => {
       if (ev.cancelable) ev.preventDefault();
       const t = ev.touches[0];
-      setPosition({ left: t.clientX - offsetX, top: t.clientY - offsetY });
+
+      let newLeft = t.clientX - offsetX;
+      let newTop = t.clientY - offsetY;
+      
+      // CLAMPING: Restringir a los límites de la pantalla
+      const maxX = window.innerWidth - currentMascotWidth;
+      const maxY = window.innerHeight - currentMascotHeight;
+
+      newLeft = Math.max(0, Math.min(newLeft, maxX));
+      newTop = Math.max(0, Math.min(newTop, maxY));
+
+      setPosition({ left: newLeft, top: newTop });
       isClick.current = false;
     };
     
@@ -119,6 +189,7 @@ const CakeMascot = () => {
             display: flex; flex-direction: column; align-items: center; 
             user-select: none; touch-action: none; 
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); cursor: grab;
+            transition: transform 0.3s ease;
         }
         .mascot-container:active { cursor: grabbing; }
 
@@ -174,6 +245,7 @@ const CakeMascot = () => {
                 <MascotChat 
                     onClose={() => setIsChatOpen(false)} 
                     triggerAction={triggerAction} 
+                    anchorClass={chatAnchorClass} // 👈 Pasa la clase combinada
                 />
             ) : (
                 <div className="mascot-bubble">
