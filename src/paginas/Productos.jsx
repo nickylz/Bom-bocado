@@ -7,9 +7,10 @@ import {
   orderBy,
 } from "firebase/firestore";
 import Filtros from "../componentes/Filtros";
-import ProductoCard from "../componentes/ProductoCard"; // ¡Importamos la tarjeta reutilizable!
+import ProductoCard from "../componentes/ProductoCard";
 import incono from "../componentes/img/Bom.png";
-import { Trash2 } from "lucide-react";
+// Importamos los iconos necesarios para la paginación
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; 
 
 export default function Productos() {
   const [productos, setProductos] = useState([]);
@@ -19,6 +20,10 @@ export default function Productos() {
     min: "",
     max: "",
   });
+
+  // --- Estados para la Paginación ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 12; // Cantidad de productos por página (puedes cambiar este número)
 
   // --- Carga de Productos ---
   useEffect(() => {
@@ -39,6 +44,23 @@ export default function Productos() {
       (filtro.max === "" || p.precio <= parseFloat(filtro.max))
     );
   });
+
+  // Resetear a la página 1 cuando se cambia un filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filtro]);
+
+  // --- Lógica de Paginación ---
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = productosFiltrados.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(productosFiltrados.length / productsPerPage);
+
+  const changePage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    // Opcional: Scrollear hacia arriba al cambiar de página
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
 
   const postresNombres = productos.map(p => p.nombre);
 
@@ -68,13 +90,12 @@ export default function Productos() {
           </div>
         </div>
 
-        {/* --- Grid de Productos -- */}
+        {/* --- Grid de Productos (Renderizamos currentProducts en lugar de todos) -- */}
         <div className="mt-10">
           {productosFiltrados.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-              {productosFiltrados.map((p) => (
+              {currentProducts.map((p) => (
                 <div key={p.id} className="relative group">
-                  {/* Usamos el componente ProductoCard */}
                   <ProductoCard producto={p} />
                 </div>
               ))}
@@ -85,6 +106,44 @@ export default function Productos() {
             </p>
           )}
         </div>
+
+        {/* --- Paginación Solicitada --- */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-12 gap-2">
+            <button 
+              onClick={() => changePage(currentPage - 1)} 
+              disabled={currentPage === 1}
+              className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              <FaChevronLeft />
+            </button>
+
+            <div className="flex bg-white rounded-full shadow px-4 py-2 gap-2">
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => changePage(i + 1)}
+                  className={`w-10 h-10 rounded-full font-bold transition duration-300 ${
+                    currentPage === i + 1 
+                    ? "bg-[#d16170] text-white shadow-lg scale-110" 
+                    : "text-gray-500 hover:bg-rose-50 hover:text-[#d16170]"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+
+            <button 
+              onClick={() => changePage(currentPage + 1)} 
+              disabled={currentPage === totalPages}
+              className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+        )}
+        
       </div>
     </div>
   );
