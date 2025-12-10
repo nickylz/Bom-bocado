@@ -30,7 +30,8 @@ const FavoritosList = () => {
       <h2 className="text-3xl font-bold text-[#9c2007] mb-8 border-b-2 border-[#f5bfb2] pb-4">
         Mis Favoritos
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* --- Rejilla de Favoritos Actualizada --- */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {favoritos.map(producto => (
           <div key={producto.id} className="relative group bg-white border border-[#f5bfb2] rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
             <Link to={`/productos/${producto.id}`} className="block">
@@ -41,13 +42,13 @@ const FavoritosList = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
-              <div className="p-4">
-                <h3 className="font-semibold text-lg text-[#9c2007] truncate">{producto.nombre}</h3>
+              <div className="p-3 md:p-4">
+                <h3 className="font-semibold text-base md:text-lg text-[#9c2007] truncate">{producto.nombre}</h3>
               </div>
             </Link>
             <button
               onClick={() => removerDeFavoritos(producto.id)}
-              className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-600 hover:bg-red-500 hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100"
+              className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-600 hover:bg-red-500 hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100"
               title="Eliminar de favoritos"
             >
               <X size={20} />

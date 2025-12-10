@@ -45,13 +45,16 @@ export const AuthProvider = ({ children }) => {
 
     let fotoURL = "/default-user.png";
     if (foto) {
-      const storageRef = ref(storage, `fotos-perfil/${user.uid}/${foto.name}`);
-      await uploadBytes(storageRef, foto);
-      fotoURL = await getDownloadURL(storageRef);
+      try {
+        const storageRef = ref(storage, `perfiles/${user.uid}/${foto.name}`);
+        await uploadBytes(storageRef, foto);
+        fotoURL = await getDownloadURL(storageRef);
+      } catch (error) {
+        console.error("Error al subir la foto de perfil: ", error);
+        alert("Hubo un error al subir tu foto de perfil. Se usará una imagen por defecto, pero tu cuenta ha sido creada. Por favor, contacta a soporte si el problema persiste.");
+      }
     }
-
-    await updateProfile(user, { displayName: nombre, photoURL: fotoURL });
-
+    
     await setDoc(doc(db, "usuarios", user.uid), {
       correo: user.email,
       nombre: nombre,
@@ -60,6 +63,8 @@ export const AuthProvider = ({ children }) => {
       fotoURL: fotoURL,
       fechaCreacion: serverTimestamp(),
     });
+
+    await updateProfile(user, { displayName: nombre, photoURL: fotoURL });
 
     return res;
   };

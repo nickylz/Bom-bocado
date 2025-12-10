@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, query, where, getDocs, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../context/authContext';
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default function ComprasList() {
   const { usuarioActual } = useAuth();
@@ -20,7 +22,11 @@ export default function ComprasList() {
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const pedidos = [];
       querySnapshot.forEach((doc) => {
-        pedidos.push({ id: doc.id, ...doc.data() });
+        pedidos.push({ 
+          id: doc.id, 
+          ...doc.data(),
+          fechaCreacion: doc.data().fechaCreacion?.toDate() || null
+        });
       });
       setCompras(pedidos.sort((a, b) => b.fechaCreacion - a.fechaCreacion));
       setCargando(false);
@@ -32,17 +38,12 @@ export default function ComprasList() {
     return () => unsubscribe();
   }, [usuarioActual]);
 
-  const formatearFecha = (fecha) => {
-    if (!fecha) return "Fecha no disponible";
-    const date = fecha.toDate ? fecha.toDate() : new Date(fecha);
-    return date.toLocaleString('es-PE', { dateStyle: 'long', timeStyle: 'short' });
-  };
-
   const handleCancelarPedido = async (pedidoId) => {
-    if (window.confirm("¿Estás seguro de que quieres cancelar este pedido? Esta acción no se puede deshacer.")) {
+    if (window.confirm("¿Estás seguro de que quieres cancelar este pedido? No podrás deshacer esta acción.")) {
       try {
-        await deleteDoc(doc(db, 'pedidos', pedidoId));
-        // The onSnapshot listener will automatically update the UI
+        const pedidoRef = doc(db, 'pedidos', pedidoId);
+        await updateDoc(pedidoRef, { estado: 'cancelada' });
+        // onSnapshot actualizará la UI automáticamente
       } catch (error) {
         console.error("Error al cancelar el pedido:", error);
         alert("Hubo un error al cancelar el pedido.");
@@ -50,9 +51,19 @@ export default function ComprasList() {
     }
   };
 
-  const puedeCancelar = (estado) => {
-    return estado === 'pendiente';
+  const getEstadoColor = (estado) => {
+    switch (estado) {
+      case "pendiente":
+        return "bg-yellow-100 text-yellow-800";
+      case "finalizada":
+        return "bg-green-100 text-green-800";
+      case "cancelada":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
+
 
   return (
     <div>
@@ -68,51 +79,81 @@ export default function ComprasList() {
         </div>
       ) : (
         <div className="space-y-6">
-          {compras.map((compra) => (
-            <div key={compra.id} className="bg-white border border-[#f5bfb2] rounded-2xl p-5 shadow-sm transition-all hover:shadow-md">
-              <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
-                <div className="flex-1">
-                  <p className="font-bold text-lg text-[#7a1a0a]">
-                    Pedido #{compra.id.substring(0, 8)}
-                  </p>
-                  <p className="text-sm text-gray-500 mb-2">
-                    {formatearFecha(compra.fechaCreacion)}
-                  </p>
-                  <div className="text-sm space-y-1">
-                      <p><strong>Estado:</strong> <span className={`font-semibold px-2 py-0.5 rounded-full text-xs ${compra.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{compra.estado}</span></p>
-                      <p><strong>Método de pago:</strong> {compra.metodoPago}</p>
+          {compras.map((compra) => {
+              const delivery = (compra.totalFinal - compra.subtotal) || 0;
+            return (
+              <div key={compra.id} className="bg-white rounded-2xl border border-[#f5bfb2] p-4 sm:p-6 shadow-sm transition-all hover:shadow-md">
+                {/* --- CABECERA --- */}
+                <div className="flex flex-col sm:flex-row justify-between items-start border-b border-gray-200 pb-3 mb-4">
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-800">
+                      Pedido #{compra.id.substring(0, 7).toUpperCase()}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {compra.fechaCreacion ? format(compra.fechaCreacion, "dd 'de' MMMM, yyyy, h:mm a", { locale: es }) : "Fecha no disponible"}
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right mt-2 sm:mt-0">
+                    <p className="text-xl font-bold text-[#d16170]">
+                      Total: S/ {compra.totalFinal?.toFixed(2)}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Delivery: S/ {delivery.toFixed(2)}
+                    </p>
                   </div>
                 </div>
-                <div className="text-left sm:text-right">
-                    <p className="text-xl font-bold text-[#d16170]">Total: S/{Number(compra.totalFinal || 0).toFixed(2)}</p>
-                    <p className="text-sm text-gray-500">Delivery: S/{Number(compra.delivery || 0).toFixed(2)}</p>
-                </div>
-              </div>
 
-              <div className="mt-4 pt-4 border-t border-[#f5bfb2]">
-                <h4 className="font-semibold text-[#7a1a0a] mb-2">Productos:</h4>
-                <ul className="space-y-2 text-sm">
-                    {compra.items?.map((item, index) => (
-                        <li key={index} className="flex justify-between items-center">
-                            <span>{item.nombre} (x{item.cantidad})</span>
-                            <span>S/{(item.precio * item.cantidad).toFixed(2)}</span>
-                        </li>
+                {/* --- DETALLES --- */}
+                <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 py-2 text-sm">
+                    <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-800">Estado:</span> 
+                        <span className={`px-2 py-0.5 text-xs rounded-full font-semibold ${getEstadoColor(compra.estado)}`}>
+                           {compra.estado}
+                        </span>
+                      </div>
+                      <p className="text-gray-600"><span className="font-medium text-gray-800">Pago:</span> {compra.metodoPago}</p>
+                </div>
+                
+
+                {/* --- LISTA DE PRODUCTOS --- */}
+                <div className="border-t border-gray-200 pt-4 mt-2">
+                  <h4 className="font-semibold text-gray-700 mb-3">Productos</h4>
+                  <div className="space-y-3">
+                    {(compra.items || []).map((item, index) => (
+                      <div key={index} className="flex justify-between items-center text-sm">
+                        <div className="flex items-center gap-3">
+                           {item.imagen && (
+                              <img
+                                src={item.imagen}
+                                alt={item.nombre}
+                                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                              />
+                            )}
+                            <div>
+                              <p className="font-semibold text-gray-800">{item.nombre}</p>
+                              <p className="text-xs text-gray-500">
+                                Cantidad: {item.cantidad} · Precio: S/ {item.precio?.toFixed(2)}
+                              </p>
+                            </div>
+                        </div>
+                        <p className="font-semibold text-gray-800">S/ {(item.cantidad * item.precio).toFixed(2)}</p>
+                      </div>
                     ))}
-                </ul>
-              </div>
-
-              {puedeCancelar(compra.estado) && (
-                <div className="mt-4 text-right">
-                  <button
-                    onClick={() => handleCancelarPedido(compra.id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition-colors"
-                  >
-                    Cancelar Pedido
-                  </button>
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
+
+                {compra.estado === 'pendiente' && (
+                  <div className="mt-4 border-t border-[#f5bfb2] pt-4 text-right">
+                    <button
+                      onClick={() => handleCancelarPedido(compra.id)}
+                      className="border border-red-500 text-red-500 bg-transparent px-5 py-2 rounded-xl text-sm font-semibold hover:bg-red-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors disabled:opacity-50"
+                    >
+                      Cancelar Pedido
+                    </button>
+                  </div>
+                )}
+              </div>
+          )})}
         </div>
       )}
     </div>
