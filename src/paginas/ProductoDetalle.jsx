@@ -18,6 +18,7 @@ import { ArrowLeft } from 'lucide-react';
 
 import RatingSummary from '../componentes/RatingSummary';
 import DejarComentario from '../componentes/DejarComentario';
+import ProductosRecomendados from '../componentes/ProductosRecomendados';
 
 export default function ProductoDetalle() {
   const { id } = useParams();
@@ -247,6 +248,9 @@ export default function ProductoDetalle() {
           </div>
         </div>
       </div>
+
+      {/* Productos Recomendados */}
+      <ProductosRecomendados />
 
       {/* Comentarios */}
       <div className="mt-16">

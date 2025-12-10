@@ -102,7 +102,7 @@ export default function Novedades() {
         </div>
       </main>
 
-      <style>{`
+            <style>{`
         @keyframes scroll {
           from { transform: translateX(0); }
           to { transform: translateX(-50%); }
