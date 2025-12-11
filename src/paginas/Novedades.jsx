@@ -42,15 +42,28 @@ export default function Novedades() {
   const favoritos = favoritosFirebase.length > 0 ? favoritosFirebase : fallbackFavoritos;
   const productosNuevos = nuevosFirebase.length > 0 ? nuevosFirebase : fallbackNuevos;
 
-  // Refactorizamos las funciones de renderizado para usar ProductoCard
-  const renderProductos = (items, mostrarBoton = true) =>
-    items.map((item) => <ProductoCard key={item.id} producto={item} mostrarBoton={mostrarBoton} />);
+  const renderProductos = (items, { mostrarBoton = true, mostrarFavoritos = true, esEnlace = true } = {}) =>
+    items.map((item) => (
+      <ProductoCard 
+        key={item.id} 
+        producto={item} 
+        mostrarBoton={mostrarBoton} 
+        mostrarFavoritos={mostrarFavoritos}
+        esEnlace={esEnlace}
+      />
+    ));
 
-  const renderCarrusel = (items, mostrarBoton = true) => (
+  const renderCarrusel = (items, { mostrarBoton = true, mostrarFavoritos = true, esEnlace = true } = {}) => (
     <div className="overflow-hidden relative">
       <div className="flex gap-6 animate-scroll">
         {items.concat(items).map((item, index) => (
-          <ProductoCard key={`${item.id}-${index}`} producto={item} mostrarBoton={mostrarBoton} />
+          <ProductoCard 
+            key={`${item.id}-${index}`} 
+            producto={item} 
+            mostrarBoton={mostrarBoton} 
+            mostrarFavoritos={mostrarFavoritos}
+            esEnlace={esEnlace}
+          />
         ))}
       </div>
       <div className="pointer-events-none absolute top-0 left-0 w-20 h-full bg-linear-to-r from-[#fff3f0] to-transparent z-10" />
@@ -97,7 +110,7 @@ export default function Novedades() {
 
           <section>
             <h2 className="text-3xl font-bold text-[#9c2007] mb-8 border-b-2 border-[#f5bfb2] pb-2">Próximamente</h2>
-            {productosNuevos.length > 0 ? (productosNuevos.length > 4 ? renderCarrusel(productosNuevos, false) : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">{renderProductos(productosNuevos, false)}</div>) : (<p className="text-center text-gray-500 mt-10">Estamos horneando nuevas sorpresas. ¡Espéralas!</p>)}
+            {productosNuevos.length > 0 ? (productosNuevos.length > 4 ? renderCarrusel(productosNuevos, { mostrarBoton: false, mostrarFavoritos: false, esEnlace: false }) : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">{renderProductos(productosNuevos, { mostrarBoton: false, mostrarFavoritos: false, esEnlace: false })}</div>) : (<p className="text-center text-gray-500 mt-10">Estamos horneando nuevas sorpresas. ¡Espéralas!</p>)}
           </section>
         </div>
       </main>

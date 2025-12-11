@@ -249,39 +249,40 @@ export default function Testimonials() {
                             </div>
                           </div>
                         ) : (
-                          /* --- MODO VISTA NORMAL --- */
+                          /* --- MODO VISTA NORMAL (RESPONSIVO) --- */
                           <>
-                            <div className="flex justify-between items-start">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-y-2">
+                              {/* INFO: Nombre, estrellas y fecha */}
                               <div>
                                 <h4 className="font-bold text-lg text-[#8f2133]">{t.nombre}</h4>
-                                <div className="flex items-center gap-2 mb-2">
-                                    {renderStars(t.estrellas)}
-                                    <span className="text-xs text-gray-400 ml-2">
-                                      {t.createdAt ? new Date(t.createdAt.seconds * 1000).toLocaleDateString("es-PE") : ''}
-                                    </span>
+                                <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1">
+                                  {renderStars(t.estrellas)}
+                                  <span className="text-xs text-gray-400">
+                                    {t.createdAt ? new Date(t.createdAt.seconds * 1000).toLocaleDateString("es-PE") : ''}
+                                  </span>
                                 </div>
                               </div>
+                              {/* BOTONES: Editar y Eliminar */}
                               {puedeEditarEliminar(t) && (
-                                <div className="flex gap-2 text-gray-400">
-                                    <button onClick={() => comenzarEdicion(t)} className="hover:text-[#8f2133] transition p-1"><FaEdit /></button>
-                                    <button onClick={() => eliminar(t.id)} className="hover:text-[#8f2133] transition p-1"><FaTrash /></button>
-                                </div> 
+                                <div className="flex gap-2 text-gray-400 self-start sm:self-auto shrink-0">
+                                  <button onClick={() => comenzarEdicion(t)} className="hover:text-[#8f2133] transition p-1"><FaEdit /></button>
+                                  <button onClick={() => eliminar(t.id)} className="hover:text-[#8f2133] transition p-1"><FaTrash /></button>
+                                </div>
                               )}
                             </div>
-                            
-                            <p className="text-gray-700 leading-relaxed">“{t.mensaje}”</p>
-                            
+                            {/* MENSAJE y FOTOS */}
+                            <p className="text-gray-700 leading-relaxed mt-3">“{t.mensaje}”</p>
                             {t.imageUrls && t.imageUrls.length > 0 && (
-                                <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                                    {t.imageUrls.map((url, i) => (
-                                        <img 
-                                            key={i} 
-                                            onClick={() => mostrarModal('', <img src={url} className="max-w-full max-h-[80vh] rounded" />)} 
-                                            src={url} alt="img" 
-                                            className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition" 
-                                        />
-                                    ))}
-                                </div>
+                              <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+                                {t.imageUrls.map((url, i) => (
+                                  <img
+                                    key={i}
+                                    onClick={() => mostrarModal('', <img src={url} className="max-w-full max-h-[80vh] rounded" />)}
+                                    src={url} alt="img"
+                                    className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition"
+                                  />
+                                ))}
+                              </div>
                             )}
                           </>
                         )}

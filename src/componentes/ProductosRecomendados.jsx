@@ -76,7 +76,7 @@ const ProductosRecomendados = () => {
           className="flex overflow-x-auto gap-6 scrollbar-hide px-4 py-2 scroll-smooth"
         >
           {productosRecomendados.map(producto => (
-            <div key={producto.id} className="flex-shrink-0 w-64">
+            <div key={producto.id} className="shrink-0 w-64">
               <ProductoCard producto={producto} />
             </div>
           ))}
