@@ -40,7 +40,7 @@ export default function ProductoCard({ producto, mostrarBoton = true, mostrarFav
       </div>
       <div className="p-4 text-center">
         <h3 className="font-bold text-lg text-[#7a1a0a] truncate">{producto.nombre}</h3>
-        <p>oe</p>
+        <p className="text-sm text-gray-600 h-10 overflow-hidden">{producto.descripcion}</p>
         {tieneDescuento ? (
           <div className="flex justify-center items-baseline gap-2 mt-1">
             <p className="text-[#d16170] font-bold text-xl">S/{precioFinal.toFixed(2)}</p>
@@ -76,7 +76,7 @@ export default function ProductoCard({ producto, mostrarBoton = true, mostrarFav
       {usuarioActual && mostrarFavoritos && (
         <button
           onClick={handleFavoritoClick}
-          className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-400 hover:text-red-500 transition-all duration-300 z-10"
+          className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-400 hover:text-red-500 transition-all duration-300 z-10 opacity-0 group-hover:opacity-100"
           title={isFavorito ? "Quitar de favoritos" : "Añadir a favoritos"}
         >
           <Heart size={22} fill={isFavorito ? '#ef4444' : 'none'} stroke={isFavorito ? '#ef4444' : 'currentColor'}/>

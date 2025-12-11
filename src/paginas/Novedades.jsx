@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../lib/firebase";
-import { collection, query, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { Link } from 'react-router-dom';
 import ProductoCard from "../componentes/ProductoCard";
 import incono from "../componentes/img/Bom.png";
 
-// --- Datos de Respaldo (Fallback) ---
 const fallbackFavoritos = [
   { id: "fav-1", nombre: "Tarta Mix", descripcion: "Refrescante y cremosa", precio: 40.00, imagen: "https://i.pinimg.com/736x/4c/07/44/4c07447203a816cbb5a470fbe7d14ee9.jpg" },
   { id: "fav-2", nombre: "Tiramisú Clásico", descripcion: "Con café y mascarpone", precio: 28.00, imagen: "https://www.tasteofhome.com/wp-content/uploads/2024/11/EXPS_TOHD24_25469_EricKleinberg_6.jpg" },
@@ -25,12 +25,16 @@ const Shape = ({ className }) => <div className={`absolute ${className}`}></div>
 
 export default function Novedades() {
   const [productos, setProductos] = useState([]);
+  const [postreDelMes, setPostreDelMes] = useState(null);
 
   useEffect(() => {
     const q = query(collection(db, "productos"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setProductos(lista);
+      
+      const postre = lista.find(p => p.postreDelMes === true);
+      setPostreDelMes(postre);
     });
     return () => unsubscribe();
   }, []);
@@ -55,15 +59,16 @@ export default function Novedades() {
 
   const renderCarrusel = (items, { mostrarBoton = true, mostrarFavoritos = true, esEnlace = true } = {}) => (
     <div className="overflow-hidden relative">
-      <div className="flex gap-6 animate-scroll">
+      <div className="flex gap-8 animate-scroll">
         {items.concat(items).map((item, index) => (
-          <ProductoCard 
-            key={`${item.id}-${index}`} 
-            producto={item} 
-            mostrarBoton={mostrarBoton} 
-            mostrarFavoritos={mostrarFavoritos}
-            esEnlace={esEnlace}
-          />
+          <div key={`${item.id}-${index}`} className="w-80 flex-shrink-0">
+            <ProductoCard 
+              producto={item} 
+              mostrarBoton={mostrarBoton} 
+              mostrarFavoritos={mostrarFavoritos}
+              esEnlace={esEnlace}
+            />
+          </div>
         ))}
       </div>
       <div className="pointer-events-none absolute top-0 left-0 w-20 h-full bg-linear-to-r from-[#fff3f0] to-transparent z-10" />
@@ -95,6 +100,30 @@ export default function Novedades() {
           </div>
         </div>
       </section>
+
+      {/* --- Postre del Mes -- */}
+      {postreDelMes && (
+        <section className="py-20 bg-[#fdecdf]">
+          <div className="max-w-7xl mx-auto px-6 md:px-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div className="order-2 lg:order-1">
+                <h2 className="text-xl font-semibold text-[#d16170]">Postre del Mes</h2>
+                <h3 className="text-4xl font-bold text-[#9c2007] mt-2">{postreDelMes.nombre}</h3>
+                <p className="mt-4 text-gray-600 text-lg">{postreDelMes.descripcion}</p>
+                <div className="mt-6">
+                  <p className="text-3xl font-bold text-[#d16170]">S/{postreDelMes.precio.toFixed(2)}</p>
+                  <Link to={`/productos/${postreDelMes.id}`} className="mt-4 inline-block bg-[#9c2007] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#7a1a0a] transition-colors">
+                    Ver más
+                  </Link>
+                </div>
+              </div>
+              <div className="order-1 lg:order-2 h-80 lg:h-auto rounded-2xl overflow-hidden shadow-lg">
+                <img src={postreDelMes.imagen} alt={postreDelMes.nombre} className="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <main className="py-16">
         <div className="max-w-7xl mx-auto px-6 md:px-12 space-y-16">
