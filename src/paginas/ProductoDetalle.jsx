@@ -205,11 +205,11 @@ export default function ProductoDetalle() {
           </p>
 
           <div className="mt-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-              <p className="text-[#d8718c] font-bold text-3xl sm:text-4xl text-center sm:text-left">
+            <div className="flex flex-row justify-between items-center gap-4 mb-4">
+              <p className="text-[#d8718c] font-bold text-3xl sm:text-4xl">
                 S/{producto.precio?.toFixed(2)}
               </p>
-              <div className="flex items-center justify-center gap-5 bg-rose-100 rounded-full px-4 py-1 self-center sm:self-auto">
+              <div className="flex items-center justify-center gap-5 bg-rose-100 rounded-full px-4 py-1">
                 <button
                   onClick={() => cambiarCantidad(-1)}
                   className="text-3xl font-bold text-[#d8718c] hover:text-[#a34d5f] transition"

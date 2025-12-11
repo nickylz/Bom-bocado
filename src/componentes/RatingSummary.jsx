@@ -26,14 +26,19 @@ const RatingSummary = ({ averageRating, totalReviews, starCounts, variant = "ful
           {safeTotalReviews} calificaciones
         </span>
 
-        {/* Derecha: solo estrellas */}
-        <div className="flex text-xl md:text-2xl gap-1">
-          {[...Array(5)].map((_, i) => (
-            <FaStar
-              key={i}
-              color={i < Math.round(safeAverage) ? PINK_COLOR : GRAY_COLOR}
-            />
-          ))}
+        {/* Derecha: promedio + estrellas */}
+        <div className="flex items-center gap-2">
+          <span className="text-xl md:text-2xl font-bold text-[#8f2133]">
+            {safeAverage.toFixed(1)}
+          </span>
+          <div className="flex text-xl md:text-2xl gap-1">
+            {[...Array(5)].map((_, i) => (
+              <FaStar
+                key={i}
+                color={i < Math.round(safeAverage) ? PINK_COLOR : GRAY_COLOR}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );

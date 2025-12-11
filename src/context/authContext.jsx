@@ -9,7 +9,7 @@ import {
   updateProfile
 } from "firebase/auth";
 import { auth, db, storage } from "../lib/firebase";
-import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const AuthContext = createContext();
@@ -112,29 +112,45 @@ export const AuthProvider = ({ children }) => {
   const cerrarSesion = () => signOut(auth);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const docRef = doc(db, "usuarios", user.uid);
-        const docSnap = await getDoc(docRef);
+    let unsubscribeFirestore = () => {};
 
-        if (docSnap.exists()) {
-          const firestoreData = docSnap.data();
-          setUsuarioActual({
-            ...user,
-            ...firestoreData,
-          });
-        } else {
-          console.log("Usuario autenticado pero sin datos en Firestore. Esto puede pasar si el registro con Google falló a la mitad.");
-          setUsuarioActual(user);
-        }
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      unsubscribeFirestore(); // Cancela la suscripción anterior
+
+      if (user) {
+        setCargando(true);
+        const docRef = doc(db, "usuarios", user.uid);
+        
+        unsubscribeFirestore = onSnapshot(docRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const firestoreData = docSnap.data();
+            setUsuarioActual({
+              ...user, // Datos de auth de Firebase (uid, email verificado, etc.)
+              ...firestoreData, // Tus datos de Firestore (rol, nombre, fotoURL, etc.)
+            });
+          } else {
+            console.warn("Usuario autenticado pero sin datos en Firestore.");
+            // Si no hay datos en Firestore, usa la info básica de la sesión
+            setUsuarioActual(user);
+          }
+          setCargando(false);
+        }, (error) => {
+          console.error("Error al escuchar datos de Firestore:", error);
+          setUsuarioActual(user); // En caso de error, provee al menos el usuario base
+          setCargando(false);
+        });
       } else {
         setUsuarioActual(null);
+        setCargando(false);
       }
-      setCargando(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      unsubscribeFirestore();
+    };
   }, []);
+
 
   const value = {
     usuarioActual,

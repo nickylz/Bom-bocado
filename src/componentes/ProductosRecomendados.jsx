@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import ProductoCard from './ProductoCard';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ProductosRecomendados = () => {
   const { id } = useParams();
   const [productosRecomendados, setProductosRecomendados] = useState([]);
   const [categoriaActual, setCategoriaActual] = useState('');
+  const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     const fetchProductoActual = async () => {
@@ -15,7 +17,7 @@ const ProductosRecomendados = () => {
         const productoRef = doc(db, "productos", id);
         const productoSnap = await getDoc(productoRef);
         if (productoSnap.exists()) {
-            setCategoriaActual(productoSnap.data().categoria);
+          setCategoriaActual(productoSnap.data().categoria);
         }
       }
     };
@@ -32,8 +34,7 @@ const ProductosRecomendados = () => {
         const querySnapshot = await getDocs(q);
         const productos = querySnapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(producto => producto.id !== id)
-          .slice(0, 5); // Limitar a 5 productos
+          .filter(producto => producto.id !== id);
         setProductosRecomendados(productos);
       }
     };
@@ -41,17 +42,53 @@ const ProductosRecomendados = () => {
     fetchProductosRecomendados();
   }, [categoriaActual, id]);
 
+  const handleScroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 300;
+      const currentScroll = scrollContainerRef.current.scrollLeft;
+      const newScroll = direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount;
+      scrollContainerRef.current.scrollTo({
+        left: newScroll,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   if (productosRecomendados.length === 0) {
     return null;
   }
 
   return (
-    <div className="mt-12">
+    <div className="mt-16">
       <h2 className="text-3xl font-bold text-center mb-8">También te podría gustar...</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {productosRecomendados.map(producto => (
-          <ProductoCard key={producto.id} producto={producto} />
-        ))}
+      <div className="relative">
+        {/* Botón Izquierdo */}
+        <button 
+          onClick={() => handleScroll('left')} 
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-opacity duration-300 opacity-75 hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft size={28} className="text-[#d8718c]" />
+        </button>
+
+        {/* Contenedor del carrusel */}
+        <div 
+          ref={scrollContainerRef} 
+          className="flex overflow-x-auto gap-6 scrollbar-hide px-4 py-2 scroll-smooth"
+        >
+          {productosRecomendados.map(producto => (
+            <div key={producto.id} className="flex-shrink-0 w-64">
+              <ProductoCard producto={producto} />
+            </div>
+          ))}
+        </div>
+
+        {/* Botón Derecho */}
+        <button 
+          onClick={() => handleScroll('right')} 
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-opacity duration-300 opacity-75 hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed"
+        >
+          <ChevronRight size={28} className="text-[#d8718c]" />
+        </button>
       </div>
     </div>
   );
