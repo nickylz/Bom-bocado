@@ -129,8 +129,9 @@ export const AuthProvider = ({ children }) => {
               ...firestoreData, // Tus datos de Firestore (rol, nombre, fotoURL, etc.)
             });
           } else {
-            console.warn("Usuario autenticado pero sin datos en Firestore.");
-            // Si no hay datos en Firestore, usa la info básica de la sesión
+            // Este bloque se ejecuta brevemente durante el registro con Google
+            // antes de que el documento de Firestore sea creado.
+            // Se establece un usuario temporal que se actualizará en milisegundos.
             setUsuarioActual(user);
           }
           setCargando(false);

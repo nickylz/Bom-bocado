@@ -1,138 +1,135 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   FaMapMarkerAlt,
   FaPhoneAlt,
   FaEnvelope,
-  FaClock,
   FaInstagram,
   FaFacebook,
   FaTiktok,
-  FaWhatsapp,
+  FaBook,
 } from "react-icons/fa";
 
 export default function Footer() {
+  const socialLinks = [
+    { icon: FaInstagram, href: "#", label: "Instagram" },
+    { icon: FaFacebook, href: "#", label: "Facebook" },
+    { icon: FaTiktok, href: "#", label: "TikTok" },
+  ];
+
+  const navLinks = [
+      { to: "/", text: "Inicio" },
+      { to: "/productos", text: "Productos" },
+      { to: "/nosotros", text: "Nosotros" },
+      { to: "/novedades", text: "Novedades" },
+  ]
+
+  // Paleta de colores alineada con el NavBar
+  const bgColor = "bg-[#fdd2d7]";
+  const textColor = "text-[#9c2007]";
+  const titleColor = "text-[#8a152e]";
+  const accentColor = "text-[#da6786]";
+  const hoverColor = "hover:text-[#e46945]";
+  const borderColor = "border-[#f5bfb2]";
+
   return (
-    <footer className="w-full overflow-x-hidden bg-[#fdd2d7] text-[#9c2007] border-t border-[#f5bfb2] shadow-[0_24px_48px_-8px_#d8718c26]">
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 flex flex-col lg:flex-row justify-between items-start gap-10">
-        {/* ======= CONTACTO ======= */}
-        <div className="flex-1 space-y-4">
-          <h3 className="text-2xl font-semibold text-[#d8718c] mb-4">
-            Información de contacto
-          </h3>
-
-          <div className="flex items-start gap-3">
-            <FaMapMarkerAlt className="text-xl text-[#a04f66] mt-1" />
-            <p className="text-sm leading-relaxed">
-              <strong>Ubicación:</strong>{" "}
-              <a
-                href="https://www.google.com/maps/place/Av.+Primavera+123,+Miraflores,+Lima,+Perú"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-[#e46945] transition-colors"
-              >
-                Av. Primavera 123, Miraflores, Lima, Perú
-              </a>
+    <footer className={`${bgColor} ${textColor} border-t ${borderColor}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+          
+          {/* Col 1: Logo y Redes Sociales */}
+          <div className="space-y-4">
+            <Link to="/" className={`text-3xl font-extrabold tracking-wide ${accentColor} w-fit`}>
+              BOM<span className={titleColor}>BOCADO</span>
+            </Link>
+            <p className="text-sm max-w-xs pr-4">
+              La dulzura de nuestros postres, directo a tu corazón.
             </p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <FaPhoneAlt className="text-xl text-[#a04f66] mt-1" />
-            <p className="text-sm leading-relaxed">
-              <strong>Teléfono:</strong>{" "}
-              <a
-                href="tel:+51987654321"
-                className="hover:text-[#e46945] transition-colors"
-              >
-                +51 987 654 321
-              </a>{" "}
-              |{" "}
-              <a
-                href="https://wa.me/51987654321"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-[#25D366] transition-colors inline-flex items-center gap-1"
-              >
-                <FaWhatsapp /> WhatsApp
-              </a>
-            </p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <FaEnvelope className="text-xl text-[#a04f66] mt-1" />
-            <p className="text-sm leading-relaxed">
-              <strong>Correo:</strong>{" "}
-              <a
-                href="mailto:pedidos@bombocado.com"
-                className="hover:text-[#e46945] transition-colors"
-              >
-                pedidos@bombocado.com
-              </a>
-            </p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <FaClock className="text-xl text-[#a04f66] mt-1" />
-            <p className="text-sm leading-relaxed">
-              <strong>Horario:</strong> Lun a Vie: 8AM - 8PM | Sáb: 9AM - 7PM | Dom: 9AM - 6PM
-            </p>
-          </div>
-
-          {/* ======= PROMOCIÓN ======= */}
-          <div className="mt-6 space-y-2">
-            <div className="bg-[#f5bfb2] text-[#9c2007] px-4 py-2 rounded-full text-sm inline-block shadow-sm">
-              Delivery gratis por compras mayores a S/. 45.00
-            </div>
-
-            <p className="text-sm text-[#333] max-w-md leading-relaxed">
-              No te pierdas nuestras{" "}
-              <span className="text-[#d8718c] font-semibold">novedades</span>,{" "}
-              <span className="text-[#d8718c] font-semibold">promociones</span>{" "}
-              y los momentos más dulces de nuestro día a día.
-            </p>
-          </div>
-        </div>
-
-        {/* ======= MAPA + REDES ======= */}
-        <div className="flex-1 flex flex-col items-center gap-6 w-full max-w-md">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3900.9560470969716!2d-77.03926262503623!3d-12.13166258816737!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105b7e1b4b5a533%3A0xa549043226dcfb18!2sBuenavista%20Caf%C3%A9!5e0!3m2!1ses-419!2spe!4v1753934291804!5m2!1ses-419!2spe"
-            width="100%"
-            height="250"
-            className="rounded-2xl shadow-md border-none"
-            allowFullScreen
-            loading="lazy"
-            title="Mapa de ubicación"
-          ></iframe>
-
-          <div className="flex flex-col items-center text-center">
-            <p className="font-semibold mb-2 text-[#9c2007]">Síguenos en</p>
-            <div className="flex gap-6 text-2xl">
-              <a
-                href="#"
-                className="text-[#d8718c] hover:scale-110 hover:text-[#e46945] transition-transform duration-300"
-                aria-label="Instagram"
-              >
-                <FaInstagram />
-              </a>
-              <a
-                href="#"
-                className="text-[#d8718c] hover:scale-110 hover:text-[#e46945] transition-transform duration-300"
-                aria-label="Facebook"
-              >
-                <FaFacebook />
-              </a>
-              <a
-                href="#"
-                className="text-[#d8718c] hover:scale-110 hover:text-[#e46945] transition-transform duration-300"
-                aria-label="TikTok"
-              >
-                <FaTiktok />
-              </a>
+            <div className="flex gap-3 pt-2">
+              {socialLinks.map(({ icon: Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-10 h-10 flex items-center justify-center bg-white/50 ${titleColor} rounded-full ${hoverColor} transition-all duration-300`}
+                >
+                  <Icon className="text-xl" />
+                </a>
+              ))}
             </div>
           </div>
+
+          {/* Col 2: Navegación */}
+          <div className="space-y-4">
+            <h3 className={`text-xl font-semibold ${titleColor}`}>Navegación</h3>
+            <ul className="space-y-2 text-sm font-medium mt-4">
+                {navLinks.map(link => (
+                    <li key={link.to}>
+                        <Link to={link.to} className={`${hoverColor} transition-colors duration-300`}>
+                            {link.text}
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+          </div>
+
+          {/* Col 3: Atención al Cliente */}
+          <div className="space-y-4">
+            <h3 className={`text-xl font-semibold ${titleColor}`}>Atención al Cliente</h3>
+            <ul className="space-y-3 text-sm font-medium mt-4">
+                <li className="flex items-start gap-3">
+                  <FaPhoneAlt className={`${titleColor} mt-1 flex-shrink-0`} size={18} />
+                  <a href="tel:+51987654321" className={`${hoverColor} transition-colors duration-300`}>
+                    +51 987 654 321
+                  </a>
+                </li>
+                <li className="flex items-start gap-3">
+                  <FaEnvelope className={`${titleColor} mt-1 flex-shrink-0`} size={18} />
+                  <a href="mailto:pedidos@bombocado.com" className={`${hoverColor} transition-colors duration-300`}>
+                    pedidos@bombocado.com
+                  </a>
+                </li>
+                 <li className="flex items-start gap-3">
+                  <FaMapMarkerAlt className={`${titleColor} mt-1 flex-shrink-0`} size={18} />
+                  <a href="https://www.google.com/maps/place/Av.+Primavera+123,+Miraflores,+Lima,+Perú" target="_blank" rel="noopener noreferrer" className={`${hoverColor} transition-colors duration-300`}>
+                    Av. Primavera 123, Miraflores, Lima
+                  </a>
+                </li>
+            </ul>
+             <div className="pt-4">
+                <Link to="/libro-de-reclamaciones" className={`group inline-flex items-center gap-3 border-2 ${borderColor} rounded-xl px-4 py-3 hover:bg-white/30 transition-all duration-300 shadow-sm w-full`}>
+                    <FaBook className={`${titleColor} text-2xl group-hover:scale-110 transition-transform`}/>
+                    <div>
+                        <span className={`font-bold text-md ${titleColor}`}>Libro de Reclamaciones</span>
+                    </div>
+                </Link>
+            </div>
+          </div>
+          
+          {/* Col 4: Mapa */}
+            <div className="space-y-4">
+                <h3 className={`text-xl font-semibold ${titleColor}`}>Ubicación</h3>
+                 <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3900.9560470969716!2d-77.03926262503623!3d-12.13166258816737!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105b7e1b4b5a533%3A0xa549043226dcfb18!2sBuenavista%20Caf%C3%A9!5e0!3m2!1ses-419!2spe!4v1753934291804!5m2!1ses-419!2spe"
+                    height="200"
+                    className="rounded-2xl shadow-md border-none w-full"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Mapa de ubicación de BOMBOCADO"
+                ></iframe>
+            </div>
         </div>
       </div>
 
+      {/* Barra Inferior de Copyright */}
+      <div className={`py-4 border-t ${borderColor}/70`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm font-medium">
+          <p>© {new Date().getFullYear()} BOMBOCADO. Todos los derechos reservados.</p>
+        </div>
+      </div>
     </footer>
   );
 }

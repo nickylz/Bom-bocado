@@ -40,7 +40,7 @@ export default function ProductoCard({ producto, mostrarBoton = true, mostrarFav
       </div>
       <div className="p-4 text-center">
         <h3 className="font-bold text-lg text-[#7a1a0a] truncate">{producto.nombre}</h3>
-        <p className="text-sm text-gray-600 h-10 overflow-hidden">{producto.descripcion}</p>
+        <p className="text-sm text-gray-600 h-10 overflow-hidden">{producto.frase}</p>
         {tieneDescuento ? (
           <div className="flex justify-center items-baseline gap-2 mt-1">
             <p className="text-[#d16170] font-bold text-xl">S/{precioFinal.toFixed(2)}</p>
@@ -87,7 +87,7 @@ export default function ProductoCard({ producto, mostrarBoton = true, mostrarFav
         <div className="px-4 pb-4 mt-auto">
           <button
             onClick={handleAgregar}
-            className="w-full bg-[#d16170] text-white py-2 rounded-xl hover:bg-[#b84c68] transition-colors"
+            className="w-full bg-[#d16170] text-white py-2 rounded-xl hover:bg-[#b84c68] transition-colors font-bold"
           >
             Agregar al carrito
           </button>

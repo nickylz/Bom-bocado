@@ -111,7 +111,7 @@ const AdminProductos = () => {
       };
 
       dataToUpdate.descuento =
-        formData.descuento === "" || formData.descuento === "0" ? null : Number(formData.descuento);
+        formData.descuento === "" ? 0 : Number(formData.descuento);
 
       await updateDoc(docRef, dataToUpdate);
 
@@ -134,11 +134,6 @@ const AdminProductos = () => {
       alert("No se pudo eliminar el producto.");
     }
   };
-  
-  const calcularPrecioFinal = (precio, descuento) => {
-    if (!descuento || descuento <= 0) return precio;
-    return precio - (precio * descuento / 100);
-  }
 
   const productosFiltrados = productos.filter((p) =>
     categoriaFiltro ? p.categoria === categoriaFiltro : true
@@ -228,7 +223,7 @@ const AdminProductos = () => {
                           type="number"
                           value={formData.descuento}
                           onChange={handleChange}
-                          placeholder="Desc %"
+                          placeholder="Desc%"
                           className="border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
                         />
                       </div>
@@ -239,47 +234,79 @@ const AdminProductos = () => {
                         required
                         className="border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
                       >
-                        <option value="">Categoría</option>
-                        {[...new Set(productos.map(p=>p.categoria))].map(c=><option key={c} value={c}>{c}</option>)}
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Pasteles">Pasteles</option>
+                        <option value="Tartas">Tartas</option>
+                        <option value="Donas">Donas</option>
+                        <option value="Cupcakes">Cupcakes</option>
+                        <option value="Bombones">Bombones</option>
+                        <option value="Macarons">Macarons</option>
+                        <option value="Galletas">Galletas</option>
+                        <option value="Postres fríos">Postres fríos</option>
+                        <option value="Otros">Otros</option>
+                        <option value="Temporada">Temporada</option>
                       </select>
+                      <input
+                        name="frase"
+                        value={formData.frase}
+                        onChange={handleChange}
+                        placeholder="Frase"
+                        className="w-full border border-[#f5bfb2] px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#d16170]"
+                      />
                     </div>
                   ) : (
                     <div>
-                      <p className="font-bold text-[#9c2007] text-lg truncate">
+                      <p className="font-bold text-[#9c2007] text-2xl sm:text-base truncate">
                         {producto.nombre}
                       </p>
-                      <div className="flex items-center gap-2">
-                        {producto.descuento > 0 ? (
-                            <>
-                                <p className="text-[#d16170] font-semibold text-xl">
-                                    S/{calcularPrecioFinal(producto.precio, producto.descuento).toFixed(2)}
-                                </p>
-                                <p className="text-gray-400 line-through text-sm">
-                                    S/{producto.precio?.toFixed(2)}
-                                </p>
-                            </>
-                        ) : (
-                            <p className="text-[#d16170] font-semibold text-xl">
-                                S/{producto.precio?.toFixed(2)}
-                            </p>
-                        )}
-                      </div>
-                      <span className="inline-block bg-[#fff3f0] text-[#9c2007] px-2 py-0.5 rounded-full text-xs font-semibold mt-1">
+                      <p className="text-[#d16170] font-semibold text-lg sm:text-xl">
+                        S/{producto.precio?.toFixed(2)}
+                      </p>
+                      <p className="text-gray-500 text-xs sm:text-sm">
                         {producto.categoria}
-                      </span>
+                      </p>
+                      {producto.descuento > 0 && (
+                        <p className="text-green-600 text-xs font-semibold">
+                          Desc: {producto.descuento}%
+                        </p>
+                      )}
                     </div>
                   )}
 
                   <div className="flex gap-2 mt-2 justify-end">
                     {editingId === producto.id ? (
                       <>
-                        <button onClick={() => handleSave(producto.id)} className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition" title="Guardar"><FaSave /></button>
-                        <button onClick={handleCancelEdit} className="bg-gray-400 hover:bg-gray-500 text-white p-2 rounded-lg transition" title="Cancelar"><FaTimes /></button>
+                        <button
+                          onClick={() => handleSave(producto.id)}
+                          className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition text-lg"
+                          title="Guardar"
+                        >
+                          <FaSave />
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="bg-gray-400 hover:bg-gray-500 text-white p-2 rounded-lg transition text-lg"
+                          title="Cancelar"
+                        >
+                          <FaTimes />
+                        </button>
                       </>
                     ) : (
                       <>
-                        <button onClick={() => handleEditClick(producto)} className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition" title="Editar"><FaEdit /></button>
-                        <button onClick={() => handleDelete(producto.id)} className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition" title="Eliminar"><FaTrash /></button>
+                        <button
+                          onClick={() => handleEditClick(producto)}
+                          className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition text-lg"
+                          title="Editar"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(producto.id)}
+                          className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition text-lg"
+                          title="Eliminar"
+                        >
+                          <FaTrash />
+                        </button>
                       </>
                     )}
                   </div>
@@ -288,7 +315,9 @@ const AdminProductos = () => {
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-500 py-8">No hay productos</p>
+          <p className="text-center text-gray-500 py-8">
+            No hay productos para mostrar
+          </p>
         )}
       </div>
 
@@ -298,12 +327,24 @@ const AdminProductos = () => {
           <table className="min-w-max w-full divide-y divide-[#f5bfb2]">
             <thead className="bg-[#d16170] text-white sticky top-0">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Imagen</th>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Nombre</th>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Precio</th>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Descuento</th>
-                <th className="px-6 py-4 text-left text-sm font-bold uppercase">Categoría</th>
-                <th className="px-6 py-4 text-center text-sm font-bold uppercase">Acciones</th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Imagen
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Nombre
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Precio
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Descuento
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold uppercase">
+                  Categoría
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-bold uppercase">
+                  Acciones
+                </th>
               </tr>
             </thead>
 
@@ -311,69 +352,133 @@ const AdminProductos = () => {
               {productosPaginados.length > 0 ? (
                 productosPaginados.map((producto) => {
                   const isEditing = editingId === producto.id;
+
                   return (
-                    <tr key={producto.id} className="hover:bg-[#fff3f0] transition">
+                    <tr
+                      key={producto.id}
+                      className="hover:bg-[#fff3f0] transition"
+                    >
                       <td className="px-6 py-4">
-                        <img src={producto.imagen} alt={producto.nombre} className="w-14 h-14 rounded-lg object-cover border-2 border-[#f5bfb2]"/>
+                        <img
+                          src={producto.imagen}
+                          alt={producto.nombre}
+                          className="w-14 h-14 rounded-lg object-cover border-2 border-[#f5bfb2]"
+                        />
                       </td>
+
                       <td className="px-6 py-4 text-sm align-middle">
                         {isEditing ? (
-                          <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className="w-full border rounded-md px-2 py-1 text-xs"/>
+                          <input
+                            type="text"
+                            name="nombre"
+                            value={formData.nombre}
+                            onChange={handleChange}
+                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#f5bfb2] bg-white"
+                          />
                         ) : (
-                          <span className="font-semibold text-[#9c2007]">{producto.nombre}</span>
+                          <span className="font-semibold text-[#9c2007]">
+                            {producto.nombre}
+                          </span>
                         )}
                       </td>
+
                       <td className="px-6 py-4 text-sm align-middle">
                         {isEditing ? (
-                          <input type="number" name="precio" step="0.01" value={formData.precio} onChange={handleChange} className="w-24 border rounded-md px-2 py-1 text-xs"/>
+                          <input
+                            type="number"
+                            name="precio"
+                            step="0.01"
+                            value={formData.precio}
+                            onChange={handleChange}
+                            className="w-20 border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#f5bfb2] bg-white"
+                          />
                         ) : (
-                          <div className="flex items-center gap-2">
-                            {producto.descuento > 0 ? (
-                                <>
-                                    <span className="font-bold text-[#d16170] text-lg">
-                                        S/{calcularPrecioFinal(producto.precio, producto.descuento).toFixed(2)}
-                                    </span>
-                                    <span className="text-gray-400 line-through text-sm">
-                                        S/{Number(producto.precio || 0).toFixed(2)}
-                                    </span>
-                                </>
-                            ) : (
-                                <span className="font-bold text-[#d16170] text-lg">
-                                    S/{Number(producto.precio || 0).toFixed(2)}
-                                </span>
-                            )}
-                          </div>
+                          <span className="font-bold text-[#d16170] text-lg">
+                            S/{Number(producto.precio || 0).toFixed(2)}
+                          </span>
                         )}
                       </td>
+
                       <td className="px-6 py-4 text-sm align-middle">
                         {isEditing ? (
-                          <input type="number" name="descuento" step="1" value={formData.descuento} onChange={handleChange} placeholder="%" className="w-16 border rounded-md px-2 py-1 text-xs"/>
-                        ) : producto.descuento > 0 ? (
-                          <span className="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-bold">{producto.descuento}%</span>
+                          <input
+                            type="number"
+                            name="descuento"
+                            step="1"
+                            value={formData.descuento}
+                            onChange={handleChange}
+                            className="w-16 border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#f5bfb2] bg-white"
+                          />
+                        ) : producto.descuento ? (
+                          <span className="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
+                            {producto.descuento}%
+                          </span>
                         ) : (
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
+
                       <td className="px-6 py-4 text-sm align-middle">
                         {isEditing ? (
-                          <select name="categoria" value={formData.categoria} onChange={handleChange} className="w-full border rounded-md px-2 py-1 text-xs">
-                             <option value="">Categoría</option>
-                             {[...new Set(productos.map(p=>p.categoria))].map(c=><option key={c} value={c}>{c}</option>)}
+                          <select
+                            name="categoria"
+                            value={formData.categoria}
+                            onChange={handleChange}
+                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#f5bfb2]"
+                          >
+                            <option value="">Selecciona una categoría</option>
+                            <option value="Pasteles">Pasteles</option>
+                            <option value="Tartas">Tartas</option>
+                            <option value="Donas">Donas</option>
+                            <option value="Cupcakes">Cupcakes</option>
+                            <option value="Bombones">Bombones</option>
+                            <option value="Macarons">Macarons</option>
+                            <option value="Galletas">Galletas</option>
+                            <option value="Postres fríos">Postres fríos</option>
+                            <option value="Otros">Otros</option>
+                            <option value="Temporada">Temporada</option>
                           </select>
                         ) : (
-                          <span className="inline-block bg-[#fff3f0] text-[#9c2007] px-3 py-1 rounded-full text-xs font-semibold">{producto.categoria}</span>
+                          <span className="inline-block bg-[#fff3f0] text-[#9c2007] px-3 py-1 rounded-full text-xs font-semibold">
+                            {producto.categoria}
+                          </span>
                         )}
                       </td>
+
                       <td className="px-6 py-4 text-center">
                         {isEditing ? (
                           <div className="flex gap-3 justify-center">
-                            <button onClick={() => handleSave(producto.id)} className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition" title="Guardar"><FaSave /></button>
-                            <button onClick={handleCancelEdit} className="bg-gray-400 hover:bg-gray-500 text-white p-2 rounded-lg transition" title="Cancelar"><FaTimes /></button>
+                            <button
+                              onClick={() => handleSave(producto.id)}
+                              className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition text-lg"
+                              title="Guardar"
+                            >
+                              <FaSave />
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="bg-gray-400 hover:bg-gray-500 text-white p-2 rounded-lg transition text-lg"
+                              title="Cancelar"
+                            >
+                              <FaTimes />
+                            </button>
                           </div>
                         ) : (
                           <div className="flex gap-3 justify-center">
-                            <button onClick={() => handleEditClick(producto)} className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition" title="Editar"><FaEdit /></button>
-                            <button onClick={() => handleDelete(producto.id)} className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition" title="Eliminar"><FaTrash /></button>
+                            <button
+                              onClick={() => handleEditClick(producto)}
+                              className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition text-lg"
+                              title="Editar"
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(producto.id)}
+                              className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition text-lg"
+                              title="Eliminar"
+                            >
+                              <FaTrash />
+                            </button>
                           </div>
                         )}
                       </td>
@@ -382,7 +487,12 @@ const AdminProductos = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">No hay productos para mostrar</td>
+                  <td
+                    colSpan="6"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    No hay productos para mostrar
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -391,13 +501,42 @@ const AdminProductos = () => {
       </div>
       {totalPaginas > 1 && (
         <div className="flex justify-center items-center mt-12 gap-2">
-          <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 disabled:opacity-50 transition"><FaChevronLeft /></button>
+          {/* Botón Izquierda */}
+          <button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 
+                 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            <FaChevronLeft />
+          </button>
+
+          {/* Números */}
           <div className="flex bg-white rounded-full shadow px-4 py-2 gap-2">
             {[...Array(totalPaginas)].map((_, i) => (
-              <button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-10 h-10 rounded-full font-bold transition duration-300 ${ currentPage === i + 1 ? "bg-[#d16170] text-white scale-110" : "text-gray-500 hover:bg-rose-50"}`}>{i + 1}</button>
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`w-10 h-10 rounded-full font-bold transition duration-300 ${
+                  currentPage === i + 1
+                    ? "bg-[#d16170] text-white shadow-lg scale-110"
+                    : "text-gray-500 hover:bg-rose-50 hover:text-[#d16170]"
+                }`}
+              >
+                {i + 1}
+              </button>
             ))}
           </div>
-          <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPaginas} className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 disabled:opacity-50 transition"><FaChevronRight /></button>
+
+          {/* Botón Derecha */}
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPaginas}
+            className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 
+                 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            <FaChevronRight />
+          </button>
         </div>
       )}
     </div>

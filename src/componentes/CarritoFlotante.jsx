@@ -35,8 +35,8 @@ export function CarritoFlotante() {
 
   return (
     <>
-      {/* === BOTÓN FLOTANTE Y NOTIFICACIÓN === */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center">
+      {/* === BOTÓN FLOTANTE Y NOTIFICACIÓN (SOLO ESCRITORIO) === */}
+      <div className="fixed bottom-6 right-6 z-40 hidden md:flex items-center">
         {/* Notificación de "Producto agregado" */}
         <div
           className={`transition-all duration-500 ease-in-out ${

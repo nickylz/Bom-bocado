@@ -49,7 +49,7 @@ export const CarritoProvider = ({ children }) => {
     const uid = user ? user.uid : getGuestId();
     const q = query(collection(db, "carrito"), where("userId", "==", uid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const productos = snapshot.docs.map((docu) => ({ id: docu.id, ...docu.data() }));
+      const productos = snapshot.docs.map((docu) => ({...docu.data(), id: docu.id }));
       setCarrito(productos);
     }, (error) => {
         console.error("Error al escuchar el carrito: ", error);
