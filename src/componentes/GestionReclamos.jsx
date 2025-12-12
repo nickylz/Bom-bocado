@@ -147,20 +147,20 @@ export default function GestionReclamos() {
             <table className="w-full text-sm text-left text-gray-700">
               <thead className="bg-[#d16170] text-xs text-white uppercase tracking-wider">
                 <tr>
-                  <th scope="col" className="px-6 py-3 font-semibold">Fecha</th>
                   <th scope="col" className="px-6 py-3 font-semibold">Cliente</th>
                   <th scope="col" className="px-6 py-3 font-semibold">Tipo</th>
                   <th scope="col" className="px-6 py-3 font-semibold">Resumen</th>
+                  <th scope="col" className="px-6 py-3 font-semibold">Fecha</th>
                   <th scope="col" className="px-6 py-3 font-semibold text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {reclamosPaginados.map((reclamo) => (
                   <tr key={reclamo.id} className="border-b border-[#f5bfb2] last:border-b-0 hover:bg-[#fff3f0]/60">
-                    <td className="px-6 py-4 font-medium text-gray-800 whitespace-nowrap">{new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(reclamo.fechaCreacion)}</td>
                     <td className="px-6 py-4">{reclamo.nombres} {reclamo.apellidos}</td>
                     <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${reclamo.tipo === 'producto' ? 'bg-pink-100 text-pink-800' : 'bg-red-100 text-red-800'}`}>{reclamo.tipo}</span></td>
                     <td className="px-6 py-4 max-w-sm truncate" title={reclamo.comentario}>{reclamo.comentario}</td>
+                    <td className="px-6 py-4 font-medium text-gray-800 whitespace-nowrap">{new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(reclamo.fechaCreacion)}</td>
                     <td className="px-6 py-4 text-center"><button onClick={() => setSelectedReclamo(reclamo)} className="bg-[#d16170] text-white p-2 rounded-lg hover:bg-[#b94a5b] transition-colors duration-200 shadow-sm" title="Ver Detalles del Reclamo"><Eye size={16} /></button></td>
                   </tr>
                 ))}

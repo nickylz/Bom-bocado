@@ -5,18 +5,17 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import { format } from "date-fns";
 import { FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
 import { useModal } from "../context/ModalContext";
+import { ChevronLeft, ChevronRight, Loader, AlertTriangle, User, Edit, Trash2, Clock } from "lucide-react";
 
 const functions = getFunctions();
 const deleteUser = httpsCallable(functions, "deleteUser");
 
-// Define el orden de los roles
 const roleOrder = {
   admin: 1,
   editor: 2,
   cliente: 3,
 };
 
-// Función para ordenar usuarios
 const sortUsers = (users) => {
   return [...users].sort((a, b) => {
     const roleA = roleOrder[a.rol] || 99;
@@ -32,6 +31,23 @@ export default function GestionUsuarios() {
   const [editandoId, setEditandoId] = useState(null);
   const [nuevoRol, setNuevoRol] = useState("");
   const { mostrarModal } = useModal();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage, setUsersPerPage] = useState(15);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setUsersPerPage(6);
+      } else {
+        setUsersPerPage(15);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchUsuarios = async () => {
     try {
@@ -118,96 +134,52 @@ export default function GestionUsuarios() {
     }
   };
 
-  if (cargando)
-    return <p className="text-center text-[#8f2133]">Cargando usuarios...</p>;
-  if (error)
-    return (
-      <p className="text-center text-red-600 bg-red-100 p-4 rounded-xl">
-        {error}
-      </p>
-    );
+  if (cargando) {
+    return <div className="flex justify-center items-center py-10"><Loader className="animate-spin text-[#d16170]" size={40} /><p className="ml-4 text-lg font-semibold text-gray-700">Cargando Usuarios...</p></div>;
+  }
+
+  if (error) {
+    return <div className="flex items-center gap-3 text-red-700 bg-red-100/80 p-4 rounded-lg border border-red-300"><AlertTriangle size={24} /><p className="font-semibold">{error}</p></div>;
+  }
+
+  const totalPages = Math.ceil(usuarios.length / usersPerPage);
+  const paginatedUsers = usuarios.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
 
   return (
-    <div>
-      <div className="lg:hidden w-full space-y-4">
-        {usuarios.map((usuario) => (
-          <div
-            key={usuario.id}
-            className="bg-white shadow-sm rounded-lg border border-[#f5bfb2] p-4"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-lg  text-[#d16170] font-bold">
-                  @{usuario.username}
-                </p>
-                <p className="text-sm text-gray-500">{usuario.correo}</p>
-                <p className="text-xs text-gray-400">
-                  {usuario.fechaCreacion
-                    ? format(usuario.fechaCreacion, "dd/MM/yyyy")
-                    : "-"}
-                </p>
-              </div>
+    <div className="space-y-6">
+       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <h3 className="text-xl font-bold text-[#8f2133]">Historial de Usuarios</h3>
+          <p className="text-sm text-gray-600">Total: {usuarios.length} usuarios</p>
+        </div>
+      </div>
 
-              <div className="flex flex-col items-end gap-2">
-                <span
-                  className={`inline px-3 py-1 text-xs rounded-full ${
-                    usuario.rol === "admin"
-                      ? "bg-red-200 text-red-800"
-                      : usuario.rol === "editor"
-                      ? "bg-pink-200 text-pink-800"
-                      : "bg-gray-200 text-gray-800"
-                  }`}
-                >
-                  {usuario.rol}
-                </span>
-
-                <div className="flex items-center justify-end gap-3">
-                  {editandoId === usuario.id ? (
-                    <>
-                      <button
-                        onClick={() =>
-                          handleGuardarRol(usuario.id, usuario.rol)
-                        }
-                        className="text-green-600 hover:text-green-800 text-lg"
-                        title="Guardar"
-                      >
-                        <FaSave />
-                      </button>
-                      <button
-                        onClick={handleCancelar}
-                        className="text-gray-600 hover:text-gray-800 text-lg"
-                        title="Cancelar"
-                      >
-                        <FaTimes />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() =>
-                          handleEmpezarEdicion(usuario.id, usuario.rol)
-                        }
-                        className="text-[#d16170] hover:text-[#b84c68] text-lg"
-                        title="Editar Rol"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(usuario)}
-                        className="text-[#d16170] hover:text-[#b84c68] text-lg"
-                        title="Eliminar Usuario"
-                      >
-                        <FaTrash />
-                      </button>
-                    </>
-                  )}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {paginatedUsers.map((usuario) => (
+          <div key={usuario.id} className="bg-white rounded-2xl border-2 border-[#f5bfb2] p-4 shadow-sm space-y-3">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User size={22} className="text-gray-400" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-800">@{usuario.username}</p>
+                  <p className="text-xs text-gray-500">{usuario.correo}</p>
                 </div>
               </div>
+              <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${
+                usuario.rol === "admin"
+                  ? "bg-red-200 text-red-800"
+                  : usuario.rol === "editor"
+                  ? "bg-pink-200 text-pink-800"
+                  : "bg-gray-200 text-gray-800"
+              }`}>
+                {usuario.rol}
+              </span>
             </div>
-
-            {editandoId === usuario.id && (
-              <div className="mt-3">
-                <select
+            {editandoId === usuario.id ? (
+              <div className="space-y-2 pt-2">
+                 <select
                   value={nuevoRol}
                   onChange={(e) => setNuevoRol(e.target.value)}
                   className="w-full bg-white border border-[#f5bfb2] text-[#7a1a0a] px-3 py-2 rounded-xl focus:ring-2 focus:ring-[#d8718c] text-sm"
@@ -216,54 +188,47 @@ export default function GestionUsuarios() {
                   <option value="editor">Editor</option>
                   <option value="admin">Admin</option>
                 </select>
+                <div className="flex gap-2">
+                    <button onClick={() => handleGuardarRol(usuario.id, usuario.rol)} className="w-full mt-2 bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-semibold">
+                        <FaSave size={16} /> Guardar
+                    </button>
+                    <button onClick={handleCancelar} className="w-full mt-2 bg-gray-500 text-white p-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-semibold">
+                        <FaTimes size={16} /> Cancelar
+                    </button>
+                </div>
               </div>
+            ) : (
+                <div className="flex gap-2 pt-2 border-t border-gray-100">
+                    <button onClick={() => handleEmpezarEdicion(usuario.id, usuario.rol)} className="w-full mt-2 bg-[#d16170] text-white p-2 rounded-lg hover:bg-[#b94a5b] transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-semibold">
+                        <Edit size={16} /> Editar
+                    </button>
+                    <button onClick={() => handleDeleteUser(usuario)} className="w-full mt-2 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-semibold">
+                        <Trash2 size={16} /> Eliminar
+                    </button>
+                </div>
             )}
           </div>
         ))}
       </div>
 
-      <div className="hidden lg:block w-full overflow-x-auto rounded-xl border border-[#f5bfb2]">
-        <table className="min-w-max divide-y divide-[#f5bfb2]">
-          <thead className="bg-[#fff3f0] w-full">
+      <div className="hidden md:block overflow-x-auto bg-white rounded-lg border-2 border-[#f5bfb2]">
+        <table className="w-full text-sm text-left text-gray-700">
+          <thead className="bg-[#d16170] text-xs text-white uppercase tracking-wider">
             <tr>
-              <th className="px-20 sm:px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
-                Username
-              </th>
-
-              <th className="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
-                Correo
-              </th>
-
-              <th className="px-12 sm:px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
-                Rol
-              </th>
-
-              <th className="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-bold text-[#8f2133] uppercase tracking-wider">
-                Fecha de Creación
-              </th>
-
-              <th className="px-12 sm:px-6 py-3 text-center text-xs font-bold text-[#8f2133] uppercase tracking-wider">
-                Acciones
-              </th>
+              <th scope="col" className="px-6 py-3 font-semibold">Username</th>
+              <th scope="col" className="px-6 py-3 font-semibold">Correo</th>
+              <th scope="col" className="px-6 py-3 font-semibold">Rol</th>
+              <th scope="col" className="px-6 py-3 font-semibold">Fecha de Creación</th>
+              <th scope="col" className="px-6 py-3 font-semibold text-center">Acciones</th>
             </tr>
           </thead>
-
-          <tbody className="bg-white divide-y divide-[#f5bfb2] w-full">
-            {usuarios.map((usuario) => (
-              <tr key={usuario.id}>
-                {/* Username: siempre */}
-                <td className="px-6 sm:px-6 py-4 whitespace-nowrap text-sm sm:text-base text-gray-700 font-medium">
-                  @{usuario.username}
-                </td>
-
-                {/* Correo: solo desktop */}
-                <td className="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {usuario.correo}
-                </td>
-
-                {/* Rol: siempre */}
-                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold">
-                  {editandoId === usuario.id ? (
+          <tbody>
+            {paginatedUsers.map((usuario) => (
+              <tr key={usuario.id} className="border-b border-[#f5bfb2] last:border-b-0 hover:bg-[#fff3f0]/60">
+                <td className="px-6 py-4 font-medium text-gray-800 whitespace-nowrap">@{usuario.username}</td>
+                <td className="px-6 py-4">{usuario.correo}</td>
+                <td className="px-6 py-4">
+                {editandoId === usuario.id ? (
                     <select
                       value={nuevoRol}
                       onChange={(e) => setNuevoRol(e.target.value)}
@@ -274,30 +239,24 @@ export default function GestionUsuarios() {
                       <option value="admin">Admin</option>
                     </select>
                   ) : (
-                    <span
-                      className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${
                         usuario.rol === "admin"
                           ? "bg-red-200 text-red-800"
                           : usuario.rol === "editor"
                           ? "bg-pink-200 text-pink-800"
                           : "bg-gray-200 text-gray-800"
-                      }`}
-                    >
+                      }`}>
                       {usuario.rol}
                     </span>
                   )}
                 </td>
-
-                {/* Fecha: solo desktop */}
-                <td className="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 font-medium text-gray-800 whitespace-nowrap">
                   {usuario.fechaCreacion
                     ? format(usuario.fechaCreacion, "dd/MM/yyyy HH:mm")
                     : "No disponible"}
                 </td>
-
-                {/* Acciones: siempre */}
-                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                  {editandoId === usuario.id ? (
+                <td className="px-6 py-4 text-center">
+                {editandoId === usuario.id ? (
                     <div className="flex items-center justify-center gap-3">
                       <button
                         onClick={() =>
@@ -322,17 +281,17 @@ export default function GestionUsuarios() {
                         onClick={() =>
                           handleEmpezarEdicion(usuario.id, usuario.rol)
                         }
-                        className="text-[#d16170] hover:text-[#b84c68] text-lg"
+                        className="bg-[#d16170] text-white p-2 rounded-lg hover:bg-[#b94a5b] transition-colors duration-200 shadow-sm"
                         title="Editar Rol"
                       >
-                        <FaEdit />
+                        <Edit size={16} />
                       </button>
                       <button
                         onClick={() => handleDeleteUser(usuario)}
-                        className="text-[#d16170] hover:text-[#b84c68] text-lg"
+                        className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-sm"
                         title="Eliminar Usuario"
                       >
-                        <FaTrash />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   )}
@@ -342,6 +301,16 @@ export default function GestionUsuarios() {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center pt-6 gap-2">
+          <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="p-3 rounded-full bg-white text-[#d16170] shadow-md hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300" aria-label="Página Anterior"><ChevronLeft size={20} /></button>
+          <div className="flex bg-white rounded-full shadow-md px-4 py-2 gap-2">
+            {[...Array(totalPages)].map((_, i) => (<button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-10 h-10 rounded-full font-bold transition-all duration-300 ${currentPage === i + 1 ? "bg-[#d16170] text-white scale-110 shadow-lg" : "text-gray-500 hover:bg-rose-50 hover:text-[#d16170]"}`}>{i + 1}</button>))}
+          </div>
+          <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-3 rounded-full bg-white text-[#d16170] shadow-md hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300" aria-label="Página Siguiente"><ChevronRight size={20} /></button>
+        </div>
+      )}
     </div>
   );
 }
