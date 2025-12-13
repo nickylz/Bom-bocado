@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { db, storage } from "../lib/firebase";
 import {
   collection,
@@ -9,329 +9,297 @@ import {
   doc,
   updateDoc,
   serverTimestamp,
+  addDoc,
+  where,
+  getDocs,
+  getDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { FaStar, FaEdit, FaTrash, FaTimes, FaCamera, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaStar, FaEdit, FaTrash, FaTimes, FaCamera, FaChevronLeft, FaChevronRight, FaReply } from "react-icons/fa";
 import { useAuth } from "../context/authContext";
 import toast from 'react-hot-toast';
 import { useModal } from "../context/ModalContext";
 
-// Importamos tus componentes
 import FiltroComentarios from "./FiltroComentarios";
-import RatingSummary from "./RatingSummary"; // El componente nuevo
+import RatingSummary from "./RatingSummary";
 import FormularioResena from "./FormularioResena";
 
 const PINK_COLOR = "#d16170";
 const GRAY_COLOR = "#e4e5e9";
 const ITEMS_PER_PAGE = 5;
 
-export default function Testimonials() {
-  const { usuarioActual } = useAuth();
-  const { mostrarModal } = useModal();
-  const [testimonios, setTestimonios] = useState([]);
-  
-  // Estados para Edición
-  const [editId, setEditId] = useState(null);
-  const [editForm, setEditForm] = useState({ mensaje: "", estrellas: 0 });
-  const [editImageFiles, setEditImageFiles] = useState([]);
-  const [existingImageUrls, setExistingImageUrls] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  
-  // Estado para Filtro y Paginación
-  const [filtro, setFiltro] = useState('recientes');
-  const [currentPage, setCurrentPage] = useState(1);
+// --- Componente para el Formulario de Edición (Unificado) ---
+const FormularioEdicion = ({ testimonio, onSave, onCancel, onImageAction }) => {
+    const [mensaje, setMensaje] = useState(testimonio.mensaje);
+    const [estrellas, setEstrellas] = useState(testimonio.estrellas || 0);
+    const [imageFiles, setImageFiles] = useState([]);
+    const [existingUrls, setExistingUrls] = useState(testimonio.imageUrls || []);
+    const [uploading, setUploading] = useState(false);
 
-  // --- Cargar datos de Firebase ---
-  useEffect(() => {
-    const q = query(collection(db, "testimonios"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
-      const arr = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setTestimonios(arr);
-    });
-    return () => unsub();
-  }, []);
+    const esRespuesta = !!testimonio.parentId;
 
-  // --- Cálculos para el RatingSummary ---
-  const totalTestimonios = testimonios.length;
-  const averageRating = totalTestimonios > 0 
-    ? testimonios.reduce((acc, t) => acc + t.estrellas, 0) / totalTestimonios 
-    : 0;
+    const handleSave = async () => {
+        if (!mensaje.trim()) return toast.error("El mensaje no puede estar vacío.");
+        if (!esRespuesta && estrellas === 0) return toast.error("Debes seleccionar una calificación.");
 
-  // Contar cuántos hay de cada estrella (5, 4, 3, 2, 1)
-  const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-  if (totalTestimonios > 0) {
-    testimonios.forEach(t => {
-      if (t.estrellas >= 1 && t.estrellas <= 5) {
-        ratingCounts[t.estrellas]++;
-      }
-    });
-  }
+        setUploading(true);
+        const loadingToast = toast.loading('Actualizando...');
 
-  // --- Lógica de Paginación y Filtros ---
-  const testimoniosFiltrados = testimonios.filter(testimonio => {
-    if (filtro === "mis-comentarios") {
-      return testimonio.userUid === usuarioActual?.uid;
-    }
-    return true; 
-  });
-
-  const totalPages = Math.ceil(testimoniosFiltrados.length / ITEMS_PER_PAGE);
-  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-  const currentTestimonials = testimoniosFiltrados.slice(indexOfFirstItem, indexOfLastItem);
-
-  const changePage = (pageNumber) => setCurrentPage(pageNumber);
-
-  // --- Lógica de Moderación (Admin/Autor) ---
-  const esModerador = usuarioActual && (usuarioActual.rol === 'admin' || usuarioActual.rol === 'editor');
-  const esAutor = (t) => usuarioActual && usuarioActual.uid === t.userUid;
-  const puedeEditarEliminar = (t) => esModerador || esAutor(t);
-
-  const eliminar = async (id) => {
-    if (!window.confirm("¿Seguro que quieres eliminar este testimonio?")) return;
-    try { await deleteDoc(doc(db, "testimonios", id)); toast.success("Testimonio eliminado"); } 
-    catch { toast.error("No se pudo eliminar el testimonio") }
-  };
-
-  const comenzarEdicion = (t) => {
-    setEditId(t.id);
-    setEditForm({ mensaje: t.mensaje, estrellas: t.estrellas });
-    setExistingImageUrls(t.imageUrls || []);
-  };
-
-  const handleNewImageFiles = (e) => {
-    if (e.target.files) {
-      const fileList = Array.from(e.target.files);
-      if (existingImageUrls.length + editImageFiles.length + fileList.length > 5) {
-          toast.error("Puedes tener un máximo de 5 imágenes.");
-          return;
-      }
-      setEditImageFiles(prev => [...prev, ...fileList]);
-    }
-  };
-
-  const removeNewImage = (index) => setEditImageFiles(prev => prev.filter((_, i) => i !== index));
-
-  const removeExistingImage = async (urlToRemove) => {
-    if (!window.confirm("¿Seguro que quieres eliminar esta imagen?")) return;
-    try {
-        const imageRef = ref(storage, urlToRemove);
-        await deleteObject(imageRef);
-        const updatedUrls = existingImageUrls.filter(url => url !== urlToRemove);
-        setExistingImageUrls(updatedUrls);
-        await updateDoc(doc(db, "testimonios", editId), { imageUrls: updatedUrls });
-        toast.success("Imagen eliminada");
-    } catch  { toast.error("Error al eliminar imagen"); }
-  }
-
-  const guardarEdicion = async () => {
-    if (!editForm.mensaje || editForm.estrellas === 0) return toast.error("Campos vacíos.");
-    setUploading(true);
-    const loadingToast = toast.loading('Actualizando...');
-    try {
-        let finalImageUrls = [...existingImageUrls];
-        if (editImageFiles.length > 0) {
-            for (const imageFile of editImageFiles) {
-                const imageRef = ref(storage, `testimonios/${editId}/${Date.now()}-${imageFile.name}`);
-                await uploadBytes(imageRef, imageFile);
-                finalImageUrls.push(await getDownloadURL(imageRef));
-            }
+        try {
+            await onSave({ ...testimonio, mensaje, estrellas }, imageFiles, existingUrls);
+            toast.success('Actualizado', { id: loadingToast });
+            onCancel();
+        } catch (error) {
+            toast.error('Error al actualizar', { id: loadingToast });
+            console.error("Error al guardar edición:", error);
+        } finally {
+            setUploading(false);
         }
-        await updateDoc(doc(db, "testimonios", editId), { ...editForm, imageUrls: finalImageUrls, updatedAt: serverTimestamp() });
-        toast.success('Actualizado', { id: loadingToast });
-        cancelarEdicion();
-    } catch  { toast.error('Error', { id: loadingToast }); } 
-    finally { setUploading(false); }
-  };
+    };
+    
+    const handleSetImageFiles = (files) => {
+        setImageFiles(files);
+    }
+    
+    const handleSetExistingUrls = (urls) => {
+        setExistingUrls(urls);
+    }
 
-  const cancelarEdicion = () => {
-    setEditId(null);
-    setEditForm({ mensaje: "", estrellas: 0 });
-    setEditImageFiles([]);
-    setExistingImageUrls([]);
-  };
-
-  // Renderizado de estrellas (helper local para la lista y edición)
-  const renderStars = (rating, isEditable = false, onClick = () => {}) => (
-    <div className={`flex ${isEditable ? 'my-2 justify-center text-3xl' : 'text-xl'}`}>
-      {[...Array(5)].map((_, i) => (
-        <FaStar 
-            key={i} 
-            className={`${isEditable ? 'cursor-pointer hover:scale-110' : ''} mr-1`} 
-            color={i < rating ? PINK_COLOR : GRAY_COLOR} 
-            onClick={() => isEditable && onClick(i + 1)} 
-        />
-      ))}
-    </div>
-  );
-
-  return (
-    <section className="px-6 md:px-12 py-12 bg-[#fff3f0] min-h-screen">
-      <div className="max-w-6xl mx-auto"> 
-        <h2 className="text-4xl md:text-5xl font-bold text-[#8f2133] mb-8 text-center">
-          Opiniones de nuestros clientes
-        </h2>
-
-        {/* 1. Formulario de Publicar */}
-        <FormularioResena />
-
-        {/* 2. Resumen de Calificaciones (Nuevo Diseño) */}
-        {totalTestimonios > 0 && (
-          <RatingSummary 
-            averageRating={averageRating}
-            totalReviews={totalTestimonios}
-            starCounts={ratingCounts}
-          />
-        )}
-
-        {/* 3. Filtros */}
-        <FiltroComentarios setFiltro={setFiltro} />
-
-        {/* 4. Lista de Comentarios */}
-        <div id="lista-comentarios" className="space-y-6 mt-6">
-          {currentTestimonials.length === 0 ? (
-            <p className="text-center text-gray-500 py-10 text-xl">
-                {filtro === 'mis-comentarios' ? 'No has escrito comentarios aún.' : 'Aún no hay testimonios en esta página.'}
-            </p>
-          ) : (
-            currentTestimonials.map((t) => {
-              const enEdicion = editId === t.id;
-              return (
-                <div key={t.id} className="bg-white rounded-2xl p-6 shadow-md border border-rose-100 w-full transition hover:shadow-lg">
-                  <div className="flex gap-4 sm:gap-6 items-start">
-                      <div className="shrink-0">
-                        {t.userPhotoURL ? (
-                            <img src={t.userPhotoURL} alt={t.nombre} className="w-14 h-14 rounded-full object-cover shadow-sm" />
-                        ) : (
-                            <div className="w-14 h-14 bg-[#f5bfb2] rounded-full flex items-center justify-center text-2xl font-bold text-[#9c2007]">
-                                {t.nombre ? t.nombre.charAt(0).toUpperCase() : "?"}
+    return (
+        <div className="bg-rose-50 p-4 rounded-xl">
+            <h4 className="font-bold text-[#d16170] mb-2">Editando...</h4>
+            <textarea 
+                value={mensaje} 
+                onChange={(e) => setMensaje(e.target.value)} 
+                className="w-full border border-rose-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] bg-white resize-none" 
+                rows={esRespuesta ? "2" : "3"}
+            />
+            
+            {!esRespuesta && (
+                <>
+                    <div className="mt-2 flex my-2 justify-center text-3xl">
+                        {[...Array(5)].map((_, i) => <FaStar key={i} className="cursor-pointer hover:scale-110" color={i < estrellas ? PINK_COLOR : GRAY_COLOR} onClick={() => setEstrellas(i + 1)} />)}
+                    </div>
+                    <div className="my-4 flex flex-wrap gap-2">
+                        {existingUrls.map((url, i) => (
+                            <div key={i} className="relative w-16 h-16">
+                                <img src={url} alt="adjunto" className="w-full h-full object-cover rounded-md"/>
+                                <button onClick={() => onImageAction('remove_existing', url, handleSetExistingUrls)} className="absolute -top-1 -right-1 bg-[#8f2133] text-white rounded-full p-1"><FaTimes size={10}/></button>
                             </div>
-                        )}
-                      </div>
-
-                      <div className="w-full">
-                        {enEdicion ? (
-                          /* --- MODO EDICIÓN --- */
-                          <div className="bg-rose-50 p-4 rounded-xl">
-                            <h4 className="font-bold text-[#d16170] mb-2">Editando comentario...</h4>
-                            <textarea 
-                                value={editForm.mensaje} 
-                                onChange={(e) => setEditForm({ ...editForm, mensaje: e.target.value })} 
-                                className="w-full border border-rose-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] bg-white resize-none" rows="3"
-                            />
-                            <div className="mt-2">{renderStars(editForm.estrellas, true, (r) => setEditForm({ ...editForm, estrellas: r }))}</div>
-                            
-                            {/* Imágenes en Edición */}
-                            <div className="my-4 flex flex-wrap gap-2">
-                                {existingImageUrls.map((url, i) => (
-                                    <div key={i} className="relative group w-16 h-16">
-                                        <img src={url} alt="p" className="w-full h-full object-cover rounded-md"/>
-                                        <button onClick={() => removeExistingImage(url)} className="absolute -top-1 -right-1 bg-[#8f2133] text-white rounded-full p-1"><FaTimes size={10}/></button>
-                                    </div>
-                                ))}
-                                {editImageFiles.map((file, i) => (
-                                     <div key={i} className="relative group w-16 h-16">
-                                        <img src={URL.createObjectURL(file)} alt="p" className="w-full h-full object-cover rounded-md"/>
-                                        <button onClick={() => removeNewImage(i)} className="absolute -top-1 -right-1 bg-[#8f2133]-500 text-white rounded-full p-1"><FaTimes size={10}/></button>
-                                    </div>
-                                ))}
-                                <label className="w-16 h-16 flex items-center justify-center bg-white border border-dashed border-rose-300 text-rose-400 rounded-md cursor-pointer hover:bg-rose-100">
-                                    <FaCamera/>
-                                    <input type="file" multiple accept="image/*" onChange={handleNewImageFiles} className="hidden"/>
-                                </label>
+                        ))}
+                        {imageFiles.map((file, i) => (
+                             <div key={i} className="relative w-16 h-16">
+                                <img src={URL.createObjectURL(file)} alt="nuevo adjunto" className="w-full h-full object-cover rounded-md"/>
+                                <button onClick={() => setImageFiles(p => p.filter((_, idx) => i !== idx))} className="absolute -top-1 -right-1 bg-[#8f2133] text-white rounded-full p-1"><FaTimes size={10}/></button>
                             </div>
+                        ))}
+                        <label className="w-16 h-16 flex items-center justify-center bg-white border border-dashed border-rose-300 text-rose-400 rounded-md cursor-pointer hover:bg-rose-100">
+                            <FaCamera/>
+                            <input type="file" multiple accept="image/*" onChange={(e) => onImageAction('add_new', e.target.files, handleSetImageFiles)} className="hidden"/>
+                        </label>
+                    </div>
+                </>
+            )}
 
-                            <div className="flex justify-end gap-3 mt-4">
-                                <button onClick={cancelarEdicion} className="text-gray-600 px-3 py-1 hover:bg-gray-200 rounded">Cancelar</button>
-                                <button onClick={guardarEdicion} disabled={uploading} className="bg-[#a34d5f] text-white px-4 py-1 rounded hover:bg-[#d16170]">
-                                    {uploading ? '...' : 'Guardar'}
-                                </button>
-                            </div>
-                          </div>
-                        ) : (
-                          /* --- MODO VISTA NORMAL (RESPONSIVO) --- */
-                          <>
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-y-2">
-                              {/* INFO: Nombre, estrellas y fecha */}
-                              <div>
-                                <h4 className="font-bold text-lg text-[#8f2133]">{t.nombre}</h4>
-                                <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1">
-                                  {renderStars(t.estrellas)}
-                                  <span className="text-xs text-gray-400">
-                                    {t.createdAt ? new Date(t.createdAt.seconds * 1000).toLocaleDateString("es-PE") : ''}
-                                  </span>
-                                </div>
-                              </div>
-                              {/* BOTONES: Editar y Eliminar */}
-                              {puedeEditarEliminar(t) && (
-                                <div className="flex gap-2 text-gray-400 self-start sm:self-auto shrink-0">
-                                  <button onClick={() => comenzarEdicion(t)} className="hover:text-[#8f2133] transition p-1"><FaEdit /></button>
-                                  <button onClick={() => eliminar(t.id)} className="hover:text-[#8f2133] transition p-1"><FaTrash /></button>
-                                </div>
-                              )}
-                            </div>
-                            {/* MENSAJE y FOTOS */}
-                            <p className="text-gray-700 leading-relaxed mt-3">“{t.mensaje}”</p>
-                            {t.imageUrls && t.imageUrls.length > 0 && (
-                              <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                                {t.imageUrls.map((url, i) => (
-                                  <img
-                                    key={i}
-                                    onClick={() => mostrarModal('', <img src={url} className="max-w-full max-h-[80vh] rounded" />)}
-                                    src={url} alt="img"
-                                    className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition"
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* 5. Paginación */}
-        {totalPages > 1 && (
-            <div className="flex justify-center items-center mt-12 gap-2">
-                <button 
-                    onClick={() => changePage(currentPage - 1)} 
-                    disabled={currentPage === 1}
-                    className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                    <FaChevronLeft />
-                </button>
-
-                <div className="flex bg-white rounded-full shadow px-4 py-2 gap-2">
-                    {[...Array(totalPages)].map((_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => changePage(i + 1)}
-                            className={`w-10 h-10 rounded-full font-bold transition duration-300 ${
-                                currentPage === i + 1 
-                                ? "bg-[#d16170] text-white shadow-lg scale-110" 
-                                : "text-gray-500 hover:bg-rose-50 hover:text-[#d16170]"
-                            }`}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-                </div>
-
-                <button 
-                    onClick={() => changePage(currentPage + 1)} 
-                    disabled={currentPage === totalPages}
-                    className="p-3 rounded-full bg-white text-[#d16170] shadow hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                    <FaChevronRight />
+            <div className="flex justify-end gap-3 mt-4">
+                <button onClick={onCancel} className="text-gray-600 px-3 py-1 hover:bg-gray-200 rounded">Cancelar</button>
+                <button onClick={handleSave} disabled={uploading} className="bg-[#a34d5f] text-white px-4 py-1 rounded hover:bg-[#d16170]">
+                    {uploading ? '...' : 'Guardar'}
                 </button>
             </div>
-        )}
-
       </div>
-    </section>
-  );
+    );
+};
+
+
+// --- Componente para un solo Comentario/Testimonio ---
+const Comentario = ({ testimonio, onReply, onEdit, onDelete, esModerador, usuarioActual }) => {
+    const { mostrarModal } = useModal();
+    const esAutor = (t) => usuarioActual && usuarioActual.uid === t.userUid;
+    const puedeEditarEliminar = (t) => esModerador || esAutor(t);
+
+    return (
+        <div className={`flex gap-4 sm:gap-6 items-start ${testimonio.parentId ? 'pt-4' : ''}`}>
+            <div className="shrink-0">
+                <img src={testimonio.userPhotoURL || `https://ui-avatars.com/api/?name=${testimonio.nombre}&background=f5bfb2&color=9c2007`} alt={testimonio.nombre} className="w-12 h-12 rounded-full object-cover shadow-sm" />
+            </div>
+            <div className="w-full">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h4 className="font-bold text-lg text-[#8f2133]">{testimonio.nombre}</h4>
+                        <div className="flex items-center gap-3 mt-1">
+                           {!testimonio.parentId && <div className="flex text-xl">{[...Array(5)].map((_, i) => <FaStar key={i} color={i < testimonio.estrellas ? PINK_COLOR : GRAY_COLOR} />)}</div>}
+                            <span className="text-xs text-gray-400">{testimonio.createdAt ? new Date(testimonio.createdAt.seconds * 1000).toLocaleDateString("es-PE") : ''}</span>
+                        </div>
+                    </div>
+                    {puedeEditarEliminar(testimonio) && (
+                        <div className="flex gap-2 text-gray-400 shrink-0 ml-4">
+                            <button onClick={() => onEdit(testimonio)} className="hover:text-[#8f2133] transition p-1"><FaEdit /></button>
+                            <button onClick={() => onDelete(testimonio.id)} className="hover:text-[#8f2133] transition p-1"><FaTrash /></button>
+                        </div>
+                    )}
+                </div>
+                <p className="text-gray-700 leading-relaxed mt-3">{testimonio.mensaje}</p>
+                {testimonio.imageUrls && testimonio.imageUrls.length > 0 && (
+                    <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+                        {testimonio.imageUrls.map((url, i) => <img key={i} onClick={() => mostrarModal('', <img src={url} className="max-w-full max-h-[80vh] rounded" />)} src={url} alt="img" className="w-20 h-20 object-cover rounded-lg cursor-pointer"/>)}
+                    </div>
+                )}
+                {!testimonio.parentId && (
+                    <div className="mt-3"><button onClick={() => onReply(testimonio.id)} className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-[#d16170]"><FaReply /> Responder</button></div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// --- Componente para el Formulario de Respuesta ---
+const FormularioRespuesta = ({ parentId, onCancel, onReplied, usuarioActual }) => {
+    const [mensaje, setMensaje] = useState('');
+    const [enviando, setEnviando] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!mensaje.trim()) return toast.error("Escribe una respuesta.");
+        setEnviando(true);
+        try {
+            await addDoc(collection(db, 'testimonios'), {
+                mensaje, parentId, userUid: usuarioActual.uid, nombre: usuarioActual.displayName || 'Anónimo', userPhotoURL: usuarioActual.photoURL, createdAt: serverTimestamp(),
+            });
+            toast.success('Respuesta publicada'); onReplied();
+        } catch (error) { toast.error('Error al responder'); console.error(error); }
+        finally { setEnviando(false); }
+    };
+
+    return (
+        <div className="my-4 ml-12 pl-4 border-l-2 border-rose-100">
+            <form onSubmit={handleSubmit}><textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} className="w-full border border-rose-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] bg-white resize-none" rows="2" placeholder={`Respondiendo...`} required />
+                <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={onCancel} className="text-gray-600 px-3 py-1">Cancelar</button><button type="submit" disabled={enviando} className="bg-[#a34d5f] text-white px-4 py-1 rounded">{enviando ? '...' : 'Publicar'}</button></div>
+            </form>
+        </div>
+    );
+};
+
+
+export default function Testimonials() {
+    const { usuarioActual } = useAuth();
+    const [testimonios, setTestimonios] = useState([]);
+    const [editId, setEditId] = useState(null);
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [filtro, setFiltro] = useState('recientes');
+    const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        const q = query(collection(db, "testimonios"), orderBy("createdAt", "desc"));
+        const unsub = onSnapshot(q, (snap) => setTestimonios(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+        return () => unsub();
+    }, []);
+
+    const { nestedTestimonials, ratingSummary } = useMemo(() => {
+        const commentMap = {};
+        testimonios.forEach(c => commentMap[c.id] = { ...c, replies: [] });
+        const nested = [];
+        testimonios.forEach(c => { c.parentId && commentMap[c.parentId] ? commentMap[c.parentId].replies.push(commentMap[c.id]) : nested.push(commentMap[c.id]); });
+
+        const mainComments = nested.filter(c => !c.parentId);
+        const total = mainComments.length;
+        const avg = total > 0 ? mainComments.reduce((acc, t) => acc + t.estrellas, 0) / total : 0;
+        const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        mainComments.forEach(t => { if (t.estrellas >= 1) counts[t.estrellas]++; });
+        return { nestedTestimonials: nested, ratingSummary: { totalReviews: total, averageRating: avg, starCounts: counts } };
+    }, [testimonios]);
+
+    const testimoniosFiltrados = useMemo(() => filtro === 'mis-comentarios' ? nestedTestimonials.filter(t => t.userUid === usuarioActual?.uid && !t.parentId) : nestedTestimonials.filter(t => !t.parentId), [nestedTestimonials, filtro, usuarioActual]);
+    const paginatedTestimonials = useMemo(() => testimoniosFiltrados.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE), [testimoniosFiltrados, currentPage]);
+    const totalPages = Math.ceil(testimoniosFiltrados.length / ITEMS_PER_PAGE);
+
+    const esModerador = usuarioActual && ['admin', 'editor'].includes(usuarioActual.rol);
+
+    const eliminar = async (id) => {
+        if (!window.confirm("¿Seguro? Si es un comentario, sus respuestas también se borrarán.")) return;
+        try {
+            const q = query(collection(db, "testimonios"), where("parentId", "==", id));
+            const replies = await getDocs(q);
+            const batch = replies.docs.map(d => deleteDoc(d.ref));
+            await Promise.all(batch);
+            await deleteDoc(doc(db, "testimonios", id));
+            toast.success("Eliminado correctamente");
+        } catch { toast.error("No se pudo eliminar") }
+    };
+
+    const guardarEdicion = async (testimonio, newFiles, existingUrls) => {
+        const docRef = doc(db, "testimonios", testimonio.id);
+        const updateData = { mensaje: testimonio.mensaje, updatedAt: serverTimestamp() };
+        
+        if (!testimonio.parentId) { // Es comentario principal
+            updateData.estrellas = testimonio.estrellas;
+            let finalImageUrls = [...existingUrls];
+            if (newFiles.length > 0) {
+                for (const file of newFiles) {
+                    const imgRef = ref(storage, `testimonios/${testimonio.id}/${Date.now()}-${file.name}`);
+                    await uploadBytes(imgRef, file);
+                    finalImageUrls.push(await getDownloadURL(imgRef));
+                }
+            }
+            updateData.imageUrls = finalImageUrls;
+        }
+        await updateDoc(docRef, updateData);
+    };
+
+    const handleImageActions = async (action, payload, stateUpdater) => {
+        if (action === 'remove_existing') {
+            if (!window.confirm("¿Eliminar imagen?")) return;
+            try {
+                await deleteObject(ref(storage, payload));
+                const docSnap = await getDoc(doc(db, "testimonios", editId));
+                const updatedUrls = docSnap.data().imageUrls.filter(u => u !== payload);
+                await updateDoc(doc(db, "testimonios", editId), { imageUrls: updatedUrls });
+                toast.success('Imagen eliminada');
+                stateUpdater(updatedUrls);
+            } catch { toast.error('Error al eliminar'); }
+        }
+        if (action === 'add_new') {
+            const fileList = Array.from(payload);
+            const docSnap = await getDoc(doc(db, "testimonios", editId));
+            const currentCount = docSnap.data().imageUrls.length;
+            if (currentCount + fileList.length > 5) { toast.error("Máximo 5 imágenes."); return; }
+            stateUpdater(prev => [...prev, ...fileList]);
+        }
+    };
+
+    const renderComentarioConAnidacion = (testimonio) => (
+        <div key={testimonio.id} className="bg-white rounded-2xl p-6 shadow-md border-rose-100">
+            {editId === testimonio.id 
+                ? <FormularioEdicion testimonio={testimonio} onSave={guardarEdicion} onCancel={() => setEditId(null)} onImageAction={handleImageActions} />
+                : <Comentario testimonio={testimonio} onReply={setReplyingTo} onEdit={setEditId} onDelete={eliminar} esModerador={esModerador} usuarioActual={usuarioActual} />
+            }
+
+            {replyingTo === testimonio.id && <FormularioRespuesta parentId={testimonio.id} onCancel={() => setReplyingTo(null)} onReplied={() => setReplyingTo(null)} usuarioActual={usuarioActual} />}
+            
+            {testimonio.replies && testimonio.replies.length > 0 && (
+                <div className="ml-8 border-l-2 border-rose-100 space-y-2">
+                    {testimonio.replies.map(renderComentarioConAnidacion)}
+                </div>
+            )}
+        </div>
+    );
+
+    return (
+        <section className="px-6 md:px-12 py-12 bg-[#fff3f0] min-h-screen">
+            <div className="max-w-6xl mx-auto"> 
+                <h2 className="text-4xl md:text-5xl font-bold text-[#8f2133] mb-8 text-center">Opiniones de nuestros clientes</h2>
+                <FormularioResena />
+                {ratingSummary.totalReviews > 0 && <RatingSummary {...ratingSummary} />}
+                <FiltroComentarios setFiltro={setFiltro} />
+
+                <div id="lista-comentarios" className="space-y-6 mt-6">
+                    {paginatedTestimonials.map(renderComentarioConAnidacion)}
+                </div>
+
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center mt-12 gap-2"> <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="p-3 rounded-full bg-white text-[#d16170] shadow disabled:opacity-50"><FaChevronLeft /></button> <div className="flex bg-white rounded-full shadow px-4 py-2 gap-2">{[...Array(totalPages)].map((_, i) => (<button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-10 h-10 rounded-full font-bold transition duration-300 ${currentPage === i + 1 ? 'bg-[#d16170] text-white' : 'text-gray-500'}`}>{i + 1}</button>))}</div> <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="p-3 rounded-full bg-white text-[#d16170] shadow disabled:opacity-50"><FaChevronRight /></button></div>
+                )}
+            </div>
+        </section>
+    );
 }

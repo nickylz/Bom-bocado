@@ -13,7 +13,7 @@ import Perfil from "./paginas/Perfil";
 import Intranet from "./paginas/Intranet";
 import Checkout from "./paginas/Checkout";
 import Gracias from "./paginas/Gracias";
-import LibroDeReclamaciones from "./paginas/LibroDeReclamaciones"; // Importar la nueva página
+import LibroDeReclamaciones from "./paginas/LibroDeReclamaciones";
 
 // Contexto y Mascota
 import { MascotProvider } from './context/MascotContext';
@@ -33,11 +33,11 @@ function App() {
           <Route path="/productos" element={<Productos />} />
           <Route path="/productos/:id" element={<ProductoDetalle />} />
           <Route path="/novedades" element={<Novedades />} />
-          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/perfil/:username" element={<Perfil />} />
           <Route path="/intranet" element={<Intranet />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/gracias" element={<Gracias />} />
-          <Route path="/libro-de-reclamaciones" element={<LibroDeReclamaciones />} /> // Añadir nueva ruta
+          <Route path="/libro-de-reclamaciones" element={<LibroDeReclamaciones />} />
         </Route>
       </Routes>
     </MascotProvider>

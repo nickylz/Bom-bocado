@@ -4,9 +4,10 @@ import { useModal as useAppModal } from "../context/ModalContext";
 import { FcGoogle } from "react-icons/fc";
 import Ajustes from "./Ajustes";
 import Modal from "./Modal";
+import { Link } from "react-router-dom";
 
 export default function Login() {
-  const { usuarioActual, iniciarSesion, registrarUsuario, iniciarConGoogle } = useAuth();
+  const { usuarioActual, iniciarSesion, registrarUsuario, iniciarConGoogle, cerrarSesion } = useAuth();
   const { mostrarModal: mostrarNotificacion } = useAppModal();
 
   const [modalLoginOpen, setModalLoginOpen] = useState(false);
@@ -59,22 +60,67 @@ export default function Login() {
     setModalRegistroOpen(true);
   }
 
+    const handleLogout = async () => {
+    try {
+      await cerrarSesion();
+      mostrarNotificacion("Sesión cerrada", "Has cerrado sesión exitosamente.");
+    } catch (error) {
+      mostrarNotificacion("Error", "No se pudo cerrar la sesión.");
+    }
+  };
+
   const nombreMostrado = usuarioActual?.nombre || "Usuario";
+  const usernameMostrado = usuarioActual?.username || "usuario";
 
   return (
     <>
       {usuarioActual ? (
-        <div className="relative">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setModalAjustesOpen(!modalAjustesOpen)}>
-            <img
-              src={usuarioActual.fotoURL || "/default-user.png"}
-              alt="perfil"
-              className="w-10 h-10 rounded-full border-2 border-[#d8718c]"
-            />
-            <span className="text-[#7a1a0a] font-semibold hidden sm:block">
-              {nombreMostrado.length > 15 ? nombreMostrado.split(" ")[0] : nombreMostrado}
-            </span>
+        <div className="w-full">
+          {/* --- Vista para el menú lateral (móvil) --- */}
+          <div className="md:hidden">
+            <div className="bg-[#fff3f0] border border-[#f5bfb2] rounded-2xl p-4 text-center">
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src={usuarioActual.fotoURL || "/default-user.png"}
+                  alt="perfil"
+                  className="w-12 h-12 rounded-full border-2 border-[#d8718c]"
+                />
+                <div className="text-left">
+                  <p className="text-[#7a1a0a] font-semibold text-base leading-tight">{nombreMostrado}</p>
+                  <p className="text-[#9c2007] text-sm leading-tight">@{usernameMostrado}</p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Link
+                  to={`/perfil/${usernameMostrado}`}
+                  className="w-full block bg-white border border-[#d8718c] text-[#d8718c] py-2 rounded-xl hover:bg-[#ffe5e0] transition font-semibold"
+                >
+                  Gestionar Perfil
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-[#d16170] text-white py-2 rounded-xl hover:bg-[#b84c68] transition font-semibold"
+                >
+                  Cerrar Sesión
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* --- Vista para la barra de navegación (desktop) --- */}
+          <div className="hidden md:block relative">
+             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setModalAjustesOpen(!modalAjustesOpen)}>
+                <img
+                  src={usuarioActual.fotoURL || "/default-user.png"}
+                  alt="perfil"
+                  className="w-10 h-10 rounded-full border-2 border-[#d8718c]"
+                />
+                <span className="text-[#7a1a0a] font-semibold hidden sm:block">
+                  {nombreMostrado.length > 15 ? nombreMostrado.split(" ")[0] : nombreMostrado}
+                </span>
+              </div>
+          </div>
+          
           <Ajustes
             isOpen={modalAjustesOpen}
             onClose={() => setModalAjustesOpen(false)}

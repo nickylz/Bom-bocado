@@ -46,7 +46,7 @@ export default function Ajustes({ isOpen, onClose, user }) {
       </div>
       <div className="space-y-3">
         <button
-          onClick={() => handleCloseAndNavigate("/perfil")}
+          onClick={() => handleCloseAndNavigate(`/perfil/${user.username}`)}
           className="block w-full text-center px-4 py-2 rounded-xl border-2 border-[#f5bfb2] bg-white hover:bg-[#fdecea] transition-all duration-300 font-semibold text-[#8f2133] text-sm shadow-sm"
         >
           Gestionar Perfil

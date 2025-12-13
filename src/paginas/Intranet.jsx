@@ -4,25 +4,22 @@ import FormProductos from "../componentes/FormProductos";
 import GestionUsuarios from "../componentes/GestionUsuarios";
 import EstadoCompra from "../componentes/EstadoCompra";
 import AdminProductos from "../componentes/AdminProductos";
-import GestionReclamos from "../componentes/GestionReclamos"; // <-- 1. IMPORTAR
+import GestionReclamos from "../componentes/GestionReclamos";
 
 export default function Intranet() {
   const { usuarioActual } = useAuth();
   const esAdmin = usuarioActual?.rol === "admin";
 
-  // Definición de todas las pestañas posibles
   const allTabs = [
     { id: 'productos', label: 'Gestión de Productos', roles: ['admin', 'editor'], component: <FormProductos /> },
     { id: 'listaProductos', label: 'Almacén de Productos', roles: ['admin', 'editor'], component: <AdminProductos /> },
     { id: 'compras', label: 'Gestión de Compras', roles: ['admin', 'editor'], component: <EstadoCompra /> },
-    { id: 'reclamos', label: 'Gestión de Reclamos', roles: ['admin'], component: <GestionReclamos /> }, // <-- 2. AÑADIR PESTAÑA
+    { id: 'reclamos', label: 'Gestión de Reclamos', roles: ['admin'], component: <GestionReclamos /> },
     { id: 'usuarios', label: 'Gestión de Usuarios', roles: ['admin'], component: <GestionUsuarios /> },
   ];
 
-  // Filtrar pestañas según el rol del usuario
   const availableTabs = allTabs.filter(tab => tab.roles.includes(usuarioActual?.rol));
 
-  // <-- 3. MEJORAR ESTADO INICIAL
   const [activeTab, setActiveTab] = useState(availableTabs[0]?.id || '');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -40,7 +37,6 @@ export default function Intranet() {
   const activeTabDetails = availableTabs.find(tab => tab.id === activeTab);
 
   const renderContent = () => {
-    // <-- 4. AJUSTAR TÍTULO DINÁMICO
     let title = activeTabDetails?.label;
     if (activeTab === 'productos') title = "Crear / Editar Producto";
     if (activeTab === 'listaProductos') title = "Lista y Gestión de Productos";
