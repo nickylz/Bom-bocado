@@ -25,7 +25,7 @@ export default function ProductoCard({ producto, mostrarBoton = true, mostrarFav
       agregarAFavoritos(producto);
     }
   };
-  
+
   const tieneDescuento = typeof producto.descuento === 'number' && producto.descuento > 0;
   const precioFinal = tieneDescuento ? producto.precio - (producto.precio * producto.descuento / 100) : producto.precio;
 
@@ -57,10 +57,13 @@ export default function ProductoCard({ producto, mostrarBoton = true, mostrarFav
     <div className="relative group bg-white border border-[#f5bfb2] rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 h-full flex flex-col">
       {/* Etiqueta de Descuento */}
       {tieneDescuento && (
-        <div className="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">
+        <div className="absolute top-3 left-3 bg-green-500 text-white 
+                  text-sm font-bold px-3 py-1.5 
+                  rounded-full z-10">
           -{producto.descuento}%
         </div>
       )}
+
 
       {esEnlace ? (
         <Link to={`/productos/${producto.id}`} className="block flex-grow">
@@ -79,7 +82,7 @@ export default function ProductoCard({ producto, mostrarBoton = true, mostrarFav
           className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-400 hover:text-red-500 transition-all duration-300 z-10 opacity-0 group-hover:opacity-100"
           title={isFavorito ? "Quitar de favoritos" : "Añadir a favoritos"}
         >
-          <Heart size={22} fill={isFavorito ? '#ef4444' : 'none'} stroke={isFavorito ? '#ef4444' : 'currentColor'}/>
+          <Heart size={22} fill={isFavorito ? '#ef4444' : 'none'} stroke={isFavorito ? '#ef4444' : 'currentColor'} />
         </button>
       )}
 
