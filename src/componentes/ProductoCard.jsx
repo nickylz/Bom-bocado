@@ -66,11 +66,11 @@ export default function ProductoCard({ producto, mostrarBoton = true, mostrarFav
 
 
       {esEnlace ? (
-        <Link to={`/productos/${producto.id}`} className="block flex-grow">
+        <Link to={`/productos/${producto.id}`} className="block grow">
           <CardContent />
         </Link>
       ) : (
-        <div className="block flex-grow">
+        <div className="block grow">
           <CardContent />
         </div>
       )}
