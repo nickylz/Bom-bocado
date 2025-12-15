@@ -83,6 +83,8 @@ export default function Checkout() {
     const direccionCompleta = `${direccion}, ${distrito}, ${provincia}, ${departamento}`;
     const direccionConReferencia = referencia ? `${direccionCompleta} (Ref: ${referencia})` : direccionCompleta;
 
+    {/*realizarPago*/}
+    
     try {
       const idPedido = await realizarPago({
         nombre,
@@ -118,6 +120,7 @@ export default function Checkout() {
     );
   }
 
+  {/* No permitir continuar si no hay comprobante */}
   const pagarDesdeModal = () => {
     if (!comprobante) {
       alert("Por favor, sube un comprobante antes de continuar.");
@@ -139,13 +142,18 @@ export default function Checkout() {
            
            <div className="flex-grow overflow-y-auto p-6 text-center space-y-4">
                 <p className="text-gray-600">Escanea el código QR para completar tu pago.</p>
+
+                {/* QR */}                
                 <img src={qrYape} alt="QR Yape" className="w-60 mx-auto rounded-xl shadow-lg border-4 border-white"/>
+
                 <div className="bg-rose-50 border-t-2 border-b-2 border-rose-200/80 py-3 px-4">
                     <p className="text-sm text-gray-500">Monto a pagar:</p>
                     <p className="text-3xl font-bold text-[#8f2133]">S/ {totalFinal.toFixed(2)}</p>
                 </div>
                 <p className="text-sm text-gray-500 pt-2">Luego, sube tu comprobante de pago.</p>
                 <div>
+                  
+                  {/* Subir Comprobante */}
                     <input type="file" accept="image/*" ref={fileInputRef} onChange={handleComprobanteChange} className="hidden" required/>
                     <div 
                         onClick={() => fileInputRef.current.click()} 
@@ -268,7 +276,9 @@ export default function Checkout() {
                         <label className="text-sm font-semibold text-[#8f2133]">Referencia (Opcional)</label>
                         <input type="text" placeholder="Ej: Al costado de la farmacia" value={referencia} onChange={(e) => setReferencia(e.target.value)} className="mt-1 border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c] outline-none"/>
                         </div>
-        
+                        
+                        {/* Método de Pago */}
+                        
                         <div>
                         <label className="text-sm font-semibold text-[#8f2133]">Método de Pago</label>
                         <select required value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="mt-1 border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c] outline-none cursor-pointer">
@@ -281,8 +291,14 @@ export default function Checkout() {
                         </div>
         
                         {errorDePago && <p className="text-sm text-red-600 text-center bg-red-100 p-2 rounded-lg">{errorDePago}</p>}
-        
-                        <button type="button" disabled={cargandoPago || intentoDePago || carrito.length === 0} onClick={() => { if (!metodoPago) { alert("Selecciona un método de pago."); return; } if (metodoPago === "yape") { setMostrarModalYape(true); } else { document.getElementById("formCheckout").requestSubmit(); } }} className="w-full bg-[#d16170] text-white py-4 rounded-xl hover:bg-[#b84c68] transition font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+
+                        <button type="button" disabled={cargandoPago || intentoDePago || carrito.length === 0} onClick={() => { 
+                          if (!metodoPago) { alert("Selecciona un método de pago."); return; }
+
+                           {/*Modal Yape*/} 
+
+                          if (metodoPago === "yape") { setMostrarModalYape(true); } 
+                          else { document.getElementById("formCheckout").requestSubmit(); } }} className="w-full bg-[#d16170] text-white py-4 rounded-xl hover:bg-[#b84c68] transition font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         {cargandoPago ? "Procesando..." : `Pagar S/${totalFinal.toFixed(2)}`}
                         </button>
                     </form>
