@@ -161,19 +161,19 @@ export function CarritoFlotante() {
 
                     <div className="flex flex-col items-center gap-1">
                       <button
-                        onClick={() => cambiarCantidad(p.id, 1)}
+                        onClick={() => cambiarCantidad(p.docId, 1)}
                         className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition"
                       >
                         +
                       </button>
                       <button
-                        onClick={() => cambiarCantidad(p.id, -1)}
+                        onClick={() => cambiarCantidad(p.docId, -1)}
                         className="px-2 bg-[#f5bfb2] hover:bg-[#d8718c]/50 rounded-lg transition"
                       >
                         -
                       </button>
                       <button
-                        onClick={() => eliminarProducto(p.id)}
+                        onClick={() => eliminarProducto(p.docId)}
                         className="p-1.5 rounded-lg hover:bg-[#fff3f0] transition text-[#d16170]"
                         title="Eliminar producto"
                       >
