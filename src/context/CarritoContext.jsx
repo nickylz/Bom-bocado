@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { db } from "../lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../lib/firebase";
+
 import {
   collection,
   doc,
@@ -18,12 +21,12 @@ import { useAuth } from "./authContext";
 const CarritoContext = createContext();
 
 const reminderMessages = [
-    "¡No dejes que se enfríe! Tus productos te esperan.",
-    "Tu carrito te extraña. ¿Listo para finalizar tu compra?",
-    "¡Psst! Esos bocaditos en tu carrito se ven deliciosos.",
-    "Estás a un paso de la felicidad. ¡Completa tu pedido!",
-    "¡No te lo pierdas! Finaliza tu compra antes de que se agoten."
-  ];
+  "¡No dejes que se enfríe! Tus productos te esperan.",
+  "Tu carrito te extraña. ¿Listo para finalizar tu compra?",
+  "¡Psst! Esos bocaditos en tu carrito se ven deliciosos.",
+  "Estás a un paso de la felicidad. ¡Completa tu pedido!",
+  "¡No te lo pierdas! Finaliza tu compra antes de que se agoten."
+];
 
 export const CarritoProvider = ({ children }) => {
   const { usuarioActual: user } = useAuth();
@@ -50,10 +53,10 @@ export const CarritoProvider = ({ children }) => {
     const uid = user ? user.uid : getGuestId();
     const q = query(collection(db, "carrito"), where("userId", "==", uid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const productos = snapshot.docs.map((docu) => ({...docu.data(), docId: docu.id }));
+      const productos = snapshot.docs.map((docu) => ({ ...docu.data(), docId: docu.id }));
       setCarrito(productos);
     }, (error) => {
-        console.error("Error al escuchar el carrito: ", error);
+      console.error("Error al escuchar el carrito: ", error);
     });
     return () => unsubscribe();
   }, [user]);
@@ -124,7 +127,7 @@ export const CarritoProvider = ({ children }) => {
       const docExistente = snap.docs[0];
       const data = docExistente.data();
       await updateDoc(doc(db, "carrito", docExistente.id), {
-        cantidad: (data.cantidad || 0) + cantidadAAgregar, 
+        cantidad: (data.cantidad || 0) + cantidadAAgregar,
       });
     }
 
@@ -142,16 +145,16 @@ export const CarritoProvider = ({ children }) => {
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-        console.error("El producto no se encontró en el carrito.");
-        return;
+      console.error("El producto no se encontró en el carrito.");
+      return;
     }
 
     const nuevaCantidad = (docSnap.data().cantidad || 0) + delta;
 
     if (nuevaCantidad <= 0) {
-        await deleteDoc(docRef);
+      await deleteDoc(docRef);
     } else {
-        await updateDoc(docRef, { cantidad: nuevaCantidad });
+      await updateDoc(docRef, { cantidad: nuevaCantidad });
     }
   };
 
@@ -190,7 +193,7 @@ export const CarritoProvider = ({ children }) => {
     window.addEventListener('keydown', handleActivity);
     window.addEventListener('scroll', handleActivity);
     window.addEventListener('click', handleActivity);
-    
+
     resetTimer();
 
     return () => {
@@ -205,8 +208,8 @@ export const CarritoProvider = ({ children }) => {
   const closeReminder = () => setShowReminder(false);
 
   const total = carrito.reduce((s, p) => s + (p.precio || 0) * (p.cantidad || 1), 0);
-  
-  const realizarPago = async ({ nombre, direccion, metodoPago, costoEnvio }) => {
+
+  const realizarPago = async ({ nombre, direccion, metodoPago, comprobante, costoEnvio }) => {
     if (!user) throw new Error("Debes iniciar sesión para realizar el pago");
     if (carrito.length === 0) throw new Error("Tu carrito está vacío");
 
@@ -216,6 +219,19 @@ export const CarritoProvider = ({ children }) => {
     try {
       const totalFinal = total + costoEnvio;
       const pedidoRef = doc(collection(db, "pedidos"));
+
+      let comprobanteURL = null;
+
+      if (comprobante) {
+        const storageRef = ref(
+          storage,
+          `comprobantes/${user.uid}/${Date.now()}-${comprobante.name}`
+        );
+
+      await uploadBytes(storageRef, comprobante);
+        comprobanteURL = await getDownloadURL(storageRef);
+      }
+
       await setDoc(pedidoRef, {
         id: pedidoRef.id,
         userId: user.uid,
@@ -223,6 +239,7 @@ export const CarritoProvider = ({ children }) => {
         nombreCliente: nombre,
         direccionEnvio: direccion,
         metodoPago,
+        comprobante: comprobanteURL,
         items: carrito.map(item => ({ ...item })),
         delivery: costoEnvio,
         totalProductos,
