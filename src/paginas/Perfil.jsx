@@ -3,6 +3,7 @@ import { useAuth } from "../context/authContext";
 import PerfilForm from '../componentes/PerfilForm';
 import ComprasList from '../componentes/ComprasList';
 import FavoritosList from '../componentes/FavoritosList';
+import AvatarUpload from "../componentes/AvatarUpload";
 
 export default function Perfil() {
   const { usuarioActual, cargandoAuth } = useAuth();
@@ -43,7 +44,8 @@ export default function Perfil() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Banner de Bienvenida */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-8">
+        <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-8 flex flex-col items-center">
+            <AvatarUpload />
           <h1 className="text-2xl md:text-3xl font-bold text-[#7a1a0a]">
             ¡Bienvenido a tu Perfil, {usuarioActual.nombre || usuarioActual.username}!
           </h1>

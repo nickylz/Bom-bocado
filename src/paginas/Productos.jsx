@@ -75,7 +75,7 @@ export default function Productos() {
           </p>
         </div>
         <div className="w-full md:w-1/2 flex justify-center py-10">
-          <img src={incono} alt="Torta decorada" className="w-[45%] md:w-[53%] h-auto object-contain" />
+          <img src={incono} alt="Torta decorada" className="w-4/5 md:w-[53%] h-auto object-contain" />
         </div>
       </section>
 

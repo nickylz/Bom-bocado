@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import FormProductos from "../componentes/FormProductos";
 import GestionUsuarios from "../componentes/GestionUsuarios";
@@ -9,9 +10,11 @@ import GestionReclamos from "../componentes/GestionReclamos";
 export default function Intranet() {
   const { usuarioActual } = useAuth();
   const esAdmin = usuarioActual?.rol === "admin";
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  // La pestaña "Gestión de Productos" se elimina de la navegación principal
   const allTabs = [
-    { id: 'productos', label: 'Gestión de Productos', roles: ['admin', 'editor'], component: <FormProductos /> },
     { id: 'listaProductos', label: 'Almacén de Productos', roles: ['admin', 'editor'], component: <AdminProductos /> },
     { id: 'compras', label: 'Gestión de Compras', roles: ['admin', 'editor'], component: <EstadoCompra /> },
     { id: 'reclamos', label: 'Gestión de Reclamos', roles: ['admin'], component: <GestionReclamos /> },
@@ -19,10 +22,22 @@ export default function Intranet() {
   ];
 
   const availableTabs = allTabs.filter(tab => tab.roles.includes(usuarioActual?.rol));
+  
+  const getInitialTab = () => {
+      // Por defecto, la pestaña activa es la primera de la lista.
+      return availableTabs[0]?.id || '';
+  };
 
-  const [activeTab, setActiveTab] = useState(availableTabs[0]?.id || '');
+  const [activeTab, setActiveTab] = useState(getInitialTab);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    setIsMenuOpen(false);
+    // Al hacer clic en una pestaña, se limpia la URL para salir del modo edición/creación.
+    navigate('/intranet', { replace: true });
+  };
+  
   if (!usuarioActual || availableTabs.length === 0) {
     return (
       <div className="min-h-screen bg-[#fff3f0] flex items-center justify-center text-center p-4">
@@ -34,23 +49,39 @@ export default function Intranet() {
     );
   }
 
-  const activeTabDetails = availableTabs.find(tab => tab.id === activeTab);
-
   const renderContent = () => {
-    let title = activeTabDetails?.label;
-    if (activeTab === 'productos') title = "Crear / Editar Producto";
+    const params = new URLSearchParams(location.search);
+    const idProductoEditar = params.get('editar');
+    const isCreating = params.get('crear') === 'true';
+
+    // Si la URL indica editar o crear, se muestra el formulario de productos.
+    if (idProductoEditar || isCreating) {
+      const title = idProductoEditar ? "Editar Producto" : "Crear Producto Nuevo";
+      return (
+        <>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#8f2133] mb-6 sm:mb-8 text-center md:text-left">{title}</h2>
+          <FormProductos idProductoEditar={idProductoEditar} />
+        </>
+      );
+    }
+
+    // Si no, se muestra el contenido de la pestaña activa.
+    const activeTabDetails = availableTabs.find(tab => tab.id === activeTab);
+    if (!activeTabDetails) return null;
+
+    let title = activeTabDetails.label;
     if (activeTab === 'listaProductos') title = "Lista y Gestión de Productos";
     if (activeTab === 'reclamos') title = "Gestión de Reclamos y Quejas";
 
     return (
       <>
-        <h2 className="text-2xl sm:text-3xl font-bold text-[#8f2133] mb-6 sm:mb-8 text-center md:text-left">
-          {title}
-        </h2>
-        {activeTabDetails?.component}
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#8f2133] mb-6 sm:mb-8 text-center md:text-left">{title}</h2>
+        {activeTabDetails.component}
       </>
-    )
+    );
   };
+  
+  const activeTabDetails = availableTabs.find(tab => tab.id === activeTab);
 
   return (
     <div className="min-h-screen bg-[#fff3f0] py-10 md:py-16">
@@ -63,7 +94,6 @@ export default function Intranet() {
             Tu rol es: <span className={`font-bold ${esAdmin ? 'text-red-500' : 'text-pink-600'}`}>{usuarioActual.rol}</span>
           </p>
         </div>
-
         <div className="flex flex-col md:flex-row gap-8">
           <aside className="md:w-1/4 lg:w-1/5">
             <div className="md:hidden mb-4">
@@ -74,13 +104,12 @@ export default function Intranet() {
                 </svg>
               </button>
             </div>
-
             <nav className={`flex-col space-y-2 ${isMenuOpen ? 'flex' : 'hidden'} md:flex`}>
               {availableTabs.map(tab => (
-                <button key={tab.id} onClick={() => { setActiveTab(tab.id); setIsMenuOpen(false); }}
+                <button key={tab.id} onClick={() => handleTabClick(tab.id)}
                   className={`text-left px-4 py-3 rounded-lg font-semibold transition-all duration-200 w-full ${
-                    activeTab === tab.id 
-                      ? 'bg-[#d16170] text-white shadow-md' 
+                    activeTab === tab.id
+                      ? 'bg-[#d16170] text-white shadow-md'
                       : 'bg-white text-gray-700 hover:bg-[#f5bfb2] hover:text-[#9c2007]'
                   }`}>
                   {tab.label}
@@ -88,7 +117,6 @@ export default function Intranet() {
               ))}
             </nav>
           </aside>
-
           <main className="md:w-3/4 lg:w-4/5">
             <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
               {renderContent()}

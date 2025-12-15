@@ -18,7 +18,6 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { FaStar, FaEdit, FaTrash, FaTimes, FaCamera, FaChevronLeft, FaChevronRight, FaReply } from "react-icons/fa";
 import { useAuth } from "../context/authContext";
 import toast from 'react-hot-toast';
-import { useModal } from "../context/ModalContext";
 
 import FiltroComentarios from "./FiltroComentarios";
 import RatingSummary from "./RatingSummary";
@@ -47,7 +46,7 @@ const FormularioEdicion = ({ testimonio, onSave, onCancel, onImageAction }) => {
 
         try {
             await onSave({ ...testimonio, mensaje, estrellas }, imageFiles, existingUrls);
-            toast.success('Actualizado', { id: loadingToast });
+            toast.success('Comentario editado', { id: loadingToast });
             onCancel();
         } catch (error) {
             toast.error('Error al actualizar', { id: loadingToast });
@@ -65,12 +64,20 @@ const FormularioEdicion = ({ testimonio, onSave, onCancel, onImageAction }) => {
         setExistingUrls(urls);
     }
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSave();
+        }
+    };
+
     return (
         <div className="bg-rose-50 p-4 rounded-xl">
             <h4 className="font-bold text-[#d16170] mb-2">Editando...</h4>
             <textarea 
                 value={mensaje} 
                 onChange={(e) => setMensaje(e.target.value)} 
+                onKeyDown={handleKeyDown}
                 className="w-full border border-rose-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] bg-white resize-none" 
                 rows={esRespuesta ? "2" : "3"}
             />
@@ -113,8 +120,7 @@ const FormularioEdicion = ({ testimonio, onSave, onCancel, onImageAction }) => {
 
 
 // --- Componente para un solo Comentario/Testimonio ---
-const Comentario = ({ testimonio, onReply, onEdit, onDelete, esModerador, usuarioActual }) => {
-    const { mostrarModal } = useModal();
+const Comentario = ({ testimonio, onReply, onEdit, onDelete, esModerador, usuarioActual, onImageClick }) => {
     const esAutor = (t) => usuarioActual && usuarioActual.uid === t.userUid;
     const puedeEditarEliminar = (t) => esModerador || esAutor(t);
 
@@ -133,16 +139,38 @@ const Comentario = ({ testimonio, onReply, onEdit, onDelete, esModerador, usuari
                         </div>
                     </div>
                     {puedeEditarEliminar(testimonio) && (
-                        <div className="flex gap-2 text-gray-400 shrink-0 ml-4">
-                            <button onClick={() => onEdit(testimonio)} className="hover:text-[#8f2133] transition p-1"><FaEdit /></button>
-                            <button onClick={() => onDelete(testimonio.id)} className="hover:text-[#8f2133] transition p-1"><FaTrash /></button>
+                        <div className="flex gap-2 shrink-0 ml-4">
+                            <button
+                                onClick={() => onEdit(testimonio.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-800 transition-colors text-sm font-semibold"
+                                title="Editar comentario"
+                            >
+                                <FaEdit />
+                                <span className="hidden sm:inline">Editar</span>
+                            </button>
+                            <button
+                                onClick={() => onDelete(testimonio.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 transition-colors text-sm font-semibold"
+                                title="Eliminar comentario"
+                            >
+                                <FaTrash />
+                                <span className="hidden sm:inline">Eliminar</span>
+                            </button>
                         </div>
                     )}
                 </div>
                 <p className="text-gray-700 leading-relaxed mt-3">{testimonio.mensaje}</p>
                 {testimonio.imageUrls && testimonio.imageUrls.length > 0 && (
                     <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                        {testimonio.imageUrls.map((url, i) => <img key={i} onClick={() => mostrarModal('', <img src={url} className="max-w-full max-h-[80vh] rounded" />)} src={url} alt="img" className="w-20 h-20 object-cover rounded-lg cursor-pointer"/>)}
+                        {testimonio.imageUrls.map((url, i) => 
+                            <img 
+                                key={i} 
+                                onClick={() => onImageClick(testimonio.imageUrls, i)} 
+                                src={url} 
+                                alt={`Imagen de testimonio ${i+1}`}
+                                className="w-20 h-20 object-cover rounded-lg cursor-pointer transition-transform duration-300 hover:scale-105"
+                            />
+                        )}
                     </div>
                 )}
                 {!testimonio.parentId && (
@@ -171,9 +199,25 @@ const FormularioRespuesta = ({ parentId, onCancel, onReplied, usuarioActual }) =
         finally { setEnviando(false); }
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            e.currentTarget.form.requestSubmit();
+        }
+    };
+
     return (
         <div className="my-4 ml-12 pl-4 border-l-2 border-rose-100">
-            <form onSubmit={handleSubmit}><textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} className="w-full border border-rose-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] bg-white resize-none" rows="2" placeholder={`Respondiendo...`} required />
+            <form onSubmit={handleSubmit}>
+              <textarea 
+                value={mensaje} 
+                onChange={(e) => setMensaje(e.target.value)} 
+                onKeyDown={handleKeyDown}
+                className="w-full border border-rose-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#d8718c] bg-white resize-none" 
+                rows="2" 
+                placeholder={`Respondiendo...`} 
+                required 
+              />
                 <div className="flex justify-end gap-3 mt-2"><button type="button" onClick={onCancel} className="text-gray-600 px-3 py-1">Cancelar</button><button type="submit" disabled={enviando} className="bg-[#a34d5f] text-white px-4 py-1 rounded">{enviando ? '...' : 'Publicar'}</button></div>
             </form>
         </div>
@@ -188,6 +232,7 @@ export default function Testimonials() {
     const [replyingTo, setReplyingTo] = useState(null);
     const [filtro, setFiltro] = useState('recientes');
     const [currentPage, setCurrentPage] = useState(1);
+    const [imageViewer, setImageViewer] = useState({ isOpen: false, images: [], currentIndex: 0 });
 
     useEffect(() => {
         const q = query(collection(db, "testimonios"), orderBy("createdAt", "desc"));
@@ -266,12 +311,42 @@ export default function Testimonials() {
             stateUpdater(prev => [...prev, ...fileList]);
         }
     };
+    
+    // --- Funciones para el Visor de Imágenes ---
+    const openImageViewer = (images, index) => {
+      document.body.style.overflow = 'hidden'; // Evitar scroll del fondo
+      setImageViewer({ isOpen: true, images, currentIndex: index });
+    };
+
+    const closeImageViewer = () => {
+      document.body.style.overflow = 'auto';
+      setImageViewer({ isOpen: false, images: [], currentIndex: 0 });
+    };
+
+    const handleViewerPrev = (e) => {
+        e.stopPropagation();
+        setImageViewer(prev => ({ ...prev, currentIndex: (prev.currentIndex === 0 ? prev.images.length - 1 : prev.currentIndex - 1) }));
+    };
+
+    const handleViewerNext = (e) => {
+        e.stopPropagation();
+        setImageViewer(prev => ({ ...prev, currentIndex: (prev.currentIndex === prev.images.length - 1 ? 0 : prev.currentIndex + 1) }));
+    };
+
 
     const renderComentarioConAnidacion = (testimonio) => (
         <div key={testimonio.id} className="bg-white rounded-2xl p-6 shadow-md border-rose-100">
             {editId === testimonio.id 
                 ? <FormularioEdicion testimonio={testimonio} onSave={guardarEdicion} onCancel={() => setEditId(null)} onImageAction={handleImageActions} />
-                : <Comentario testimonio={testimonio} onReply={setReplyingTo} onEdit={setEditId} onDelete={eliminar} esModerador={esModerador} usuarioActual={usuarioActual} />
+                : <Comentario 
+                    testimonio={testimonio} 
+                    onReply={setReplyingTo} 
+                    onEdit={setEditId} 
+                    onDelete={eliminar} 
+                    esModerador={esModerador} 
+                    usuarioActual={usuarioActual}
+                    onImageClick={openImageViewer}
+                  />
             }
 
             {replyingTo === testimonio.id && <FormularioRespuesta parentId={testimonio.id} onCancel={() => setReplyingTo(null)} onReplied={() => setReplyingTo(null)} usuarioActual={usuarioActual} />}
@@ -300,6 +375,49 @@ export default function Testimonials() {
                     <div className="flex justify-center items-center mt-12 gap-2"> <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="p-3 rounded-full bg-white text-[#d16170] shadow disabled:opacity-50"><FaChevronLeft /></button> <div className="flex bg-white rounded-full shadow px-4 py-2 gap-2">{[...Array(totalPages)].map((_, i) => (<button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-10 h-10 rounded-full font-bold transition duration-300 ${currentPage === i + 1 ? 'bg-[#d16170] text-white' : 'text-gray-500'}`}>{i + 1}</button>))}</div> <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="p-3 rounded-full bg-white text-[#d16170] shadow disabled:opacity-50"><FaChevronRight /></button></div>
                 )}
             </div>
+            
+            {/* --- Visor de Imágenes --- */}
+            {imageViewer.isOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in"
+                    onClick={closeImageViewer}
+                >
+                    <button 
+                        onClick={closeImageViewer} 
+                        className="absolute top-6 right-6 text-white text-5xl transition-transform transform hover:scale-110 z-50 [filter:drop-shadow(0_2px_2px_rgb(0_0_0/0.5))]"
+                        aria-label="Cerrar"
+                    >
+                        <FaTimes />
+                    </button>
+                    
+                    {imageViewer.images.length > 1 && (
+                        <button 
+                            onClick={handleViewerPrev} 
+                            className="absolute left-4 sm:left-10 text-white text-5xl transition-transform transform hover:scale-110 z-50 [filter:drop-shadow(0_2px_2px_rgb(0_0_0/0.5))]"
+                            aria-label="Anterior"
+                        >
+                            <FaChevronLeft />
+                        </button>
+                    )}
+
+                    <img 
+                        src={imageViewer.images[imageViewer.currentIndex]} 
+                        alt="Vista ampliada"
+                        className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                        onClick={(e) => e.stopPropagation()} 
+                    />
+                    
+                    {imageViewer.images.length > 1 && (
+                        <button 
+                            onClick={handleViewerNext} 
+                            className="absolute right-4 sm:right-10 text-white text-5xl transition-transform transform hover:scale-110 z-50 [filter:drop-shadow(0_2px_2px_rgb(0_0_0/0.5))]"
+                            aria-label="Siguiente"
+                        >
+                            <FaChevronRight />
+                        </button>
+                    )}
+                </div>
+            )}
         </section>
     );
 }

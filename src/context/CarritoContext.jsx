@@ -10,6 +10,7 @@ import {
   where,
   onSnapshot,
   getDocs,
+  getDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { useAuth } from "./authContext";
@@ -49,7 +50,7 @@ export const CarritoProvider = ({ children }) => {
     const uid = user ? user.uid : getGuestId();
     const q = query(collection(db, "carrito"), where("userId", "==", uid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const productos = snapshot.docs.map((docu) => ({...docu.data(), id: docu.id }));
+      const productos = snapshot.docs.map((docu) => ({...docu.data(), docId: docu.id }));
       setCarrito(productos);
     }, (error) => {
         console.error("Error al escuchar el carrito: ", error);
@@ -76,7 +77,9 @@ export const CarritoProvider = ({ children }) => {
         const userSnap = await getDocs(qUser);
 
         if (userSnap.empty) {
-          await setDoc(doc(db, "carrito", d.id), { ...data, userId: user.uid });
+          const newDocRef = doc(collection(db, "carrito"));
+          await setDoc(newDocRef, { ...data, userId: user.uid });
+          await deleteDoc(d.ref);
         } else {
           const userDoc = userSnap.docs[0];
           await updateDoc(userDoc.ref, {
@@ -97,7 +100,7 @@ export const CarritoProvider = ({ children }) => {
 
   const agregarAlCarrito = async (producto, cantidadAAgregar = 1) => {
     const isFirstProduct = totalProductos === 0;
-    const id = producto.id || producto.productoId || producto.nombre;
+    const id = producto.id || producto.productoId;
     if (!id) return console.error("Producto sin ID");
 
     const uid = user ? user.uid : getGuestId();
@@ -134,28 +137,26 @@ export const CarritoProvider = ({ children }) => {
     }
   };
 
-  const cambiarCantidad = async (id, delta) => {
-    const uid = user ? user.uid : getGuestId();
-    const qCarrito = query(collection(db, "carrito"), where("userId", "==", uid), where("id", "==", id));
-    const snap = await getDocs(qCarrito);
-    if (snap.empty) return;
+  const cambiarCantidad = async (docId, delta) => {
+    const docRef = doc(db, "carrito", docId);
+    const docSnap = await getDoc(docRef);
 
-    const docCambiar = snap.docs[0];
-    const nuevaCantidad = (docCambiar.data().cantidad || 0) + delta;
+    if (!docSnap.exists()) {
+        console.error("El producto no se encontró en el carrito.");
+        return;
+    }
+
+    const nuevaCantidad = (docSnap.data().cantidad || 0) + delta;
 
     if (nuevaCantidad <= 0) {
-        await eliminarProducto(id);
+        await deleteDoc(docRef);
     } else {
-        await updateDoc(docCambiar.ref, { cantidad: nuevaCantidad });
+        await updateDoc(docRef, { cantidad: nuevaCantidad });
     }
   };
 
-  const eliminarProducto = async (id) => {
-    const uid = user ? user.uid : getGuestId();
-    const qCarrito = query(collection(db, "carrito"), where("userId", "==", uid), where("id", "==", id));
-    const snap = await getDocs(qCarrito);
-    const promesasDeBorrado = snap.docs.map(d => deleteDoc(d.ref));
-    await Promise.all(promesasDeBorrado);
+  const eliminarProducto = async (docId) => {
+    await deleteDoc(doc(db, "carrito", docId));
   };
 
   const vaciarCarrito = async () => {
@@ -269,5 +270,4 @@ export const CarritoProvider = ({ children }) => {
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useCarrito = () => useContext(CarritoContext);

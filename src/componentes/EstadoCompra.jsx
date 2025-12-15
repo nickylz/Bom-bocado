@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, getDocs, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { AlertTriangle, Loader, Mail, User, Box, DollarSign, Eye, ChevronDown, ChevronLeft, ChevronRight, X, Clock, ShoppingCart, Home, Save } from 'lucide-react';
+import { AlertTriangle, Loader, Mail, User, DollarSign, Eye, ChevronDown, ChevronLeft, ChevronRight, X, Clock, ShoppingCart, Home, Save, FileImage, Package } from 'lucide-react';
 
-// --- Componente de Información Reutilizable (similar a GestionReclamos) ---
 const InfoItem = ({ icon, label, children, className }) => (
   <div className={`bg-white p-3 rounded-lg border border-rose-100/80 flex items-start gap-3 shadow-sm ${className}`}>
     <div className="flex-shrink-0 text-[#d16170]">{icon}</div>
@@ -16,6 +15,15 @@ const InfoItem = ({ icon, label, children, className }) => (
   </div>
 );
 
+const getEstadoInfo = (estado) => {
+    switch (estado) {
+      case "pendiente": return { color: "bg-yellow-100 text-yellow-800", label: "Pendiente" };
+      case "finalizada": return { color: "bg-green-100 text-green-800", label: "Finalizada" };
+      case "cancelada": return { color: "bg-red-100 text-red-800", label: "Cancelada" };
+      default: return { color: "bg-gray-100 text-gray-800", label: estado };
+    }
+};
+
 export default function EstadoCompra() {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +31,7 @@ export default function EstadoCompra() {
   const [selectedPedido, setSelectedPedido] = useState(null);
   const [sortBy, setSortBy] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
-  const pedidosPorPagina = 10;
+  const pedidosPorPagina = 9;
 
   const fetchPedidos = async () => {
     try {
@@ -32,11 +40,32 @@ export default function EstadoCompra() {
       const pedidosCollection = collection(db, 'pedidos');
       const q = query(pedidosCollection, orderBy('fechaCreacion', sortBy));
       const pedidosSnapshot = await getDocs(q);
-      const pedidosList = pedidosSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        fechaCreacion: doc.data().fechaCreacion.toDate(),
-      }));
+      
+      const userIds = [...new Set(pedidosSnapshot.docs.map(d => d.data().userId))];
+      const usersData = {};
+      
+      if (userIds.length > 0) {
+        const userPromises = userIds.map(userId => getDoc(doc(db, "usuarios", userId)));
+        const userDocs = await Promise.all(userPromises);
+        userDocs.forEach(userDoc => {
+            if (userDoc.exists()) {
+                usersData[userDoc.id] = userDoc.data();
+            }
+        });
+      }
+
+      const pedidosList = pedidosSnapshot.docs.map(doc => {
+        const pedidoData = doc.data();
+        const userData = usersData[pedidoData.userId] || {};
+        return {
+            id: doc.id,
+            ...pedidoData,
+            fechaCreacion: pedidoData.fechaCreacion.toDate(),
+            autorFotoURL: userData.photoURL,
+            nombreCliente: userData.username || pedidoData.nombreCliente,
+        };
+      });
+
       setPedidos(pedidosList);
     } catch (err) {
       console.error("Error fetching pedidos:", err);
@@ -53,15 +82,6 @@ export default function EstadoCompra() {
   const totalPaginas = Math.ceil(pedidos.length / pedidosPorPagina);
   const pedidosPaginados = pedidos.slice((currentPage - 1) * pedidosPorPagina, currentPage * pedidosPorPagina);
 
-  const getEstadoColor = (estado) => {
-    switch (estado) {
-      case "pendiente": return "bg-yellow-100 text-yellow-800";
-      case "finalizada": return "bg-green-100 text-green-800";
-      case "cancelada": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
   const PedidoDetailModal = ({ pedido, onClose, onUpdate }) => {
     const [nuevoEstado, setNuevoEstado] = useState(pedido?.estado || 'pendiente');
     const [guardando, setGuardando] = useState(false);
@@ -73,8 +93,8 @@ export default function EstadoCompra() {
         setGuardando(true);
         const pedidoRef = doc(db, "pedidos", pedido.id);
         await updateDoc(pedidoRef, { estado: nuevoEstado });
-        onUpdate(); // Refresca la lista
-        onClose(); // Cierra el modal
+        onUpdate();
+        onClose();
       } catch (err) {
         console.error("Error al actualizar estado:", err);
         alert("Error al actualizar el estado.");
@@ -92,8 +112,6 @@ export default function EstadoCompra() {
             <p className="text-xs text-gray-500">ID: {pedido.id}</p>
           </div>
           <div className="max-h-[70vh] overflow-y-auto space-y-6 px-6 sm:px-8 pb-8 scrollbar-thin scrollbar-thumb-rose-200 scrollbar-track-rose-50">
-
-            {/* --- Sección Cliente y Estado -- */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider border-b pb-2">Datos Generales</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -102,11 +120,10 @@ export default function EstadoCompra() {
                 <InfoItem icon={<Home size={18} />} label="Dirección" className="lg:col-span-3">{pedido.direccionEnvio}</InfoItem>
                 <InfoItem icon={<DollarSign size={18} />} label="Monto Total"><span className="font-bold text-lg">S/ {pedido.totalFinal?.toFixed(2)}</span></InfoItem>
                 <InfoItem icon={<Clock size={18} />} label="Fecha">{format(pedido.fechaCreacion, "dd/MM/yyyy HH:mm", { locale: es })}</InfoItem>
-                 <InfoItem icon={<ShoppingCart size={18} />} label="Método de Pago">{pedido.metodoPago}</InfoItem>
+                <InfoItem icon={<ShoppingCart size={18} />} label="Método de Pago">{pedido.metodoPago}</InfoItem>
               </div>
             </div>
 
-            {/* --- Sección Productos -- */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider border-b pb-2">Productos en el Pedido ({pedido.totalProductos})</h3>
               <div className="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rose-200 scrollbar-track-rose-50">
@@ -125,11 +142,21 @@ export default function EstadoCompra() {
               </div>
             </div>
 
-             {/* --- Sección de Acción -- */}
+            {pedido.comprobante && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider border-b pb-2 flex items-center gap-2"><FileImage size={16}/>Comprobante de Pago</h3>
+                <div className="bg-white p-2 rounded-lg border border-rose-100/80 shadow-sm flex justify-center">
+                  <a href={pedido.comprobante} target="_blank" rel="noopener noreferrer" title="Haz clic para ver la imagen completa">
+                    <img src={pedido.comprobante} alt="Comprobante de pago" className="max-h-80 rounded-md object-contain cursor-pointer transition-transform duration-300 hover:scale-105"/>
+                  </a>
+                </div>
+              </div>
+            )}
+
             <div className="bg-rose-50 border-t-2 border-dashed border-rose-200 p-5 rounded-b-2xl mt-4">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 text-center">Actualizar Estado del Pedido</h3>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <div className={`px-3 py-1.5 text-sm rounded-full font-semibold ${getEstadoColor(pedido.estado)}`}>Estado actual: {pedido.estado}</div>
+                    <div className={`px-3 py-1.5 text-sm rounded-full font-semibold ${getEstadoInfo(pedido.estado).color}`}>{`Estado actual: ${getEstadoInfo(pedido.estado).label}`}</div>
                     <select value={nuevoEstado} onChange={(e) => setNuevoEstado(e.target.value)} className="px-4 py-2 text-sm w-full sm:w-auto rounded-xl border-2 border-[#f5bfb2] bg-white focus:outline-none focus:ring-2 focus:ring-[#d8718c] font-semibold">
                         <option value="pendiente">Pendiente</option>
                         <option value="finalizada">Finalizada</option>
@@ -178,57 +205,46 @@ export default function EstadoCompra() {
       {pedidos.length === 0 ? (
         <p className="text-center text-gray-500 py-8">No se han encontrado pedidos.</p>
       ) : (
-        <>
-          {/* --- Vista Móvil --- */}
-          <div className="grid grid-cols-1 gap-4 md:hidden">
-            {pedidosPaginados.map((pedido) => (
-              <div key={pedido.id} className="bg-white rounded-2xl border-2 border-[#f5bfb2] p-4 shadow-sm space-y-3">
-                <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-bold text-gray-800">{pedido.nombreCliente}</p>
-                      <p className="text-xs text-gray-500 font-mono">#{pedido.id.substring(0, 7).toUpperCase()}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {pedidosPaginados.map((pedido) => {
+                const estadoInfo = getEstadoInfo(pedido.estado);
+                return (
+                  <div key={pedido.id} className="bg-white rounded-2xl border-2 border-[#f5bfb2] p-4 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className='flex items-center gap-3 w-10/12'>
+                            {pedido.autorFotoURL ? (
+                                <img src={pedido.autorFotoURL} alt={`Foto de ${pedido.nombreCliente}`} className="w-10 h-10 rounded-full object-cover"/>
+                            ) : (
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <User size={22} className="text-gray-400" />
+                                </div>
+                            )}
+                            <div>
+                                <p className="font-bold text-gray-800 text-lg truncate" title={pedido.nombreCliente}>{pedido.nombreCliente}</p>
+                                <p className="text-xs text-gray-500 font-mono">#{pedido.id.substring(0, 7).toUpperCase()}</p>
+                            </div>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${estadoInfo.color}`}>{estadoInfo.label}</span>
                     </div>
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${getEstadoColor(pedido.estado)}`}>{pedido.estado}</span>
-                </div>
-                <div className="text-sm text-gray-600 border-t border-gray-100 pt-3 flex justify-between">
-                  <span className="font-semibold">Total: <span className="font-bold text-lg text-[#c54b64]">S/ {pedido.totalFinal?.toFixed(2)}</span></span>
-                  <span className="text-gray-500 text-xs flex items-center gap-1.5"><Clock size={12}/> {format(pedido.fechaCreacion, "dd/MM/yy") }</span>
-                </div>
-                <button onClick={() => setSelectedPedido(pedido)} className="w-full mt-2 bg-[#d16170] text-white p-2 rounded-lg hover:bg-[#b94a5b] transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-semibold">
-                  <Eye size={16} /> Ver Detalles
-                </button>
-              </div>
-            ))}
-          </div>
+                    
+                    <div className="flex-grow my-4 border-t border-b border-rose-100 py-4 flex items-center">
+                        <div className="w-1/3 flex justify-center text-[#d16170]">
+                           <Package size={32}/>
+                        </div>
+                         <div className="w-2/3 border-l border-rose-200 pl-4">
+                             <p className='text-xs text-gray-500'>Total del Pedido</p>
+                             <p className="font-bold text-2xl text-[#c54b64]">S/ {pedido.totalFinal?.toFixed(2)}</p>
+                             <p className='text-xs text-gray-500 mt-1 flex items-center gap-1.5'><Clock size={12}/> {format(pedido.fechaCreacion, "dd/MM/yy, HH:mm")}</p>
+                        </div>
+                    </div>
 
-          {/* --- Vista Escritorio --- */}
-          <div className="hidden md:block overflow-x-auto bg-white rounded-lg border-2 border-[#f5bfb2]">
-            <table className="w-full text-sm text-left text-gray-700">
-              <thead className="bg-rose-50 text-xs text-[#7a1a0a] uppercase tracking-wider">
-                <tr>
-                  <th scope="col" className="px-6 py-3 font-semibold">Pedido</th>
-                  <th scope="col" className="px-6 py-3 font-semibold">Cliente</th>
-                  <th scope="col" className="px-6 py-3 font-semibold">Fecha</th>
-                  <th scope="col" className="px-6 py-3 font-semibold">Total</th>
-                  <th scope="col" className="px-6 py-3 font-semibold">Estado</th>
-                  <th scope="col" className="px-6 py-3 font-semibold text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-rose-100">
-                {pedidosPaginados.map((pedido) => (
-                  <tr key={pedido.id} className="hover:bg-[#fff3f0]/60">
-                    <td className="px-6 py-4 font-mono text-gray-800">#{pedido.id.substring(0, 7).toUpperCase()}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{pedido.nombreCliente}</td>
-                    <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{format(pedido.fechaCreacion, "dd/MM/yyyy HH:mm")}</td>
-                    <td className="px-6 py-4 font-bold text-[#c54b64]">S/ {pedido.totalFinal?.toFixed(2)}</td>
-                    <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${getEstadoColor(pedido.estado)}`}>{pedido.estado}</span></td>
-                    <td className="px-6 py-4 text-center"><button onClick={() => setSelectedPedido(pedido)} className="bg-[#d16170] text-white p-2 rounded-lg hover:bg-[#b94a5b] transition-colors duration-200 shadow-sm" title="Ver Detalles del Pedido"><Eye size={16} /></button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+                    <button onClick={() => setSelectedPedido(pedido)} className="w-full mt-auto bg-[#d16170] text-white p-2.5 rounded-lg hover:bg-[#b94a5b] transition-colors duration-200 shadow-sm flex items-center justify-center gap-2 font-semibold">
+                      <Eye size={16} /> Ver Detalles
+                    </button>
+                  </div>
+                )
+            })}
+        </div>
       )}
       
       {totalPaginas > 1 && (
@@ -239,12 +255,11 @@ export default function EstadoCompra() {
         </div>
       )}
 
-      <PedidoDetailModal pedido={selectedPedido} onClose={() => setSelectedPedido(null)} onUpdate={fetchPedidos} />
+      {selectedPedido && <PedidoDetailModal pedido={selectedPedido} onClose={() => setSelectedPedido(null)} onUpdate={fetchPedidos} />}
     </div>
   );
 }
 
-// --- Estilos de Animación (igual que en GestionReclamos) ---
 const animationStyles = `
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
