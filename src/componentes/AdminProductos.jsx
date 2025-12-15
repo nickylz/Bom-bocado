@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { collection, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import {  ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from "../lib/firebase";
 import toast from 'react-hot-toast';
 import { Eye, Trash, X, Save, ChevronLeft, ChevronRight, Camera, PlusCircle, AlertTriangle, Send, ChevronDown, Edit } from 'lucide-react';
@@ -121,7 +121,7 @@ const ProductoModal = ({ producto, onClose, onSave, onProductAdded }) => {
             <button onClick={onClose} className="absolute top-5 right-5 text-gray-400 hover:text-white hover:bg-red-400 rounded-full p-1.5 transition-all" aria-label="Cerrar"><X size={20} /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-rose-200 scrollbar-track-rose-50">
+        <form onSubmit={handleSubmit} className="grow overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-rose-200 scrollbar-track-rose-50">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1">
                     <label className={labelStyles}>Imagen del Producto*</label>
@@ -138,16 +138,7 @@ const ProductoModal = ({ producto, onClose, onSave, onProductAdded }) => {
                     <div className="sm:col-span-2"><label htmlFor="categoria" className={labelStyles}>Categoría*</label><select id="categoria" name="categoria" value={formData.categoria} onChange={handleChange} className={inputStyles} required><option value="" disabled>Selecciona...</option>{CATEGORIAS_PRODUCTOS.map(cat => <option key={cat} value={cat}>{cat}</option>)}</select></div>
                     <div className="sm:col-span-2"><label htmlFor="frase" className={labelStyles}>Frase</label><input id="frase" name="frase" value={formData.frase} onChange={handleChange} className={inputStyles} placeholder="Ej: 'El más chocolatoso'"/></div>
                     <div className="sm:col-span-2"><label htmlFor="descripcion" className={labelStyles}>Descripción</label><textarea id="descripcion" name="descripcion" rows="4" value={formData.descripcion} onChange={handleChange} className={`${inputStyles} min-h-[100px]`} placeholder="Describe el producto..."></textarea></div>
-                    <div className="sm:col-span-2 flex items-center gap-4 pt-2">
-                        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                            <input type="checkbox" name="disponible" checked={formData.disponible} onChange={handleChange} className="w-5 h-5 accent-[#d16170]"/>
-                            Disponible
-                        </label>
-                        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                            <input type="checkbox" name="favorito" checked={formData.favorito} onChange={handleChange} className="w-5 h-5 accent-[#d16170]"/>
-                            Marcar como Favorito
-                        </label>
-                    </div>
+                    
                 </div>
             </div>
             {error && <div className="mt-6 flex items-center gap-3 text-red-700 bg-red-100/80 p-4 rounded-lg border border-red-300"><AlertTriangle size={24} /><p className="font-semibold">{error}</p></div>}
@@ -268,7 +259,7 @@ const AdminProductos = () => {
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 </div>
-                <button onClick={openModalForNew} className="flex-shrink-0 flex items-center gap-2 bg-[#d8718c] text-white font-bold py-2.5 px-5 rounded-lg hover:bg-[#c25a75] transition-colors shadow-md"><PlusCircle size={20} /> Agregar</button>
+                <button onClick={openModalForNew} className="shrink-0 flex items-center gap-2 bg-[#d8718c] text-white font-bold py-2.5 px-5 rounded-lg hover:bg-[#c25a75] transition-colors shadow-md"><PlusCircle size={20} /> Agregar</button>
             </div>
         </div>
   

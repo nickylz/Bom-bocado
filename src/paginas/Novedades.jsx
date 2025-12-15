@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../lib/firebase";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, onSnapshot } from "firebase/firestore";
 import { Link } from 'react-router-dom';
 import ProductoCard from "../componentes/ProductoCard";
 import incono from "../componentes/img/Bom.png";
@@ -61,7 +61,7 @@ export default function Novedades() {
     <div className="overflow-hidden relative">
       <div className="flex gap-8 animate-scroll">
         {items.concat(items).map((item, index) => (
-          <div key={`${item.id}-${index}`} className="w-80 flex-shrink-0">
+          <div key={`${item.id}-${index}`} className="w-80 shrink-0">
             <ProductoCard 
               producto={item} 
               mostrarBoton={mostrarBoton} 
@@ -111,7 +111,6 @@ export default function Novedades() {
                 <h3 className="text-4xl font-bold text-[#9c2007] mt-2">{postreDelMes.nombre}</h3>
                 <p className="mt-4 text-gray-600 text-lg">{postreDelMes.descripcion}</p>
                 <div className="mt-6">
-                  <p className="text-3xl font-bold text-[#d16170]">S/{postreDelMes.precio.toFixed(2)}</p>
                   <Link to={`/productos/${postreDelMes.id}`} className="mt-4 inline-block bg-[#9c2007] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#7a1a0a] transition-colors">
                     Ver más
                   </Link>
