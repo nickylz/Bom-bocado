@@ -1,45 +1,61 @@
 import { Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
 // Layout
 import MainLayout from "./layouts/MainLayout";
 
-// Páginas
-import Inicio from "./paginas/Index";
-import Nosotros from "./paginas/Nosotros";
-import Productos from "./paginas/Productos";
-import ProductoDetalle from "./paginas/ProductoDetalle"; 
-import Novedades from "./paginas/Novedades";
-import Perfil from "./paginas/Perfil";
-import Intranet from "./paginas/Intranet";
-import Checkout from "./paginas/Checkout";
-import Gracias from "./paginas/Gracias";
-import LibroDeReclamaciones from "./paginas/LibroDeReclamaciones";
-
 // Contexto y Mascota
-import { MascotProvider } from './context/MascotContext';
-import CakeMascot from './componentes/CakeMascot';
+import { MascotProvider } from "./context/MascotContext";
+import CakeMascot from "./componentes/CakeMascot";
+
 import "./App.css";
+
+// 👇 PÁGINAS CON LAZY LOADING
+const Inicio = lazy(() => import("./paginas/Index"));
+const Nosotros = lazy(() => import("./paginas/Nosotros"));
+const Productos = lazy(() => import("./paginas/Productos"));
+const ProductoDetalle = lazy(() => import("./paginas/ProductoDetalle"));
+const Novedades = lazy(() => import("./paginas/Novedades"));
+const Perfil = lazy(() => import("./paginas/Perfil"));
+const Intranet = lazy(() => import("./paginas/Intranet"));
+const Checkout = lazy(() => import("./paginas/Checkout"));
+const Gracias = lazy(() => import("./paginas/Gracias"));
+const LibroDeReclamaciones = lazy(() =>
+  import("./paginas/LibroDeReclamaciones")
+);
 
 function App() {
   return (
     <MascotProvider>
-      {/* La mascota va fuera de Routes para estar siempre visible */}
+      {/* Mascota siempre visible */}
       <CakeMascot />
-      
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Inicio />} />
-          <Route path="/nosotros" element={<Nosotros />} />
-          <Route path="/productos" element={<Productos />} />
-          <Route path="/productos/:id" element={<ProductoDetalle />} />
-          <Route path="/novedades" element={<Novedades />} />
-          <Route path="/perfil/:username" element={<Perfil />} />
-          <Route path="/intranet" element={<Intranet />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/gracias" element={<Gracias />} />
-          <Route path="/libro-de-reclamaciones" element={<LibroDeReclamaciones />} />
-        </Route>
-      </Routes>
+
+      {/* 👇 Suspense envuelve SOLO las rutas */}
+      <Suspense
+        fallback={
+          <div style={{ textAlign: "center", marginTop: "2rem" }}>
+            Cargando dulzura 🍰...
+          </div>
+        }
+      >
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Inicio />} />
+            <Route path="/nosotros" element={<Nosotros />} />
+            <Route path="/productos" element={<Productos />} />
+            <Route path="/productos/:id" element={<ProductoDetalle />} />
+            <Route path="/novedades" element={<Novedades />} />
+            <Route path="/perfil/:username" element={<Perfil />} />
+            <Route path="/intranet" element={<Intranet />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/gracias" element={<Gracias />} />
+            <Route
+              path="/libro-de-reclamaciones"
+              element={<LibroDeReclamaciones />}
+            />
+          </Route>
+        </Routes>
+      </Suspense>
     </MascotProvider>
   );
 }
