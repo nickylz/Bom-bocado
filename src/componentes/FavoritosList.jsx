@@ -48,7 +48,7 @@ const FavoritosList = () => {
             </Link>
             <button
               onClick={() => removerDeFavoritos(producto.id)}
-              className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-600 hover:bg-red-500 hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100"
+              className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-600 hover:bg-red-500 hover:text-white transition-all duration-300 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100"
               title="Eliminar de favoritos"
             >
               <X size={20} />

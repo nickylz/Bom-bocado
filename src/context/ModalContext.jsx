@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import Modal from '../componentes/Modal';
 
 export const ModalContext = createContext();
@@ -7,6 +7,14 @@ export const ModalProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen]);
 
   // Usamos useCallback para que la función no se recree innecesariamente
   const mostrarModal = useCallback((newTitle, newContent) => {
