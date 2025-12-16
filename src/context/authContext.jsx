@@ -9,8 +9,8 @@ import {
   updateProfile
 } from "firebase/auth";
 import { auth, db, storage } from "../lib/firebase";
-import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs, onSnapshot, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
@@ -44,24 +44,20 @@ export const AuthProvider = ({ children }) => {
     const res = await createUserWithEmailAndPassword(auth, correo, contrasena);
     const user = res.user;
 
-    let fotoURL = null; // Cambiado: ahora es null por defecto
+    let fotoURL = "/default-user.png";
     if (foto) {
-      try {
-        const storageRef = ref(storage, `perfiles/${user.uid}/${foto.name}`);
+        const storageRef = ref(storage, `perfiles/${user.uid}/${Date.now()}-${foto.name}`);
         await uploadBytes(storageRef, foto);
         fotoURL = await getDownloadURL(storageRef);
-      } catch (error) {
-        console.error("Error al subir la foto de perfil: ", error);
-        toast.error("Hubo un error al subir tu foto. Se continuará sin ella.");
-      }
     }
     
     await setDoc(doc(db, "usuarios", user.uid), {
+      uid: user.uid, // Guardamos el uid para referencia
       correo: user.email,
       nombre: nombre,
       username: usernameLower,
       rol: "cliente", 
-      fotoURL: fotoURL, // Se guarda null si no hay foto
+      fotoURL: fotoURL,
       fechaCreacion: serverTimestamp(),
     });
 
@@ -97,90 +93,140 @@ export const AuthProvider = ({ children }) => {
       const userRole = adminEmails.includes(user.email.toLowerCase()) ? "admin" : "cliente";
       const usernameFromEmail = user.email.split('@')[0].toLowerCase();
       
-      await setDoc(docRef, {
+      const newUserDoc = {
+        uid: user.uid,
         correo: user.email,
         nombre: user.displayName || 'Usuario Google',
-        username: usernameFromEmail, 
+        username: usernameFromEmail,
         rol: userRole,
-        fotoURL: user.photoURL, // La foto que viene de Google
+        fotoURL: user.photoURL || "/default-user.png",
         fechaCreacion: serverTimestamp(),
-      });
+      };
+      await setDoc(docRef, newUserDoc);
     }
     return result;
   };
 
   const cerrarSesion = () => signOut(auth);
 
-  const actualizarFotoPerfil = async (file) => {
-    if (!usuarioActual) throw new Error("No hay usuario autenticado.");
+  const actualizarPerfil = async ({ nombre, username, imageFile }) => {
+    const promise = new Promise(async (resolve, reject) => {
+        if (!usuarioActual) return reject(new Error("No hay usuario autenticado."));
 
-    if (!file.type.startsWith('image/')) {
-      throw new Error('Por favor, selecciona un archivo de imagen válido.');
-    }
+        const userRef = doc(db, "usuarios", usuarioActual.uid);
+        const updateData = {};
+        let newPhotoURL = usuarioActual.fotoURL;
 
-    const toastId = toast.loading('Subiendo imagen...');
+        if (nombre && nombre !== usuarioActual.nombre) updateData.nombre = nombre;
+        if (username && username.toLowerCase() !== usuarioActual.username) {
+            const usernameLower = username.toLowerCase();
+            const q = query(collection(db, "usuarios"), where("username", "==", usernameLower));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty && querySnapshot.docs[0].id !== usuarioActual.uid) {
+              return reject(new Error("El nombre de usuario ya está en uso."));
+            }
+            updateData.username = usernameLower;
+        }
 
-    try {
-      const fileRef = ref(storage, `avatares/${usuarioActual.uid}/${file.name}`);
-      await uploadBytes(fileRef, file);
-      const photoURL = await getDownloadURL(fileRef);
+        if (imageFile) {
+            const oldPhotoURL = usuarioActual.fotoURL;
+            const storageRef = ref(storage, `perfiles/${usuarioActual.uid}/${Date.now()}-${imageFile.name}`);
+            await uploadBytes(storageRef, imageFile);
+            newPhotoURL = await getDownloadURL(storageRef);
+            updateData.fotoURL = newPhotoURL;
 
-      const userDocRef = doc(db, 'usuarios', usuarioActual.uid);
-      await updateDoc(userDocRef, { fotoURL: photoURL });
+            if (oldPhotoURL && oldPhotoURL.includes('firebasestorage')) {
+                try {
+                    await deleteObject(ref(storage, oldPhotoURL));
+                } catch (error) {
+                    console.warn("No se pudo borrar la foto antigua:", error);
+                }
+            }
+        }
+        
+        if (Object.keys(updateData).length > 0) {
+            await updateDoc(userRef, updateData);
+        }
+        
+        await updateProfile(auth.currentUser, {
+            displayName: updateData.nombre || usuarioActual.nombre,
+            photoURL: newPhotoURL,
+        });
 
-      const authUser = auth.currentUser;
-      if (authUser) {
-        await updateProfile(authUser, { photoURL });
-      }
-      
-      toast.success('¡Icono actualizado!', { id: toastId });
-      return photoURL;
+        resolve({ newPhotoURL, imageFile, updated: Object.keys(updateData).length > 0 });
+    });
 
-    } catch (error) {
-      console.error("Error al actualizar la foto de perfil:", error);
-      toast.error('Error al subir la imagen. Inténtalo de nuevo.', { id: toastId });
-      throw error;
-    }
+    toast.promise(promise, {
+        loading: 'Actualizando perfil...',
+        success: ({ newPhotoURL, imageFile, updated }) => {
+            if (imageFile) {
+                toast.custom((t) => (
+                  <div
+                    className={`${t.visible ? 'animate-enter' : 'animate-leave'} relative max-w-sm w-full bg-white shadow-2xl rounded-xl pointer-events-auto ring-1 ring-black ring-opacity-5`}>
+                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#d16170] rounded-l-xl"></div>
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors z-10"
+                    >
+                      <span className="sr-only">Cerrar</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    <div className="flex items-center p-4 pl-6">
+                        <div className="flex-shrink-0 relative">
+                            <img
+                                className="h-14 w-14 rounded-full object-cover border-2 border-white shadow-md"
+                                src={newPhotoURL}
+                                alt="Nueva foto de perfil"
+                            />
+                            <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-white">
+                                <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div className="ml-5 flex-1">
+                            <p className="text-lg font-semibold text-gray-800">
+                                ¡Éxito!
+                            </p>
+                            <p className="mt-1 text-sm text-gray-600">
+                                Tu foto de perfil ha sido actualizada.
+                            </p>
+                        </div>
+                    </div>
+                  </div>
+                ), { duration: 6000, id: 'custom-image-toast' });
+                return "";
+            } else if (updated) {
+                return '¡Perfil actualizado con éxito!';
+            } else {
+                return 'No se realizaron cambios.';
+            }
+        },
+        error: (err) => err.message || 'Hubo un error al actualizar.',
+    });
+    await promise.catch(() => {}); // Evita unhandled promise rejection en consola
   };
 
   useEffect(() => {
-    let unsubscribeFirestore = () => {};
-
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      unsubscribeFirestore();
-
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setCargando(true);
         const docRef = doc(db, "usuarios", user.uid);
-        
-        unsubscribeFirestore = onSnapshot(docRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const firestoreData = docSnap.data();
-            setUsuarioActual({
-              ...user, 
-              ...firestoreData, 
-            });
-          } else {
-            setUsuarioActual(user);
-          }
-          setCargando(false);
-        }, (error) => {
-          console.error("Error al escuchar datos de Firestore:", error);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const firestoreData = docSnap.data();
+          setUsuarioActual({ uid: user.uid, ...user, ...firestoreData });
+        } else {
           setUsuarioActual(user);
-          setCargando(false);
-        });
+        }
       } else {
         setUsuarioActual(null);
-        setCargando(false);
       }
+      setCargando(false);
     });
-
-    return () => {
-      unsubscribeAuth();
-      unsubscribeFirestore();
-    };
+    return () => unsubscribe();
   }, []);
-
 
   const value = {
     usuarioActual,
@@ -189,7 +235,7 @@ export const AuthProvider = ({ children }) => {
     iniciarSesion,
     iniciarConGoogle,
     cerrarSesion,
-    actualizarFotoPerfil
+    actualizarPerfil,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
