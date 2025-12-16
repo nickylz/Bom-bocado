@@ -5,6 +5,7 @@ import { useAuth } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trash2, Tag, X, QrCode, UploadCloud, CheckCircle } from "lucide-react";
 import qrYape from "../componentes/img/qr-bom-bocado.png";
+import qrPlin from "../componentes/img/qr-bom-bocado.png"; // ¡Reemplazar con QR de Plin!
 import { departamentos, provincias, distritos } from "../lib/peru-geo";
 
 const COSTO_ENVIO_FIJO = 10.00;
@@ -32,6 +33,7 @@ export default function Checkout() {
   const [distritosDisponibles, setDistritosDisponibles] = useState([]);
   const [metodoPago, setMetodoPago] = useState("");
   const [mostrarModalYape, setMostrarModalYape] = useState(false);
+  const [mostrarModalPlin, setMostrarModalPlin] = useState(false); // <-- Estado para Plin
   const [comprobante, setComprobante] = useState(null);
   const [nombreComprobante, setNombreComprobante] = useState("");
   const [intentoDePago, setIntentoDePago] = useState(false);
@@ -83,8 +85,6 @@ export default function Checkout() {
     const direccionCompleta = `${direccion}, ${distrito}, ${provincia}, ${departamento}`;
     const direccionConReferencia = referencia ? `${direccionCompleta} (Ref: ${referencia})` : direccionCompleta;
 
-    {/*realizarPago*/}
-    
     try {
       const idPedido = await realizarPago({
         nombre,
@@ -120,67 +120,81 @@ export default function Checkout() {
     );
   }
 
-  {/* No permitir continuar si no hay comprobante */}
   const pagarDesdeModal = () => {
     if (!comprobante) {
       alert("Por favor, sube un comprobante antes de continuar.");
       return;
     }
     setMostrarModalYape(false);
+    setMostrarModalPlin(false);
     document.getElementById("formCheckout").requestSubmit();
   };
 
+  // Factorizamos el contenido del modal para no repetir tanto código
+  const ContenidoModalPago = ({ titulo, qrImg }) => (
+    <>
+      <div className="flex-grow overflow-y-auto p-6 text-center space-y-4">
+        <p className="text-gray-600">Escanea el código QR para completar tu pago.</p>
+        <img src={qrImg} alt={`QR ${titulo}`} className="w-60 mx-auto rounded-xl shadow-lg border-4 border-white"/>
+        <div className="bg-rose-50 border-t-2 border-b-2 border-rose-200/80 py-3 px-4">
+            <p className="text-sm text-gray-500">Monto a pagar:</p>
+            <p className="text-3xl font-bold text-[#8f2133]">S/ {totalFinal.toFixed(2)}</p>
+        </div>
+        <p className="text-sm text-gray-500 pt-2">Luego, sube tu comprobante de pago.</p>
+        <div>
+            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleComprobanteChange} className="hidden" required/>
+            <div 
+                onClick={() => fileInputRef.current.click()} 
+                className="bg-white border-2 border-dashed border-[#fdd2d7] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#d8718c] transition-all">
+                {nombreComprobante ? (
+                    <div className="text-green-600 flex flex-col items-center gap-2">
+                        <CheckCircle size={32}/>
+                        <p className="font-semibold text-sm">Comprobante Cargado:</p>
+                        <p className="text-xs font-mono bg-green-50 rounded-md px-2 py-1">{nombreComprobante}</p>
+                    </div>
+                ) : (
+                    <div className="text-[#d8718c] flex flex-col items-center gap-2">
+                        <UploadCloud size={32}/>
+                        <p className="font-semibold text-sm">Seleccionar o arrastrar</p>
+                    </div>
+                )}
+            </div>
+        </div>
+      </div>
+      <div className="p-4 bg-white/30 border-t-2 border-rose-100/80 flex justify-end items-center">
+        <button onClick={pagarDesdeModal} disabled={!comprobante} className="inline-flex items-center justify-center gap-2 bg-[#d8718c] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#c25a75] transition-colors shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed">
+            <QrCode size={18} /> Confirmar Pago
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <>
+      {/* --- Modal Yape --- */}
       {mostrarModalYape && (
          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-50 animate-fade-in" onClick={() => setMostrarModalYape(false)}>
-         <div className="bg-[#fffcfc] rounded-3xl shadow-2xl border border-rose-100/50 max-w-md w-full max-h-[95vh] flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
-           <div className="p-6 relative border-b-2 border-rose-100/80">
-               <h2 className="text-2xl font-bold text-center text-[#8f2133]">Paga con Yape</h2>
-               <button onClick={() => setMostrarModalYape(false)} className="absolute top-5 right-5 text-gray-400 hover:text-white hover:bg-red-400 rounded-full p-1.5 transition-all" aria-label="Cerrar"><X size={20} /></button>
-           </div>
-           
-           <div className="flex-grow overflow-y-auto p-6 text-center space-y-4">
-                <p className="text-gray-600">Escanea el código QR para completar tu pago.</p>
+          <div className="bg-[#fffcfc] rounded-3xl shadow-2xl border border-rose-100/50 max-w-md w-full max-h-[95vh] flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="p-6 relative border-b-2 border-rose-100/80">
+                <h2 className="text-2xl font-bold text-center text-[#8f2133]">Paga con Yape</h2>
+                <button onClick={() => setMostrarModalYape(false)} className="absolute top-5 right-5 text-gray-400 hover:text-white hover:bg-red-400 rounded-full p-1.5 transition-all" aria-label="Cerrar"><X size={20} /></button>
+            </div>
+            <ContenidoModalPago titulo="Yape" qrImg={qrYape} />
+          </div>
+        </div>
+      )}
 
-                {/* QR */}                
-                <img src={qrYape} alt="QR Yape" className="w-60 mx-auto rounded-xl shadow-lg border-4 border-white"/>
-
-                <div className="bg-rose-50 border-t-2 border-b-2 border-rose-200/80 py-3 px-4">
-                    <p className="text-sm text-gray-500">Monto a pagar:</p>
-                    <p className="text-3xl font-bold text-[#8f2133]">S/ {totalFinal.toFixed(2)}</p>
-                </div>
-                <p className="text-sm text-gray-500 pt-2">Luego, sube tu comprobante de pago.</p>
-                <div>
-                  
-                  {/* Subir Comprobante */}
-                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleComprobanteChange} className="hidden" required/>
-                    <div 
-                        onClick={() => fileInputRef.current.click()} 
-                        className="bg-white border-2 border-dashed border-[#fdd2d7] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#d8718c] transition-all">
-                        {nombreComprobante ? (
-                            <div className="text-green-600 flex flex-col items-center gap-2">
-                                <CheckCircle size={32}/>
-                                <p className="font-semibold text-sm">Comprobante Cargado:</p>
-                                <p className="text-xs font-mono bg-green-50 rounded-md px-2 py-1">{nombreComprobante}</p>
-                            </div>
-                        ) : (
-                            <div className="text-[#d8718c] flex flex-col items-center gap-2">
-                                <UploadCloud size={32}/>
-                                <p className="font-semibold text-sm">Seleccionar o arrastrar</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-           </div>
-
-           <div className="p-4 bg-white/30 border-t-2 border-rose-100/80 flex justify-end items-center">
-                <button onClick={pagarDesdeModal} disabled={!comprobante} className="inline-flex items-center justify-center gap-2 bg-[#d8718c] text-white font-bold py-3 px-8 rounded-lg hover:bg-[#c25a75] transition-colors shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed">
-                    <QrCode size={18} /> Confirmar Pago
-                </button>
-           </div>
-         </div>
-       </div>
+      {/* --- Modal Plin --- */}
+      {mostrarModalPlin && (
+         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-50 animate-fade-in" onClick={() => setMostrarModalPlin(false)}>
+          <div className="bg-[#fffcfc] rounded-3xl shadow-2xl border border-rose-100/50 max-w-md w-full max-h-[95vh] flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="p-6 relative border-b-2 border-rose-100/80">
+                <h2 className="text-2xl font-bold text-center text-[#8f2133]">Paga con Plin</h2>
+                <button onClick={() => setMostrarModalPlin(false)} className="absolute top-5 right-5 text-gray-400 hover:text-white hover:bg-red-400 rounded-full p-1.5 transition-all" aria-label="Cerrar"><X size={20} /></button>
+            </div>
+            <ContenidoModalPago titulo="Plin" qrImg={qrPlin} />
+          </div>
+        </div>
       )}
 
       <div className="bg-[#fff3f0] min-h-screen py-8 sm:py-12">
@@ -284,7 +298,7 @@ export default function Checkout() {
                         <select required value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="mt-1 border border-[#f5bfb2] bg-white rounded-xl w-full p-3 focus:ring-2 focus:ring-[#d8718c] outline-none cursor-pointer">
                             <option value="">Selecciona un método</option>
                             <option value="yape">Yape</option>
-                            <option value="plin">Plin (Próximamente)</option>
+                            <option value="plin">Plin</option> {/* <-- Opción Plin habilitada */}
                             <option value="tarjeta">Tarjeta (Próximamente)</option>
                             <option value="contraentrega">Pago Contra Entrega</option>
                         </select>
@@ -294,12 +308,11 @@ export default function Checkout() {
 
                         <button type="button" disabled={cargandoPago || intentoDePago || carrito.length === 0} onClick={() => { 
                           if (!metodoPago) { alert("Selecciona un método de pago."); return; }
-
-                           {/*Modal Yape*/} 
-
-                          if (metodoPago === "yape") { setMostrarModalYape(true); } 
-                          else { document.getElementById("formCheckout").requestSubmit(); } }} className="w-full bg-[#d16170] text-white py-4 rounded-xl hover:bg-[#b84c68] transition font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                        {cargandoPago ? "Procesando..." : `Pagar S/${totalFinal.toFixed(2)}`}
+                          if (metodoPago === "yape") { setMostrarModalYape(true); }
+                          else if (metodoPago === "plin") { setMostrarModalPlin(true); } // <-- Lógica para Plin
+                          else { document.getElementById("formCheckout").requestSubmit(); } 
+                        }} className="w-full bg-[#d16170] text-white py-4 rounded-xl hover:bg-[#b84c68] transition font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                          {cargandoPago ? "Procesando..." : `Pagar S/${totalFinal.toFixed(2)}`}
                         </button>
                     </form>
                 </div>

@@ -9,8 +9,9 @@ import {
   updateProfile
 } from "firebase/auth";
 import { auth, db, storage } from "../lib/firebase";
-import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs, onSnapshot, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     const res = await createUserWithEmailAndPassword(auth, correo, contrasena);
     const user = res.user;
 
-    let fotoURL = "/default-user.png";
+    let fotoURL = null; // Cambiado: ahora es null por defecto
     if (foto) {
       try {
         const storageRef = ref(storage, `perfiles/${user.uid}/${foto.name}`);
@@ -51,7 +52,7 @@ export const AuthProvider = ({ children }) => {
         fotoURL = await getDownloadURL(storageRef);
       } catch (error) {
         console.error("Error al subir la foto de perfil: ", error);
-        alert("Hubo un error al subir tu foto de perfil. Se usará una imagen por defecto, pero tu cuenta ha sido creada. Por favor, contacta a soporte si el problema persiste.");
+        toast.error("Hubo un error al subir tu foto. Se continuará sin ella.");
       }
     }
     
@@ -60,7 +61,7 @@ export const AuthProvider = ({ children }) => {
       nombre: nombre,
       username: usernameLower,
       rol: "cliente", 
-      fotoURL: fotoURL,
+      fotoURL: fotoURL, // Se guarda null si no hay foto
       fechaCreacion: serverTimestamp(),
     });
 
@@ -96,26 +97,57 @@ export const AuthProvider = ({ children }) => {
       const userRole = adminEmails.includes(user.email.toLowerCase()) ? "admin" : "cliente";
       const usernameFromEmail = user.email.split('@')[0].toLowerCase();
       
-      const newUserDoc = {
+      await setDoc(docRef, {
         correo: user.email,
         nombre: user.displayName || 'Usuario Google',
-        username: usernameFromEmail, // Se puede hacer más robusto para evitar colisiones
+        username: usernameFromEmail, 
         rol: userRole,
-        fotoURL: user.photoURL || "/default-user.png",
+        fotoURL: user.photoURL, // La foto que viene de Google
         fechaCreacion: serverTimestamp(),
-      };
-      await setDoc(docRef, newUserDoc);
+      });
     }
     return result;
   };
 
   const cerrarSesion = () => signOut(auth);
 
+  const actualizarFotoPerfil = async (file) => {
+    if (!usuarioActual) throw new Error("No hay usuario autenticado.");
+
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Por favor, selecciona un archivo de imagen válido.');
+    }
+
+    const toastId = toast.loading('Subiendo imagen...');
+
+    try {
+      const fileRef = ref(storage, `avatares/${usuarioActual.uid}/${file.name}`);
+      await uploadBytes(fileRef, file);
+      const photoURL = await getDownloadURL(fileRef);
+
+      const userDocRef = doc(db, 'usuarios', usuarioActual.uid);
+      await updateDoc(userDocRef, { fotoURL: photoURL });
+
+      const authUser = auth.currentUser;
+      if (authUser) {
+        await updateProfile(authUser, { photoURL });
+      }
+      
+      toast.success('¡Icono actualizado!', { id: toastId });
+      return photoURL;
+
+    } catch (error) {
+      console.error("Error al actualizar la foto de perfil:", error);
+      toast.error('Error al subir la imagen. Inténtalo de nuevo.', { id: toastId });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     let unsubscribeFirestore = () => {};
 
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      unsubscribeFirestore(); // Cancela la suscripción anterior
+      unsubscribeFirestore();
 
       if (user) {
         setCargando(true);
@@ -125,19 +157,16 @@ export const AuthProvider = ({ children }) => {
           if (docSnap.exists()) {
             const firestoreData = docSnap.data();
             setUsuarioActual({
-              ...user, // Datos de auth de Firebase (uid, email verificado, etc.)
-              ...firestoreData, // Tus datos de Firestore (rol, nombre, fotoURL, etc.)
+              ...user, 
+              ...firestoreData, 
             });
           } else {
-            // Este bloque se ejecuta brevemente durante el registro con Google
-            // antes de que el documento de Firestore sea creado.
-            // Se establece un usuario temporal que se actualizará en milisegundos.
             setUsuarioActual(user);
           }
           setCargando(false);
         }, (error) => {
           console.error("Error al escuchar datos de Firestore:", error);
-          setUsuarioActual(user); // En caso de error, provee al menos el usuario base
+          setUsuarioActual(user);
           setCargando(false);
         });
       } else {
@@ -160,6 +189,7 @@ export const AuthProvider = ({ children }) => {
     iniciarSesion,
     iniciarConGoogle,
     cerrarSesion,
+    actualizarFotoPerfil
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

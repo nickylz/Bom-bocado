@@ -1,18 +1,20 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 import { db, storage } from "../lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { useAuth } from "../context/authContext";
 import toast from 'react-hot-toast';
-import { Camera, Send, AlertTriangle } from 'lucide-react';
+import { Camera, Send, AlertTriangle, Loader, ArrowLeft } from 'lucide-react';
 
 const inputStyles = "w-full bg-white/70 border-2 border-[#fdd2d7] rounded-lg px-4 py-2.5 text-gray-800 transition-all duration-300 focus:outline-none focus:border-[#d8718c] focus:ring-2 focus:ring-[#d8718c]/50";
 const labelStyles = "block text-sm font-semibold text-[#8a152e] mb-1.5";
 
 const CATEGORIAS_PRODUCTOS = ["Pasteles", "Tartas", "Donas", "Cupcakes", "Bombones", "Macarons", "Galletas", "Postres fríos", "Temporada", "Otros"];
 
-export default function FormProducto() {
+export default function FormProductos({ idProductoEditar }) {
   const { usuarioActual } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -23,10 +25,45 @@ export default function FormProducto() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
+  const esModoEdicion = !!idProductoEditar;
   const tienePermiso = usuarioActual?.rol === "admin" || usuarioActual?.rol === "editor";
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (esModoEdicion && tienePermiso) {
+        try {
+          const docRef = doc(db, "productos", idProductoEditar);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const productData = docSnap.data();
+            setFormData({
+              nombre: productData.nombre || '',
+              descripcion: productData.descripcion || '',
+              frase: productData.frase || '',
+              precio: productData.precio || '',
+              categoria: productData.categoria || '',
+            });
+            setImagePreview(productData.imagen || '');
+          } else {
+            toast.error("El producto que intentas editar no existe.");
+            navigate('/intranet');
+          }
+        } catch (err) {
+          console.error("Error al cargar el producto:", err);
+          toast.error("No se pudo cargar el producto para editar.");
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [idProductoEditar, navigate, esModoEdicion, tienePermiso]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,57 +72,67 @@ export default function FormProducto() {
 
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
-        const file = e.target.files[0];
-        setImageFile(file);
-        setImagePreview(URL.createObjectURL(file));
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!tienePermiso) {
-      toast.error("No tienes permiso para realizar esta acción.");
-      return;
-    }
-    if (!imageFile) {
-      setError("Por favor, selecciona una imagen.");
-      return;
-    }
-    if (!formData.categoria) {
-      setError("Por favor, selecciona una categoría.");
-      return;
-    }
+    if (!tienePermiso) return toast.error("No tienes permiso para realizar esta acción.");
+    if (!imagePreview) return setError("Por favor, selecciona una imagen.");
+    if (!formData.categoria) return setError("Por favor, selecciona una categoría.");
 
     setIsSubmitting(true);
     setError(null);
-    const toastId = toast.loading('Agregando producto...');
+    const toastId = toast.loading(esModoEdicion ? 'Actualizando producto...' : 'Agregando producto...');
 
     try {
-      const storageRef = ref(storage, `productos/${Date.now()}_${imageFile.name}`);
-      await uploadBytes(storageRef, imageFile);
-      const imageUrl = await getDownloadURL(storageRef);
+      let imageUrl = imagePreview;
+      let oldImageUrl = null;
 
-      await addDoc(collection(db, "productos"), {
-        ...formData,
-        precio: Number(formData.precio),
-        imagen: imageUrl,
-        fechaCreacion: serverTimestamp(),
-        creadoPor: usuarioActual.uid,
-        disponible: true,
-      });
+      if (imageFile) { // Solo si se ha seleccionado UN ARCHIVO NUEVO
+        if (esModoEdicion) {
+            // Guardamos la URL antigua para borrarla después si la subida es exitosa
+            const docRef = doc(db, "productos", idProductoEditar);
+            const currentDoc = await getDoc(docRef);
+            if (currentDoc.exists()) oldImageUrl = currentDoc.data().imagen;
+        }
+        const storageRef = ref(storage, `productos/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(storageRef, imageFile);
+        imageUrl = await getDownloadURL(storageRef);
+      }
+      
+      const dataToSave = { ...formData, precio: Number(formData.precio), imagen: imageUrl };
 
-      setFormData({ nombre: '', descripcion: '', frase: '', precio: '', categoria: '' });
-      setImageFile(null);
-      setImagePreview('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      if (esModoEdicion) {
+        const docRef = doc(db, "productos", idProductoEditar);
+        await updateDoc(docRef, { ...dataToSave, fechaActualizacion: serverTimestamp() });
+        toast.success("¡Producto actualizado con éxito!", { id: toastId });
+
+        // Si la actualización fue exitosa y se subió una nueva imagen, borramos la antigua
+        if (oldImageUrl && oldImageUrl.includes('firebasestorage')) {
+            try {
+                const oldImageRef = ref(storage, oldImageUrl);
+                await deleteObject(oldImageRef);
+            } catch (deleteError) {
+                console.warn("No se pudo borrar la imagen antigua:", deleteError);
+                toast.error("No se pudo borrar la imagen antigua. Puede que ya no exista.", { duration: 5000 });
+            }
+        }
+
+      } else {
+        await addDoc(collection(db, "productos"), { ...dataToSave, fechaCreacion: serverTimestamp(), creadoPor: usuarioActual.uid, disponible: true });
+        toast.success("¡Producto agregado con éxito!", { id: toastId });
       }
 
-      toast.success("¡Producto agregado con éxito!", { id: toastId });
+      navigate('/intranet');
+
     } catch (err) {
-      console.error("Error al agregar el producto:", err);
-      setError("Hubo un error al subir el producto.");
-      toast.error("Hubo un error al subir el producto.", { id: toastId });
+      console.error("Error durante el proceso:", err);
+      setError("Hubo un error al guardar el producto.");
+      toast.error("Hubo un error al guardar el producto.", { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
@@ -93,31 +140,34 @@ export default function FormProducto() {
 
   if (!tienePermiso) {
     return (
-      <div className="bg-[#fff3f0] rounded-3xl shadow-lg p-8 border border-[#f5bfb2] text-center">
-        <h3 className="text-xl font-bold text-[#8f2133]">Acceso Denegado</h3>
-        <p className="text-gray-600 mt-2">No tienes los permisos necesarios para agregar productos.</p>
+      <div className="bg-white rounded-3xl shadow-lg p-8 border border-rose-100 text-center">
+        <h3 className="text-xl font-bold text-[#d16170]">Acceso Denegado</h3>
+        <p className="text-gray-600 mt-2">No tienes los permisos necesarios para esta función.</p>
       </div>
     );
   }
 
-  return (
-    <div className="bg-[#fff3f0] rounded-3xl shadow-lg p-6 sm:p-8 border border-[#f5bfb2]">
-      <div className="mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-[#9c2007]">Agregar Nuevo Producto</h2>
-        <p className="text-sm text-gray-600 mt-1">Rellena el formulario para añadir un producto al catálogo.</p>
-      </div>
+  if (isLoading) {
+      return <div className="flex justify-center items-center py-10"><Loader className="animate-spin text-[#d16170]" size={32} /> <p className="ml-3">Cargando datos...</p></div>;
+  }
 
+  return (
+    <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 border border-rose-100">
+        <button onClick={() => navigate('/intranet')} className="flex items-center gap-2 text-[#9c2007] font-semibold mb-6 hover:text-[#d16170]">
+            <ArrowLeft size={20} />
+            Volver a la lista
+        </button>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
             <label className={labelStyles}>Imagen del Producto*</label>
-            <div className="aspect-square w-full bg-white/80 rounded-lg border-2 border-dashed border-[#fdd2d7] flex flex-col items-center justify-center cursor-pointer hover:border-[#d8718c] transition-all" onClick={() => fileInputRef.current.click()}>
+            <div className="aspect-square w-full bg-rose-50 rounded-lg border-2 border-dashed border-[#fdd2d7] flex flex-col items-center justify-center cursor-pointer hover:border-[#d8718c] transition-all overflow-hidden" onClick={() => fileInputRef.current.click()}>
               {imagePreview ? (
-                <img src={imagePreview} alt="Vista previa" className="w-full h-full object-cover rounded-md" />
+                <img src={imagePreview} alt="Vista previa" className="w-full h-full object-cover" />
               ) : (
-                <div className="text-center text-[#d8718c]">
+                <div className="text-center text-[#d8718c] p-4">
                   <Camera size={40} className="mx-auto" />
-                  <p className="text-sm font-semibold mt-2">Haz clic para elegir</p>
+                  <p className="text-sm font-semibold mt-2">Haz clic para elegir una imagen</p>
                 </div>
               )}
             </div>
@@ -163,9 +213,9 @@ export default function FormProducto() {
         )}
 
         <div className="mt-10 text-right">
-          <button type="submit" disabled={isSubmitting} className="inline-flex items-center justify-center gap-2 bg-[#d8718c] text-white font-bold py-3 px-10 rounded-lg hover:bg-[#c25a75] transition-colors shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:shadow-none">
+          <button type="submit" disabled={isSubmitting || isLoading} className="inline-flex items-center justify-center gap-2 bg-[#d16170] text-white font-bold py-3 px-10 rounded-lg hover:bg-[#b84c68] transition-colors shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:shadow-none">
             <Send size={18} />
-            {isSubmitting ? 'Agregando...' : 'Agregar Producto'}
+            {isSubmitting ? (esModoEdicion ? 'Actualizando...' : 'Agregando...') : (esModoEdicion ? 'Actualizar Producto' : 'Agregar Producto')}
           </button>
         </div>
       </form>
