@@ -205,7 +205,7 @@ const Comentario = ({
       <div className="shrink-0">
         <img
           src={
-            testimonio.userPhotoURL ||
+            testimonio.fotoURL ||
             `https://ui-avatars.com/api/?name=${testimonio.nombre}&background=f5bfb2&color=9c2007`
           }
           alt={testimonio.nombre}
@@ -335,7 +335,7 @@ const FormularioRespuesta = ({
         parentId,
         userUid: usuarioActual.uid,
         nombre: usuarioActual.displayName || "Anónimo",
-        userPhotoURL: usuarioActual.photoURL,
+        fotoURL: usuarioActual.fotoURL,
         createdAt: serverTimestamp(),
       });
       toast.success("Respuesta publicada");
@@ -674,7 +674,7 @@ export default function Testimonials() {
         >
           <button
             onClick={closeImageViewer}
-            className="absolute top-6 right-6 text-white text-5xl transition-transform transform hover:scale-110 z-50 filter-[drop-shadow(0_2px_2px_rgb(0_0_0/0.5))]"
+            className="absolute top-6 right-6 text-white text-5xl transition-transform transform hover:scale-110 z-50 filter-[drop-shadow(0_2px_2px_rgb(0_0_0/0.5))] "
             aria-label="Cerrar"
           >
             <FaTimes />

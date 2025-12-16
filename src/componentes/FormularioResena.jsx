@@ -77,7 +77,7 @@ export default function FormularioResena() {
         estrellas: rating,
         createdAt: serverTimestamp(),
         userUid: usuarioActual?.uid || null,
-        userPhotoURL: usuarioActual?.photoURL || null, 
+        fotoURL: usuarioActual?.fotoURL || null, 
         userCorreo: usuarioActual?.email || null,
         imageUrls: [],
       });

@@ -185,8 +185,8 @@ export default function GestionUsuarios() {
             {paginatedUsers.map((usuario) => (
                <div key={usuario.id} className="bg-white rounded-2xl border-2 border-gray-200 p-4 shadow-lg space-y-4">
                <div className="flex items-center gap-4">
-                   {usuario.photoURL ? (
-                       <img src={usuario.photoURL} alt={usuario.username} className="w-16 h-16 rounded-full object-cover border-2 border-pink-100"/>
+                   {usuario.fotoURL ? (
+                       <img src={usuario.fotoURL} alt={usuario.username} className="w-16 h-16 rounded-full object-cover border-2 border-pink-100"/>
                    ) : (
                        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
                            <User size={30} className="text-gray-400" />

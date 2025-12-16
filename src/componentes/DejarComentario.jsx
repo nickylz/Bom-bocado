@@ -36,8 +36,9 @@ const DejarComentario = ({ productoId }) => {
         texto: comentario,
         fecha: serverTimestamp(),
         autorId: usuario ? usuario.uid : null,
-        autorNombre: usuario ? (usuario.nombre || usuario.displayName) : nombreAnonimo,
-        autorFotoURL: usuario ? usuario.photoURL : null,
+        // Para usuarios anónimos, guardamos el nombre que ingresan.
+        // Para usuarios registrados, obtendremos su información en tiempo real.
+        ...(!usuario && { autorNombre: nombreAnonimo })
       };
 
       await addDoc(collection(db, 'comentarios'), datosComentario);
@@ -74,13 +75,14 @@ const DejarComentario = ({ productoId }) => {
       <div className="flex items-start gap-4">
         {usuario && (
           <div className="shrink-0">
-            {usuario.photoURL ? (
+            {usuario.fotoURL ? (
               <img
-                src={usuario.photoURL}
+                src={usuario.fotoURL}
                 alt={usuario.nombre || usuario.displayName}
                 className="w-11 h-11 rounded-full object-cover"
               />
             ) : (
+
               <div className="w-11 h-11 rounded-full bg-[#a34d5f] flex items-center justify-center text-white font-bold text-xl">
                 {(usuario.nombre || usuario.displayName)
                   ? (usuario.nombre || usuario.displayName).charAt(0).toUpperCase()
@@ -124,11 +126,10 @@ const DejarComentario = ({ productoId }) => {
                 return (
                   <svg
                     key={index}
-                    className={`w-6 h-6 sm:w-7 sm:h-7 cursor-pointer ${
-                      ratingValue <= (hoverRating || rating)
+                    className={`w-6 h-6 sm:w-7 sm:h-7 cursor-pointer ${ratingValue <= (hoverRating || rating)
                         ? 'text-[#d8718c]'
                         : 'text-gray-300'
-                    }`}
+                      }`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     onClick={() => setRating(ratingValue)}
@@ -145,9 +146,8 @@ const DejarComentario = ({ productoId }) => {
           <textarea
             className="w-full p-3 border border-gray-200 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#f5bfb2] focus:border-transparent"
             rows="3"
-            placeholder={`¿Qué te pareció el producto${
-              usuario ? ', ' + (usuario.nombre || usuario.displayName) : ''
-            }?`}
+            placeholder={`¿Qué te pareció el producto${usuario ? ', ' + (usuario.nombre || usuario.displayName) : ''
+              }?`}
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
             disabled={enviando}
@@ -155,9 +155,8 @@ const DejarComentario = ({ productoId }) => {
 
           <button
             onClick={handleGuardarComentario}
-            className={`mt-3 bg-[#a34d5f] text-white px-6 py-2 rounded-full hover:bg-[#912646] transition shadow-md w-full sm:w-auto ${
-              enviando ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className={`mt-3 bg-[#a34d5f] text-white px-6 py-2 rounded-full hover:bg-[#912646] transition shadow-md w-full sm:w-auto ${enviando ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             disabled={enviando}
           >
             {enviando ? 'Enviando...' : 'Enviar Opinión'}

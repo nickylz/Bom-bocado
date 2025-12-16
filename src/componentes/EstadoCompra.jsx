@@ -61,7 +61,7 @@ export default function EstadoCompra() {
             id: doc.id,
             ...pedidoData,
             fechaCreacion: pedidoData.fechaCreacion.toDate(),
-            autorFotoURL: userData.photoURL,
+            autorFotoURL: userData.fotoURL,
             nombreCliente: userData.username || pedidoData.nombreCliente,
         };
       });

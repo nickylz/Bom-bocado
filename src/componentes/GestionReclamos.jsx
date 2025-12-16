@@ -121,8 +121,8 @@ export default function GestionReclamos() {
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
                     {/* --- LÓGICA DE AVATAR --- */}
-                    {reclamo.autorFotoURL ? (
-                      <img src={reclamo.autorFotoURL} alt={`Foto de ${reclamo.nombres}`} className="w-10 h-10 rounded-full object-cover"/>
+                    {reclamo.fotoURL ? (
+                      <img src={reclamo.fotoURL} alt={`Foto de ${reclamo.nombres}`} className="w-10 h-10 rounded-full object-cover"/>
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                         <User size={22} className="text-gray-400" />

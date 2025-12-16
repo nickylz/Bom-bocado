@@ -175,6 +175,19 @@ const AdminProductos = () => {
       }, () => setCargando(false));
       return () => unsubscribe();
     }, []);
+
+    // Efecto para bloquear el scroll del body cuando el modal está abierto
+    useEffect(() => {
+        if (modalOpen) {
+            document.body.classList.add('overflow-hidden');
+        } else {
+            document.body.classList.remove('overflow-hidden');
+        }
+        // Función de limpieza para asegurarse de que la clase se elimine si el componente se desmonta
+        return () => {
+            document.body.classList.remove('overflow-hidden');
+        };
+    }, [modalOpen]);
   
     const openModalForNew = () => { setSelectedProduct(null); setModalOpen(true); };
     const openModalForEdit = (producto) => { setSelectedProduct(producto); setModalOpen(true); };
@@ -185,15 +198,12 @@ const AdminProductos = () => {
     
         const toastId = toast.loading('Eliminando producto...');
         try {
-            // Delete image from storage
             if (imagenUrl) {
                 const imageRef = ref(storage, imagenUrl);
                 await deleteObject(imageRef).catch(err => {
-                    // It's not critical if the image doesn't exist, so we just log it
                     console.warn("No se pudo eliminar la imagen o no existía:", err);
                 });
             }
-            // Delete doc from firestore
             await deleteDoc(doc(db, "productos", id));
             toast.success("Producto eliminado.", { id: toastId });
         } catch (error) {
@@ -266,28 +276,34 @@ const AdminProductos = () => {
         {cargando ? <div className="py-10 text-center text-gray-500">Cargando productos...</div> : 
         productosPaginados.length === 0 ? <p className="text-center text-gray-500 py-8">No hay productos para mostrar en esta categoría.</p> : 
         <>
-            {/* Vista Móvil */}
+            {/* Vista Móvil Mejorada */}
             <div className="lg:hidden space-y-4">
             {productosPaginados.map((producto) => (
-                <div key={producto.id} className="bg-white shadow-md rounded-2xl border-2 border-[#f5bfb2] p-4">
-                    <div className="flex gap-4">
-                        <img src={producto.imagen} alt={producto.nombre} className="w-24 h-24 rounded-lg object-cover border-2 border-[#f5bfb2] shrink-0"/>
-                        <div className="flex-1 flex flex-col">
-                            <p className="font-bold text-[#9c2007] text-lg truncate">{producto.nombre}</p>
-                            <p className="text-[#d16170] font-semibold text-xl">S/{producto.precio?.toFixed(2)}</p>
-                            <p className="text-gray-500 text-sm">{producto.categoria}</p>
-                            {producto.descuento > 0 && <p className="text-green-600 text-xs font-semibold">Descuento: {producto.descuento}%</p>}
-                            <div className="flex gap-2 mt-auto pt-2 justify-end">
-                                <button onClick={() => openModalForEdit(producto)} className="bg-[#d16170] hover:bg-[#b84c68] text-white p-2 rounded-lg transition" title="Editar"><FaEdit /></button>
-                                <button onClick={() => handleDelete(producto.id, producto.imagen)} className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition" title="Eliminar"><FaTrash /></button>
+                <div key={producto.id} className="bg-white shadow-lg rounded-2xl border-2 border-[#fde5e8] overflow-hidden">
+                    <div className="p-4 flex gap-4">
+                        <img src={producto.imagen} alt={producto.nombre} className="w-24 h-24 sm:w-28 sm:h-28 rounded-lg object-cover border-2 border-[#fde5e8] shrink-0"/>
+                        <div className="flex-1">
+                            <p className="font-bold text-[#9c2007] text-lg leading-tight">{producto.nombre}</p>
+                            <p className="text-[#d16170] font-bold text-xl my-1">S/{producto.precio?.toFixed(2)}</p>
+                            <div className='flex items-center gap-2 flex-wrap mt-2'>
+                               <span className="inline-block bg-[#fff3f0] text-[#9c2007] px-2.5 py-1 rounded-full text-xs font-semibold">{producto.categoria}</span>
+                               {producto.descuento > 0 && <span className="inline-block bg-green-200 text-green-800 px-2.5 py-1 rounded-full text-xs font-bold">-{producto.descuento}%</span>}
                             </div>
                         </div>
+                    </div>
+                    <div className="bg-gray-50/70 border-t-2 border-[#fde5e8] p-3 flex justify-end items-center gap-3">
+                        <button onClick={() => openModalForEdit(producto)} className="flex items-center gap-2 text-sm bg-white border-2 border-[#d16170] text-[#d16170] font-bold py-1.5 px-4 rounded-lg hover:bg-[#d16170] hover:text-white transition-all" title="Editar">
+                            <FaEdit /> Editar
+                        </button>
+                        <button onClick={() => handleDelete(producto.id, producto.imagen)} className="flex items-center gap-2 text-sm bg-red-500 border-2 border-red-500 text-white font-bold py-1.5 px-4 rounded-lg hover:bg-red-600 transition-all" title="Eliminar">
+                            <FaTrash /> Eliminar
+                        </button>
                     </div>
                 </div>
             ))}
             </div>
     
-            {/* Vista Desktop */}
+            {/* Vista Desktop (Sin cambios) */}
             <div className="hidden lg:block border-2 border-[#f5bfb2] rounded-2xl overflow-hidden shadow-lg">
                 <div className="overflow-x-auto">
                 <table className="min-w-full w-full divide-y divide-[#f5bfb2]">
