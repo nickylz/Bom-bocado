@@ -24,6 +24,11 @@ export default function Footer() {
       { to: "/novedades", text: "Novedades" },
   ]
 
+  const legalLinks = [
+    { to: "/politica-de-privacidad", text: "Política de Privacidad" },
+    { to: "/politica-de-cookies", text: "Política de Cookies" },
+  ]
+
   // Paleta de colores alineada con el NavBar
   const bgColor = "bg-[#fdd2d7]";
   const textColor = "text-[#9c2007]";
@@ -128,6 +133,13 @@ export default function Footer() {
       <div className={`py-4 border-t ${borderColor}/70`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm font-medium">
           <p>© {new Date().getFullYear()} BOMBOCADO. Todos los derechos reservados.</p>
+          <div className="flex justify-center gap-4 mt-2">
+            {legalLinks.map(link => (
+                <Link key={link.to} to={link.to} className={`${hoverColor} transition-colors duration-300`}>
+                    {link.text}
+                </Link>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

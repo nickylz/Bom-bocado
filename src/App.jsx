@@ -7,10 +7,11 @@ import MainLayout from "./layouts/MainLayout";
 // Contexto y Mascota
 import { MascotProvider } from "./context/MascotContext";
 import CakeMascot from "./componentes/CakeMascot";
+import CookieConsent from "./componentes/CookieConsent";
 
 import "./App.css";
 
-// 👇 PÁGINAS CON LAZY LOADING
+//  PÁGINAS CON LAZY LOADING
 const Inicio = lazy(() => import("./paginas/Index"));
 const Nosotros = lazy(() => import("./paginas/Nosotros"));
 const Productos = lazy(() => import("./paginas/Productos"));
@@ -23,14 +24,19 @@ const Gracias = lazy(() => import("./paginas/Gracias"));
 const LibroDeReclamaciones = lazy(() =>
   import("./paginas/LibroDeReclamaciones")
 );
+const PoliticaCookies = lazy(() => import("./paginas/PoliticaCookies"));
+const PoliticaPrivacidad = lazy(() =>
+  import("./paginas/PoliticaPrivacidad")
+);
 
 function App() {
   return (
     <MascotProvider>
-      {/* Mascota siempre visible */}
+      {/* Siempre visibles */}
       <CakeMascot />
+      <CookieConsent />
 
-      {/* 👇 Suspense envuelve SOLO las rutas */}
+      {/* 👇 Suspense envuelve las rutas */}
       <Suspense
         fallback={
           <div style={{ textAlign: "center", marginTop: "2rem" }}>
@@ -52,6 +58,14 @@ function App() {
             <Route
               path="/libro-de-reclamaciones"
               element={<LibroDeReclamaciones />}
+            />
+            <Route
+              path="/politica-de-cookies"
+              element={<PoliticaCookies />}
+            />
+            <Route
+              path="/politica-de-privacidad"
+              element={<PoliticaPrivacidad />}
             />
           </Route>
         </Routes>
