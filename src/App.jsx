@@ -34,7 +34,7 @@ function App() {
       <Suspense
         fallback={
           <div style={{ textAlign: "center", marginTop: "2rem" }}>
-            Cargando dulzura 🍰...
+            Cargando dulzura ...
           </div>
         }
       >
