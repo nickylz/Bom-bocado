@@ -104,7 +104,7 @@ export default function ProductoCard({
       {usuarioActual && mostrarFavoritos && (
         <button
           onClick={handleFavoritoClick}
-          className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-400 hover:text-red-500 transition-all duration-300 z-10 opacity-0 group-hover:opacity-100"
+          className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 text-gray-400 hover:text-red-500 transition-all duration-300 z-30 opacity-100 md:opacity-0 md:group-hover:opacity-100"
           title={isFavorito ? "Quitar de favoritos" : "Añadir a favoritos"}
         >
           <Heart
