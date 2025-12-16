@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getDoc, doc, collection, query, where, onSnapshot, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/authContext';
 import { useCarrito } from '../context/CarritoContext';
-// --- Se añade Loader a la importación ---
-import { ArrowLeft, Edit, Trash2, ShoppingCart, Loader } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, ShoppingCart, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
 import RatingSummary from '../componentes/RatingSummary';
 import DejarComentario from '../componentes/DejarComentario';
 import ProductosRecomendados from '../componentes/ProductosRecomendados';
+
+const COMENTARIOS_PER_PAGE = 4;
 
 export default function ProductoDetalle() {
   const { id } = useParams();
@@ -26,6 +27,11 @@ export default function ProductoDetalle() {
   const [starCounts, setStarCounts] = useState({});
   
   const [editingComment, setEditingComment] = useState({ id: null, texto: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [id]);
 
   // Cargar producto
   useEffect(() => {
@@ -81,6 +87,15 @@ export default function ProductoDetalle() {
 
     return () => unsubscribe();
   }, [id]);
+  
+  const { paginatedComentarios, totalPages } = useMemo(() => {
+    const total = Math.ceil(comentarios.length / COMENTARIOS_PER_PAGE);
+    const paginated = comentarios.slice(
+        (currentPage - 1) * COMENTARIOS_PER_PAGE,
+        currentPage * COMENTARIOS_PER_PAGE
+    );
+    return { paginatedComentarios: paginated, totalPages: total };
+  }, [comentarios, currentPage]);
 
   const handleAgregarAlCarrito = () => {
     if (producto) agregarAlCarrito(producto, cantidad);
@@ -105,7 +120,6 @@ export default function ProductoDetalle() {
 
   const cambiarCantidad = (delta) => setCantidad((prev) => Math.max(1, prev + delta));
 
-  // --- AHORA EL LOADER FUNCIONARÁ ---
   if (loading) return <div className="flex justify-center items-center h-screen bg-[#fff9f8]"><Loader className="animate-spin text-[#d16170]" size={40}/></div>;
   if (!producto) return <div className="text-center py-20 bg-[#fff9f8] min-h-screen">Producto no encontrado.</div>;
 
@@ -161,7 +175,7 @@ export default function ProductoDetalle() {
           <DejarComentario productoId={id} />
           <div className="space-y-6 mt-8">
             {loadingComentarios ? <p>Cargando comentarios...</p> : comentarios.length > 0 ? (
-              comentarios.map((comentario) => {
+              paginatedComentarios.map((comentario) => {
                 const puedeGestionar = usuario && (usuario.rol === 'admin' || usuario.uid === comentario.autorId);
                 const isEditing = editingComment.id === comentario.id;
                 return (
@@ -203,6 +217,40 @@ export default function ProductoDetalle() {
               })
             ) : <p className="text-center text-gray-500 py-8">Aún no hay opiniones. ¡Sé el primero en comentar!</p>}
           </div>
+          
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center mt-10 gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  disabled={currentPage === 1}
+                  className="p-3 rounded-full bg-white text-[#d16170] shadow-md border border-transparent hover:border-[#fdeff2] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <div className="flex bg-white rounded-full shadow-md border border-[#fdeff2] px-4 py-2 gap-2">
+                    {[...Array(totalPages)].map((_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setCurrentPage(i + 1)}
+                            className={`w-10 h-10 rounded-full font-bold transition-colors duration-300 ${
+                                currentPage === i + 1
+                                ? "bg-[#d16170] text-white"
+                                : "text-gray-600 hover:bg-rose-50"
+                            }`}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                </div>
+                <button
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-3 rounded-full bg-white text-[#d16170] shadow-md border border-transparent hover:border-[#fdeff2] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight size={20} />
+                </button>
+            </div>
+        )}
         </div>
       </div>
     </div>

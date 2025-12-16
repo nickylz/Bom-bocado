@@ -36,9 +36,8 @@ const DejarComentario = ({ productoId }) => {
         texto: comentario,
         fecha: serverTimestamp(),
         autorId: usuario ? usuario.uid : null,
-        // Para usuarios anónimos, guardamos el nombre que ingresan.
-        // Para usuarios registrados, obtendremos su información en tiempo real.
-        ...(!usuario && { autorNombre: nombreAnonimo })
+        autorNombre: usuario ? (usuario.displayName || usuario.nombre) : nombreAnonimo,
+        autorFotoURL: usuario ? usuario.fotoURL : null
       };
 
       await addDoc(collection(db, 'comentarios'), datosComentario);
